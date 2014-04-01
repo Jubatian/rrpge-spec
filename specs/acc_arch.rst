@@ -14,8 +14,8 @@ Introduction
 ------------------------------------------------------------------------------
 
 
-This part of the specification defines the display component from the Graphics
-Display & Accelerator unit.
+This part of the specification defines the accelerator component from the
+Graphics Display & Accelerator unit.
 
 The accelerator component provides for hardware accelerated graphics
 operations such as sprite blitting, scaling, and filling.
@@ -107,7 +107,7 @@ modes:
 
 - (BB) Block blitter, combining a source area onto a destination.
 - (SC) Scaled blitter, combining a source area onto a destination.
-- (LI) Line filler, combining a source pattern onto a destination.
+- \(LI) Line filler, combining a source pattern onto a destination.
 
 On the source in "BB" and "SC" modes the following transformations may be
 applied:
@@ -380,7 +380,7 @@ Reindexing blit
 This path is used if VRE is enabled (reindex mode). This case if VDR is also
 enabled, the path feeding in the target VRAM cell's data is also effective and
 is used for providing the high bits (up to 5) for selecting a new pixel value
-from the reindex table.
+from the reindex table. ::
 
 
     +----+----+----+----+  If VCK   +---------+
@@ -624,7 +624,7 @@ preserved unless an accelerator operation overwrites them.
 | Range  | Description                                                       |
 +========+===================================================================+
 | 0xEE0  | Video RAM write mask (0xEE0: High, 0xEE1: Low). Clear bits in it  |
-|   -    | disable write to the respective position both for the CPU and the |
+|   \-   | disable write to the respective position both for the CPU and the |
 | 0xEE1  | accelerator functions.                                            |
 +--------+-------------------------------------------------------------------+
 | 0xEE2  | Video RAM partition size. Defines further partitioning within the |
@@ -642,7 +642,7 @@ preserved unless an accelerator operation overwrites them.
 |        | - 7: 128K Words (64K * 32 bit cells)                              |
 +--------+-------------------------------------------------------------------+
 | 0xEE3  |                                                                   |
-|   -    | Display list offsets. See "vid_arch.rst" for details.             |
+|   \-   | Display list offsets. See "vid_arch.rst" for details.             |
 | 0xEE7  |                                                                   |
 +--------+-------------------------------------------------------------------+
 |        | Source X pointer whole part (32 bit cells). Used only for the     |
@@ -742,7 +742,7 @@ preserved unless an accelerator operation overwrites them.
 |        | low 2 bits are used since the Video RAM's size is 256K * 32 bits. |
 +--------+-------------------------------------------------------------------+
 | 0xEFC  |                                                                   |
-|   -    | Unused. Writable, the values written here are preserved.          |
+|   \-   | Unused. Writable, the values written here are preserved.          |
 | 0xEFE  |                                                                   |
 +--------+-------------------------------------------------------------------+
 |        | Start on write, Pattern for Line Filler (LI). A write to this     |
@@ -787,7 +787,7 @@ area is as follows:
 | 0xF07  | Reindexes for source values 0xE and 0xF, bank 0.                  |
 +--------+-------------------------------------------------------------------+
 | 0xF08  | Further reindex banks (banks 1 - 31) to specify 512 reindex       |
-|   -    | values in total.                                                  |
+|   \-   | values in total.                                                  |
 | 0xFFF  |                                                                   |
 +--------+-------------------------------------------------------------------+
 

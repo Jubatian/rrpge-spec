@@ -58,61 +58,61 @@ value 0x0A.
 | Range  | U | Description                                                   |
 +========+===+===============================================================+
 | 0x000  |   |                                                               |
-|   -    | F | "RPA\n" (File identification characters)                      |
+|   \-   | F | "RPA\n" (File identification characters)                      |
 | 0x001  |   |                                                               |
 +--------+---+---------------------------------------------------------------+
 | 0x002  |   |                                                               |
-|   -    | F | "\nAppAuth: "                                                 |
+|   \-   | F | "\nAppAuth: "                                                 |
 | 0x006  |   |                                                               |
 +--------+---+---------------------------------------------------------------+
 | 0x007  |   | Application author identification. It should be a registered  |
-|   -    | M | name (this is not mandatory). It is of exactly 16 characters  |
+|   \-   | M | name (this is not mandatory). It is of exactly 16 characters  |
 | 0x00E  |   | from the following set: "[a-z][A-Z][0-9]- " (the last is      |
 |        |   | 0x20: space). Hosts may check it for various reasons.         |
 +--------+---+---------------------------------------------------------------+
 | 0x00F  |   |                                                               |
-|   -    | F | "\nAppName: "                                                 |
+|   \-   | F | "\nAppName: "                                                 |
 | 0x013  |   |                                                               |
 +--------+---+---------------------------------------------------------------+
 | 0x014  |   | Application name of 34 characters, padded with 0x20 spaces.   |
-|   -    | M | It should be unique for an author. It must only contain 7 bit |
+|   \-   | M | It should be unique for an author. It must only contain 7 bit |
 | 0x024  |   | ASCII excluding control codes (anything below 0x20) and 0x7F. |
 +--------+---+---------------------------------------------------------------+
 | 0x025  |   |                                                               |
-|   -    | F | "\nVersion: "                                                 |
+|   \-   | F | "\nVersion: "                                                 |
 | 0x029  |   |                                                               |
 +--------+---+---------------------------------------------------------------+
 | 0x02A  |   | Application version in the form of "hh.mmm.ppp" where "h" is  |
-|   -    | M | the major version, "m" is the minor, "p" is the patch. Only   |
+|   \-   | M | the major version, "m" is the minor, "p" is the patch. Only   |
 | 0x02E  |   | numerals ([0-9]) are allowed. Example: "01.14.019".           |
 +--------+---+---------------------------------------------------------------+
 | 0x02F  |   |                                                               |
-|   -    | F | "\nEngSpec: "                                                 |
+|   \-   | F | "\nEngSpec: "                                                 |
 | 0x033  |   |                                                               |
 +--------+---+---------------------------------------------------------------+
 | 0x034  |   | Minimal RRPGE specification version the application conforms  |
-|   -    | M | to. Uses the same format like the Application version.        |
+|   \-   | M | to. Uses the same format like the Application version.        |
 | 0x038  |   |                                                               |
 +--------+---+---------------------------------------------------------------+
 | 0x039  |   |                                                               |
-|   -    | F | "\nLicense: "                                                 |
+|   \-   | F | "\nLicense: "                                                 |
 | 0x03D  |   |                                                               |
 +--------+---+---------------------------------------------------------------+
 | 0x03E  |   | License or licenses (if multiple alternative licenses are     |
-|   -    | M | supported) the application may be used under. Every license   |
+|   \-   | M | supported) the application may be used under. Every license   |
 | L.End  |   | identification may be prepended by 0x20 spaces, and must      |
 |        |   | terminate with a single newline ("\n"). The end of the        |
 |        |   | license list is marked by a double newline ("\n\n"). It is    |
 |        |   | not necessarily on a word boundary.                           |
 +--------+---+---------------------------------------------------------------+
 | L.End  |   | Textual data. This may contain specific fields for various    |
-|   -    | M | application types, and language specific information. It may  |
+|   \-   | M | application types, and language specific information. It may  |
 | T.End  |   | contain UTF-8 encoded characters. It is terminated by a singe |
 |        |   | null (0x00) character. It may span until 0xBC0 which field's  |
 |        |   | high byte may also be used as terminator.                     |
 +--------+---+---------------------------------------------------------------+
 | T.End  |   |                                                               |
-|   -    |   | Arbitrary data directly accessible to the application.        |
+|   \-   |   | Arbitrary data directly accessible to the application.        |
 | 0xBBF  |   |                                                               |
 +--------+---+---------------------------------------------------------------+
 |        |   | RRPGE variant to be used.                                     |
@@ -208,11 +208,11 @@ value 0x0A.
 |        |   | - bit  0-12: 0                                                |
 +--------+---+---------------------------------------------------------------+
 | 0xBD2  |   | Arbitrary data, reserved for further header expansion if the  |
-|   -    |   | appropriate fields in 0xBC5 - 0xBC7 are set. Those fields     |
+|   \-   |   | appropriate fields in 0xBC5 - 0xBC7 are set. Those fields     |
 | 0xBFF  |   | should be clear to ignore this area for header processing.    |
 +--------+---+---------------------------------------------------------------+
 | 0xC00  |   | 64x64 4bit application icon. Pixel order is Big Endian so the |
-|   -    | M | highest 4 bits of 0xC00 encode the upper left pixel. The      |
+|   \-   | M | highest 4 bits of 0xC00 encode the upper left pixel. The      |
 | 0xFFF  |   | color mapping is a ramp, preferably between the colors        |
 |        |   | suggested in 0xBC8 and 0xBC9. Note that this area is not      |
 |        |   | visible for the application.                                  |

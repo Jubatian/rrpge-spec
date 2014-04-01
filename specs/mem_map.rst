@@ -48,11 +48,11 @@ blocks.
 | Range  | R/W | Stall | Description                                         |
 +========+=====+=======+=====================================================+
 | 0x0000 |     |       |                                                     |
-|   -    |  -  |   0   | Reserved                                            |
+|   \-   |  -  |   0   | Reserved                                            |
 | 0x3FFF |     |       |                                                     |
 +--------+-----+       +-----------------------------------------------------+
 | 0x4000 |     |       | Data memory. Audio buffers are defined in page      |
-|   -    | RW  |       | 0x4000.                                             |
+|   \-   | RW  |       | 0x4000.                                             |
 | 0x40DF |     |       |                                                     |
 +--------+-----+       +-----------------------------------------------------+
 |        |     |       | Read Only Process Descriptor (ROPD). For the        |
@@ -60,7 +60,7 @@ blocks.
 |        |     |       | into it to pass information to the application.     |
 +--------+-----+       +-----------------------------------------------------+
 | 0x40E1 |     |       |                                                     |
-|   -    |  -  |       | Reserved                                            |
+|   \-   |  -  |       | Reserved                                            |
 | 0x7FFE |     |       |                                                     |
 +--------+-----+       +-----------------------------------------------------+
 |        |     |       | Audio peripheral area. This region is used to       |
@@ -69,11 +69,11 @@ blocks.
 |        |     |       | the audio output buffers.                           |
 +--------+-----+-------+-----------------------------------------------------+
 | 0x8000 |     |       | Video memory. Can only be banked in for writing if  |
-|   -    | RW* |   1   | the same page is also banked in for read at the     |
+|   \-   | RW* |   1   | the same page is also banked in for read at the     |
 | 0x807F |     |       | same location in the CPU's address space.           |
 +--------+-----+       +-----------------------------------------------------+
 | 0x8080 |     |       |                                                     |
-|   -    |  -  |       | Reserved                                            |
+|   \-   |  -  |       | Reserved                                            |
 | 0xBFFE |     |       |                                                     |
 +--------+-----+       +-----------------------------------------------------+
 |        |     |       | Video peripheral area. This region is used to       |
@@ -83,7 +83,7 @@ blocks.
 |        |     |       | is also banked in for read at the same location.    |
 +--------+-----+       +-----------------------------------------------------+
 | 0xC000 |     |       |                                                     |
-|   -    |  -  |       | Reserved                                            |
+|   \-   |  -  |       | Reserved                                            |
 | 0xFFFF |     |       |                                                     |
 +--------+-----+-------+-----------------------------------------------------+
 
@@ -106,25 +106,25 @@ smaller data source as it contains the application binary's header (see
 | Range  | Description                                                       |
 +========+===================================================================+
 | 0x000  | Application binary header page, as-is, except for head bytes:     |
-|   -    | they read as "RPS\n" (instead of "RPA\n" as originally found in   |
+|   \-   | they read as "RPS\n" (instead of "RPA\n" as originally found in   |
 | 0xBFF  | the application binary), for state. See "bin_rpa.rst".            |
 +--------+-------------------------------------------------------------------+
 | 0xC00  | Video palette in 4-4-4 RGB format, high 4 bits are zero. All      |
-|   -    | entries are populated even in 4bit display mode. See "Palette" in |
+|   \-   | entries are populated even in 4bit display mode. See "Palette" in |
 | 0xCFF  | "vid_arch.rst" and "Set palette entry" in "kcall.rst".            |
 +--------+-------------------------------------------------------------------+
 | 0xD00  |                                                                   |
-|   -    | Pages mapped in the CPU's Data read address space.                |
+|   \-   | Pages mapped in the CPU's Data read address space.                |
 | 0xD0F  |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xD10  |                                                                   |
-|   -    | Pages mapped in the CPU's Data write address space.               |
+|   \-   | Pages mapped in the CPU's Data write address space.               |
 | 0xD1F  |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xD20  | Raster line to fire Video line interrupt at.                      |
 +--------+-------------------------------------------------------------------+
 | 0xD21  |                                                                   |
-|   -    | Empty (reads as 0x0000)                                           |
+|   \-   | Empty (reads as 0x0000)                                           |
 | 0xD2F  |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xD30  | Video line event handler offset. 0x0000: Handler off.             |
@@ -132,13 +132,13 @@ smaller data source as it contains the application binary's header (see
 | 0xD31  | Audio half-empty event handler offset. 0x0000: Handler off.       |
 +--------+-------------------------------------------------------------------+
 | 0xD32  |                                                                   |
-|   -    | Empty (reads as 0x0000)                                           |
+|   \-   | Empty (reads as 0x0000)                                           |
 | 0xD3E  |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xD3F  | Network availability: 0: not available, 1: available              |
 +--------+-------------------------------------------------------------------+
 | 0xD40  |                                                                   |
-|   -    | Constant data. See "data.rst" for details.                        |
+|   \-   | Constant data. See "data.rst" for details.                        |
 | 0xDFF  |                                                                   |
 +--------+-------------------------------------------------------------------+
 
@@ -158,15 +158,15 @@ the peripheral registers.
 | Range  | Description                                                       |
 +========+===================================================================+
 | 0x000  |                                                                   |
-|   -    | Shadow of the last Video memory page (page 0x807F).               |
+|   \-   | Shadow of the last Video memory page (page 0x807F).               |
 | 0xDFF  |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xE00  | Graphics display & Accelerator peripheral registers. They repeat  |
-|   -    | every 32 words in this range. See the memory maps in              |
+|   \-   | every 32 words in this range. See the memory maps in              |
 | 0xEFF  | "vid_arch.rst" and "acc_arch.rst" for details.                    |
 +--------+-------------------------------------------------------------------+
 | 0xF00  |                                                                   |
-|   -    | Reindex table. See memory map in "acc_arch.rst" for details.      |
+|   \-   | Reindex table. See memory map in "acc_arch.rst" for details.      |
 | 0xFFF  |                                                                   |
 +--------+-------------------------------------------------------------------+
 
@@ -185,11 +185,11 @@ audio DMA buffers are located.
 | Range  | Description                                                       |
 +========+===================================================================+
 | 0x000  | Shadow of the first memory page (page 0x4000) where the audio     |
-|   -    | buffers are located. See "DMA buffers" in "snd_arch.rst" for      |
+|   \-   | buffers are located. See "DMA buffers" in "snd_arch.rst" for      |
 | 0xDFF  | details. This area is also populated by important initial data,   |
 |        | see "data.rst" for details.                                       |
 +--------+-------------------------------------------------------------------+
 | 0xE00  | Mixer peripheral registers. They repeat every 16 words in this    |
-|   -    | range. See "Mixer peripheral memory map" in "mix_arch.rst" for    |
+|   \-   | range. See "Mixer peripheral memory map" in "mix_arch.rst" for    |
 | 0xFFF  | details.                                                          |
 +--------+-------------------------------------------------------------------+
