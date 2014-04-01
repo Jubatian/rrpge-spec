@@ -516,7 +516,7 @@ register.
 | Range  | Description                                                       |
 +========+===================================================================+
 | 0xEE0  | Video RAM write mask (0xEE0: High, 0xEE1: Low). Does not belong   |
-|   \-   | to the display unit, see "acc_arch.rst" for details.              |
+| \-     | to the display unit, see "acc_arch.rst" for details.              |
 | 0xEE1  |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xEE2  | Video RAM partition size. Defines further partitioning within the |
@@ -550,11 +550,11 @@ register.
 |        | Works the same way like the Background display list offset.       |
 +--------+-------------------------------------------------------------------+
 | 0xEE8  | Scaled blitter pointers and increments. Does not belong to the    |
-|   \-   | display unit, see "acc_arch.rst" for details.                     |
+| \-     | display unit, see "acc_arch.rst" for details.                     |
 | 0xEEF  |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xEF0  | Video accelerator area. Does not belong to the display unit, see  |
-|   \-   | "acc_arch.rst" for details.                                       |
+| \-     | "acc_arch.rst" for details.                                       |
 | 0xEFF  |                                                                   |
 +--------+-------------------------------------------------------------------+
 

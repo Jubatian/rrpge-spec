@@ -1046,62 +1046,62 @@ that the ordering is somewhat mixed to respect the structure of the opcode
 layout. The columns group by the highest two bits (bit 15 and bit 14) and bit
 9. The rows group by bits 13, 12, 11 and 10.
 
-+----+---------+---------+---------+---------+---------+---------+-----------+
-|    | 00....0 | 00....1 | 01....0 | 01....1 | 10....0 | 10....1 | 11....0/1 |
-+====+=========+=========+=========+=========+=========+=========+===========+
-|    |   MOV   |   MOV   |   OR    |   OR    |   MOV   |   MOV   |           |
-|0000| adr, rx | rx, adr | adr, rx | rx, adr | adr, XM | XM, adr |    NOP    |
-|    |         |         |         |         | adr, XH | XH, adr |           |
-|    |         |         |         |         | adr, SP | SP, adr |           |
-+----+---------+---------+---------+---------+---------+---------+           |
-|    |   MOV   |   MOV   |   AND   |   AND   |                   |           |
-|0001| adr, xmn| xmn, adr| adr, rx | rx, adr |    JMR simm10     |           |
-|    | adr, xhn| xhn, adr|         |         |                   |           |
-+----+---------+---------+---------+---------+---------+---------+           |
-|    |   ADD   |   ADD   |   ADD   |   ADD   |   JFL   |   ADD   |           |
-|0010| adr, rx | rx, adr |C:adr, rx|C:rx, adr|   JFA   | SP, adr |           |
-|    |         |         |         |         |   JSV   |         |           |
-|    |         |         |         |         |   RFN   |         |           |
-+----+---------+---------+---------+---------+---------+---------+           |
-|    |   SUB   |   SUB   |   SUB   |   SUB   |   JML   |   SUB   |           |
-|0011| adr, rx | rx, adr |C:adr, rx|C:rx, adr|   JMA   | SP, adr |           |
-+----+---------+---------+---------+---------+---------+---------+           |
-|    |   XCH   |   XCH   |   XOR   |   XOR   |                   |           |
-|0100| adr, rx | rx, adr | adr, rx | rx, adr |     Supervisor    |           |
-+----+---------+---------+---------+---------+                   |           |
-|    |   DIV   |   DIV   |   DIV   |   DIV   |                   |           |
-|0101| adr, rx | rx, adr |C:adr, rx|C:rx, adr|                   |           |
-+----+---------+---------+---------+---------+                   |           |
-|    |   ADC   |   ADC   |   ADC   |   ADC   |                   |           |
-|0110| adr, rx | rx, adr |C:adr, rx|C:rx, adr|                   |           |
-+----+---------+---------+---------+---------+                   |           |
-|    |   SBC   |   SBC   |   SBC   |   SBC   |                   |           |
-|0111| adr, rx | rx, adr |C:adr, rx|C:rx, adr|                   |           |
-+----+---------+---------+---------+---------+-------------------+           |
-|    |   MUL   |   MUL   |   MUL   |   MUL   |                   |           |
-|1000| adr, rx | rx, adr |C:adr, rx|C:rx, adr|   BTC adr, imm4   |           |
-+----+---------+---------+---------+---------+-------------------+           |
-|    |   ASL   |   ASL   |   ASL   |   ASL   |                   |           |
-|1001| adr, rx | rx, adr |C:adr, rx|C:rx, adr|   XBC adr, imm4   |           |
-+----+---------+---------+---------+---------+-------------------+           |
-|    |   SHL   |   SHL   |   SHL   |   SHL   |                   |           |
-|1010| adr, rx | rx, adr |C:adr, rx|C:rx, adr|   BTS adr, imm4   |           |
-+----+---------+---------+---------+---------+-------------------+           |
-|    |   SHR   |   SHR   |   SHR   |   SHR   |                   |           |
-|1011| adr, rx | rx, adr |C:adr, rx|C:rx, adr|   XBS adr, imm4   |           |
-+----+---------+---------+---------+---------+---------+---------+           |
-|    |   MAC   |   MAC   |   MAC   |   MAC   |   XEQ   |   XEQ   |           |
-|1100| adr, rx | rx, adr |C:adr, rx|C:rx, adr| adr, rx | rx, adr |           |
-+----+---------+---------+---------+---------+---------+---------+           |
-|    |   ASR   |   ASR   |   ASR   |   ASR   |   XSG   |   XSG   |           |
-|1101| adr, rx | rx, adr |C:adr, rx|C:rx, adr| adr, rx | rx, adr |           |
-+----+---------+---------+---------+---------+---------+---------+           |
-|    |   SLC   |   SLC   |   SLC   |   SLC   |   XNE   |   XNE   |           |
-|1110| adr, rx | rx, adr |C:adr, rx|C:rx, adr| adr, rx | rx, adr |           |
-+----+---------+---------+---------+---------+---------+---------+           |
-|    |   SRC   |   SRC   |   SRC   |   SRC   |   XUG   |   XUG   |           |
-|1111| adr, rx | rx, adr |C:adr, rx|C:rx, adr| adr, rx | rx, adr |           |
-+----+---------+---------+---------+---------+---------+---------+-----------+
++----+---------+---------+----------+----------+---------+---------+---------+
+|    | 00....0 | 00....1 | 01....0  | 01....1  | 10....0 | 10....1 | 11..... |
++====+=========+=========+==========+==========+=========+=========+=========+
+|    || MOV    || MOV    || OR      || OR      || MOV    || MOV    |         |
+|0000|| adr, rx|| rx, adr|| adr, rx || rx, adr || adr, XM|| XM, adr|   NOP   |
+|    |         |         |          |          || adr, XH|| XH, adr|         |
+|    |         |         |          |          || adr, SP|| SP, adr|         |
++----+---------+---------+----------+----------+---------+---------+         |
+|    || MOV    || MOV    || AND     || AND     |                   |         |
+|0001|| adr,xmn|| xmn,adr|| adr, rx || rx, adr |    JMR simm10     |         |
+|    || adr,xhn|| xhn,adr|          |          |                   |         |
++----+---------+---------+----------+----------+---------+---------+         |
+|    || ADD    || ADD    || ADD     || ADD     || JFL    || ADD    |         |
+|0010|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|| JFA    || SP, adr|         |
+|    |         |         |          |          || JSV    |         |         |
+|    |         |         |          |          || RFN    |         |         |
++----+---------+---------+----------+----------+---------+---------+         |
+|    || SUB    || SUB    || SUB     || SUB     || JML    || SUB    |         |
+|0011|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|| JMA    || SP, adr|         |
++----+---------+---------+----------+----------+---------+---------+         |
+|    || XCH    || XCH    || XOR     || XOR     |                   |         |
+|0100|| adr, rx|| rx, adr|| adr, rx || rx, adr |     Supervisor    |         |
++----+---------+---------+----------+----------+                   |         |
+|    || DIV    || DIV    || DIV     || DIV     |                   |         |
+|0101|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|                   |         |
++----+---------+---------+----------+----------+                   |         |
+|    || ADC    || ADC    || ADC     || ADC     |                   |         |
+|0110|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|                   |         |
++----+---------+---------+----------+----------+                   |         |
+|    || SBC    || SBC    || SBC     || SBC     |                   |         |
+|0111|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|                   |         |
++----+---------+---------+----------+----------+-------------------+         |
+|    || MUL    || MUL    || MUL     || MUL     |                   |         |
+|1000|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|   BTC adr, imm4   |         |
++----+---------+---------+----------+----------+-------------------+         |
+|    || ASL    || ASL    || ASL     || ASL     |                   |         |
+|1001|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|   XBC adr, imm4   |         |
++----+---------+---------+----------+----------+-------------------+         |
+|    || SHL    || SHL    || SHL     || SHL     |                   |         |
+|1010|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|   BTS adr, imm4   |         |
++----+---------+---------+----------+----------+-------------------+         |
+|    || SHR    || SHR    || SHR     || SHR     |                   |         |
+|1011|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|   XBS adr, imm4   |         |
++----+---------+---------+----------+----------+---------+---------+         |
+|    || MAC    || MAC    || MAC     || MAC     || XEQ    || XEQ    |         |
+|1100|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|| adr, rx|| rx, adr|         |
++----+---------+---------+----------+----------+---------+---------+         |
+|    || ASR    || ASR    || ASR     || ASR     || XSG    || XSG    |         |
+|1101|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|| adr, rx|| rx, adr|         |
++----+---------+---------+----------+----------+---------+---------+         |
+|    || SLC    || SLC    || SLC     || SLC     || XNE    || XNE    |         |
+|1110|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|| adr, rx|| rx, adr|         |
++----+---------+---------+----------+----------+---------+---------+         |
+|    || SRC    || SRC    || SRC     || SRC     || XUG    || XUG    |         |
+|1111|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|| adr, rx|| rx, adr|         |
++----+---------+---------+----------+----------+---------+---------+---------+
 
 The area marked as "Supervisor" is reserved for instructions for the
 supervisor mode only. If the user mode attempts to execute any of them, the

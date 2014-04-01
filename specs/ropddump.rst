@@ -48,7 +48,7 @@ is not visible to the application, and is only meant to be used by emulators.
 | Range  | Description                                                       |
 +========+===================================================================+
 | 0xD40  |                                                                   |
-|   \-   | CPU general purpose registers: A, B, C, D, X0, X1, X2, X3.        |
+| \-     | CPU general purpose registers: A, B, C, D, X0, X1, X2, X3.        |
 | 0xD47  |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xD48  | CPU XM register                                                   |
@@ -62,7 +62,7 @@ is not visible to the application, and is only meant to be used by emulators.
 | 0xD4C  | CPU BP register                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xD4D  |                                                                   |
-|   \-   | Unused, must be 0x0000.                                           |
+| \-     | Unused, must be 0x0000.                                           |
 | 0xD4F  |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xD50  | Current video line (0 - 399: Display; 400 -: VBlank)              |
@@ -98,7 +98,7 @@ is not visible to the application, and is only meant to be used by emulators.
 | 0xD5F  | Display layer 3, offset of current line, fraction.                |
 +--------+-------------------------------------------------------------------+
 | 0xD60  |                                                                   |
-|   \-   | First level interrupt CPU state (saves 0xD40 - 0xD4C).            |
+| \-     | First level interrupt CPU state (saves 0xD40 - 0xD4C).            |
 | 0xD6C  |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xD6D  | Unused, must be 0x0000.                                           |
@@ -114,7 +114,7 @@ is not visible to the application, and is only meant to be used by emulators.
 |        | - bit 1: Set if within audio interrupt.                           |
 +--------+-------------------------------------------------------------------+
 | 0xD70  |                                                                   |
-|   \-   | Second level interrupt CPU state (saves 0xD60 - 0xD6C).           |
+| \-     | Second level interrupt CPU state (saves 0xD60 - 0xD6C).           |
 | 0xD7C  |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xD7D  | Unused, must be 0x0000.                                           |
@@ -124,39 +124,39 @@ is not visible to the application, and is only meant to be used by emulators.
 | 0xD7F  | Previous bottom of stack.                                         |
 +--------+-------------------------------------------------------------------+
 | 0xD80  |                                                                   |
-|   \-   | 16 * 16 words of kernel task data.                                |
+| \-     | 16 * 16 words of kernel task data.                                |
 | 0xE7F  |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xE80  | Touch areas, X start (left bound of the area). 0xE80 corresponds  |
-|   \-   | to the touch area defined for digital input bit 0. Ranges from 0  |
+| \-     | to the touch area defined for digital input bit 0. Ranges from 0  |
 | 0xE8F  | to 639 irrespective of display mode.                              |
 +--------+-------------------------------------------------------------------+
 | 0xE90  | Touch areas, Y start (top bound of the area). 0xE90 corresponds   |
-|   \-   | to the touch area defined for digital input bit 0. Ranges from 0  |
+| \-     | to the touch area defined for digital input bit 0. Ranges from 0  |
 | 0xE9F  | to 399 irrespective of display mode.                              |
 +--------+-------------------------------------------------------------------+
 | 0xEA0  | Touch areas, width. 0xEA0 corresponds to the touch area defined   |
-|   \-   | for digital input bit 0. Allowed range is so combined with X it   |
+| \-     | for digital input bit 0. Allowed range is so combined with X it   |
 | 0xEAF  | fits within the display width of 640 units.                       |
 +--------+-------------------------------------------------------------------+
 | 0xEB0  | Touch areas, height. 0xEB0 corresponds to the touch area defined  |
-|   \-   | for digital input bit 0. Allowed range is so combined with Y it   |
+| \-     | for digital input bit 0. Allowed range is so combined with Y it   |
 | 0xEBF  | fits within the display height of 400 units.                      |
 +--------+-------------------------------------------------------------------+
 | 0xEC0  |                                                                   |
-|   \-   | Unused, must be 0x0000.                                           |
+| \-     | Unused, must be 0x0000.                                           |
 | 0xECF  |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xED0  |                                                                   |
-|   \-   | Mixer DMA peripheral registers. See "mix_arch.rst" for details.   |
+| \-     | Mixer DMA peripheral registers. See "mix_arch.rst" for details.   |
 | 0xEDF  |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xEE0  | Graphics Display & Accelerator registers. See "vid_arch.rst" and  |
-|   \-   | "acc_arch.rst" for details.                                       |
+| \-     | "acc_arch.rst" for details.                                       |
 | 0xEFF  |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xF00  |                                                                   |
-|   \-   | Reindex table. See "acc_arch.rst" for details.                    |
+| \-     | Reindex table. See "acc_arch.rst" for details.                    |
 | 0xFFF  |                                                                   |
 +--------+-------------------------------------------------------------------+
 
