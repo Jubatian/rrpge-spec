@@ -769,8 +769,8 @@ area is as follows:
 +========+===================================================================+
 |        | First reindex table entry, first reindex bank (bank 0).           |
 | 0xF00  |                                                                   |
-|        | bit  8-15: Reindex for source value 0x0.                          |
-|        | bit  0- 7: Reindex for source value 0x1.                          |
+|        | - bit  8-15: Reindex for source value 0x0.                        |
+|        | - bit  0- 7: Reindex for source value 0x1.                        |
 +--------+-------------------------------------------------------------------+
 | 0xF01  | Reindexes for source values 0x2 and 0x3, bank 0.                  |
 +--------+-------------------------------------------------------------------+
