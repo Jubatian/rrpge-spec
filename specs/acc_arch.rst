@@ -226,8 +226,10 @@ Block Blitter (BB)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The Block Blitter normally produces a horizontal strip of sequentially read
-data beginning at an arbitrary position. The source data can only begin at
-Video RAM cell boundary, but can be of arbitrary length in pixels.
+data beginning at an arbitrary position. The source data may begin at an
+arbitrary location, and the blit may have an arbitrary length in pixels. The
+begin position is handled as a part of the incrementing logic, detailed
+further below.
 
 Preparing the source data requires a memory of the previous data to be able
 to shift it according to the destination start pointer's fractional part. For
@@ -262,7 +264,7 @@ out). The data from each source cell is prepared as follows: ::
               +------------+ Shift to align with destination
                            V
     +----+----+----+----+----+----+----+----+
-    | Prev. src. |   Current source  |      |
+    | Prev. src. |   Current source  |      | Shift register
     +----+----+----+----+----+----+----+----+
               |
               V
@@ -271,12 +273,20 @@ out). The data from each source cell is prepared as follows: ::
     +----+----+----+----+
 
 
-The Block Blitter uses a simple source increment logic, only taking a
-dedicated Source pointer and a Source increment register for it. The first
-source cell is taken from the offset by the initial value of the Source
-Pointer, then, and after all the source fetches, the Source pointer is
-incremented with the Source increment. Note that the increment happens even
-for the last fetched cell even if it is only used partially.
+The Block Blitter upon entry calculates the destination alignment shift. This
+is taken from the destination fraction after subtracting the source fraction
+from it. If the subtraction wraps around, the first source fetch stage
+terminates after the write into the shift register (the destination combine
+stage is not started). Note that the calculation of the begin mask is not
+affected, and the mask applies on the first executed destination combine.
+
+After each processed source cell unless it is a partial ending cell, the whole
+part of the source pointer increments by the source increment. The fractional
+part is adjusted by subtracting the fractional part of the blit length (with
+wraparound) after the blit. The fractional part of the blit length is the blit
+length modulo the Video RAM cell size (so ranging from 0 to 7, only even
+numbers in 8 bit mode) shifted left by 13 (to align proper with the 16 bits of
+fraction).
 
 
 Scaled blitter (SC)
@@ -313,7 +323,8 @@ The data is prepared as follows: ::
 
 The Scaled Blitter uses a complex source incrementing scheme supporting two
 dimensional texture blitting. This scheme supersedes that of the BB mode: in
-SC mode the source increments of the BB mode are inactive.
+SC mode the source increment logic of the BB mode is inactive, and the source
+fraction is treated as being zero.
 
 The scheme uses the following variables:
 
@@ -667,10 +678,11 @@ preserved unless an accelerator operation overwrites them.
 +--------+-------------------------------------------------------------------+
 | 0xEEF  | Source Y incr. fraction. Used only for the Scaled Blitter (SC).   |
 +--------+-------------------------------------------------------------------+
-| 0xEF0  | Source start pointer (32 bit cells). Used only for the Block      |
+| 0xEF0  | Source pointer whole part (32 bit cells). Used only for the Block |
 |        | Blitter (BB). Updates after source pointer increments in BB mode. |
 +--------+-------------------------------------------------------------------+
-| 0xEF1  | Source increment. Used only for the Block Blitter (BB).           |
+| 0xEF1  | Source pointer fractional part. Used only for the Block Blitter   |
+|        | (BB). Updates after the end of the operation in BB mode.          |
 +--------+-------------------------------------------------------------------+
 | 0xEF2  | Destination start pointer whole part (32 bit cells). Updates      |
 |        | after destination pointer increments.                             |
@@ -680,11 +692,9 @@ preserved unless an accelerator operation overwrites them.
 |        | only the highest 2 or 3 bits are used depending on display mode   |
 |        | (8 bit or 4 bit), but all it's bits are writable.                 |
 +--------+-------------------------------------------------------------------+
-| 0xEF4  | Destination increment whole part (32 bit cells)                   |
+| 0xEF4  | Source increment whole. Used only for the Block Blitter (BB).     |
 +--------+-------------------------------------------------------------------+
-|        | (SSP) Source split mask. Used for the Scaled Blitter (SC).        |
-| 0xEF5  | Specifies the bits to take from Source X pointer whole when       |
-|        | composing the next pixel address to fetch.                        |
+| 0xEF5  | Destination increment whole (32 bit cells).                       |
 +--------+-------------------------------------------------------------------+
 | 0xEF6  | Reindex bank select. Only low 5 bits are used.                    |
 +--------+-------------------------------------------------------------------+
@@ -741,7 +751,11 @@ preserved unless an accelerator operation overwrites them.
 | 0xEFB  | Destination high (Video RAM bank) part (64K * 32 bit units). Only |
 |        | low 2 bits are used since the Video RAM's size is 256K * 32 bits. |
 +--------+-------------------------------------------------------------------+
-| 0xEFC  |                                                                   |
+|        | (SSP) Source split mask. Used for the Scaled Blitter (SC).        |
+| 0xEFC  | Specifies the bits to take from Source X pointer whole when       |
+|        | composing the next pixel address to fetch.                        |
++--------+-------------------------------------------------------------------+
+| 0xEFD  |                                                                   |
 | \-     | Unused. Writable, the values written here are preserved.          |
 | 0xEFE  |                                                                   |
 +--------+-------------------------------------------------------------------+
@@ -757,8 +771,8 @@ Setting this to something else than one may be useful for example when
 blitting small tiles to cell boundaries (such as emulating a character mode),
 so a blit can be performed with less operations.
 
-Note that the accelerator modifies the values written at 0xEE8 - 0xEEB, 0xEF0,
-0xEF2 and 0xEF3 according to the descriptions of these fields.
+Note that the accelerator modifies the values written at 0xEE8 - 0xEEB and
+0xEF0 - 0xEF3 according to the descriptions of these fields.
 
 The Accelerator also has a Reindex table in the 0xF00 - 0xFFF range. This
 reindex table contains 8 bit values, two in each register. The layout of this
