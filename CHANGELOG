@@ -2,6 +2,9 @@ Version 00.002.000 (2014.04.23)
  - Video RAM partitioning changes to support scrolling surfaces better: now
    all four Video RAM banks can be partitioned seperately and have an X wrap
    feature.
+ - RRPGE Incremetal palette minor tweak: Color index 11 is now CC4 (bright
+   yellow) instead of BC4 (bright green).
+
 
 Version 00.001.000 (2014.04.04)
  - Sprite clipping support introduced: the Block Blitter of the Graphics
