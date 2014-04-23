@@ -287,11 +287,11 @@ it's high 16 bits as it's first word, and the low 16 bits as it's second word.
 
 The Video RAM is partitioned into 64K * 32 bit unit banks across which
 addresses may not increment (this increment is further limited by the
-partition size setting at 0xEE2, see later). The Video RAM bank selection
-fields for each layer select one from the first four such partitions. Note
-that even if the actual display memory would be larger, displaying from
-beyond the first four banks is not supported (in the RRPGE system however the
-display memory is defined to be exactly four such banks).
+partition size setting at 0xEE2 for each bank, see later). The Video RAM bank
+selection fields for each layer select one from the first four such
+partitions. Note that even if the actual display memory would be larger,
+displaying from beyond the first four banks is not supported (in the RRPGE
+system however the display memory is defined to be exactly four such banks).
 
 The Global mask limits the effective color bits of all display layers except
 the background. It may be used to force such limitation if the application
@@ -362,9 +362,10 @@ The relative pointer is applied before starting processing the line.
 
 Adding the relative pointer and increments during the output of the line are
 constrained by the 64K * 32 bit Video RAM banks, and further by the
-partition size setting at 0xEE2. The partition to work within is selected by
-the absolute address (or the previous address in relative mode). The address
-will wrap around to the beginning of the partition when passing it's boundary.
+partition size setting at 0xEE2 for each bank. The partition to work within is
+selected by the absolute address (or the previous address in relative mode).
+The address will wrap around to the beginning of the partition when passing
+it's boundary.
 
 Using the relative pointer mode eases implementing the scrolling of the layer
 since using it only a singe absolute address have to be written to affect
@@ -519,10 +520,20 @@ register.
 | \-     | to the display unit, see "acc_arch.rst" for details.              |
 | 0xEE1  |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xEE2  | Video RAM partition size. Defines further partitioning within the |
-|        | Video RAM banks. Only the low 3 bits are used (the rest may be    |
-|        | written but are ignored). Note that this setting also applies to  |
-|        | the accelerator.                                                  |
+| 0xEE2  | Video RAM partition size for each VRAM bank. Defines further      |
+|        | partitioning within the Video RAM banks. Note that this setting   |
+|        | also applies to the accelerator.                                  |
+|        |                                                                   |
+|        | bit    15: Bank 3: If set, carry from bit 6 -> 7 is disabled      |
+|        | bit 12-14: Bank 3: Partition setting                              |
+|        | bit    11: Bank 2: If set, carry from bit 6 -> 7 is disabled      |
+|        | bit  8-10: Bank 2: Partition setting                              |
+|        | bit     7: Bank 1: If set, carry from bit 6 -> 7 is disabled      |
+|        | bit  4- 6: Bank 1: Partition setting                              |
+|        | bit     3: Bank 0: If set, carry from bit 6 -> 7 is disabled      |
+|        | bit  0- 2: Bank 0: Partition setting                              |
+|        |                                                                   |
+|        | The available partition settings are as follows:                  |
 |        |                                                                   |
 |        | - 0: 512 * 32 bit cells                                           |
 |        | - 1: 1K * 32 bit cells                                            |
@@ -557,6 +568,12 @@ register.
 | \-     | "acc_arch.rst" for details.                                       |
 | 0xEFF  |                                                                   |
 +--------+-------------------------------------------------------------------+
+
+The carry disable bits in 0xEE2 affect only the rendering of display lines,
+and not the relative addressing of display lists (relative addressing is
+always only bounded by the respective partition setting). Setting the bit
+makes the line wrapping around reaching 1024 4 bit pixels, so can be used to
+assist X scrolling.
 
 
 

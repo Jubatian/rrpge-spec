@@ -133,8 +133,8 @@ Some more advanced examples of usages of the Accelerator are as follows:
   layer from a Video memory area, this area may hold overlaid low bit depth
   images not affecting the display.
 
-- The Scaled blitter combined with appropriate partitioning setting may be
-  utilized for simple texture blitting for three dimensional scenes.
+- The Scaled blitter may be utilized for simple texture blitting for three
+  dimensional scenes.
 
 - Reindexing by destination with an appropriate color remapping table may be
   utilized for alpha blending without needing to split up the display into
@@ -638,19 +638,29 @@ preserved unless an accelerator operation overwrites them.
 | \-     | disable write to the respective position both for the CPU and the |
 | 0xEE1  | accelerator functions.                                            |
 +--------+-------------------------------------------------------------------+
-| 0xEE2  | Video RAM partition size. Defines further partitioning within the |
-|        | Video RAM banks. Only the low 3 bits are used (the rest may be    |
-|        | written but are ignored). Note that this setting also applies to  |
-|        | the Display unit.                                                 |
+| 0xEE2  | Video RAM partition size for each VRAM bank. Defines further      |
+|        | partitioning within the Video RAM banks. Note that this setting   |
+|        | also applies to the Display unit.                                 |
 |        |                                                                   |
-|        | - 0: 1K Words (512 * 32 bit cells)                                |
-|        | - 1: 2K Words (1K * 32 bit cells)                                 |
-|        | - 2: 4K Words (2K * 32 bit cells)                                 |
-|        | - 3: 8K Words (4K * 32 bit cells)                                 |
-|        | - 4: 16K Words (8K * 32 bit cells)                                |
-|        | - 5: 32K Words (16K * 32 bit cells)                               |
-|        | - 6: 64K Words (32K * 32 bit cells)                               |
-|        | - 7: 128K Words (64K * 32 bit cells)                              |
+|        | bit    15: Bank 3: If set, carry from bit 6 -> 7 is disabled      |
+|        | bit 12-14: Bank 3: Partition setting                              |
+|        | bit    11: Bank 2: If set, carry from bit 6 -> 7 is disabled      |
+|        | bit  8-10: Bank 2: Partition setting                              |
+|        | bit     7: Bank 1: If set, carry from bit 6 -> 7 is disabled      |
+|        | bit  4- 6: Bank 1: Partition setting                              |
+|        | bit     3: Bank 0: If set, carry from bit 6 -> 7 is disabled      |
+|        | bit  0- 2: Bank 0: Partition setting                              |
+|        |                                                                   |
+|        | The available partition settings are as follows:                  |
+|        |                                                                   |
+|        | - 0: 512 * 32 bit cells                                           |
+|        | - 1: 1K * 32 bit cells                                            |
+|        | - 2: 2K * 32 bit cells                                            |
+|        | - 3: 4K * 32 bit cells                                            |
+|        | - 4: 8K * 32 bit cells                                            |
+|        | - 5: 16K * 32 bit cells                                           |
+|        | - 6: 32K * 32 bit cells                                           |
+|        | - 7: 64K * 32 bit cells                                           |
 +--------+-------------------------------------------------------------------+
 | 0xEE3  |                                                                   |
 | \-     | Display list offsets. See "vid_arch.rst" for details.             |
@@ -708,10 +718,8 @@ preserved unless an accelerator operation overwrites them.
 |        | In 4 bit mode only bits 0-3 are used of the Read AND mask, and    |
 |        | only bits 8-9 are used of the Pixel barrel rotate right.          |
 |        |                                                                   |
-|        | Source partitioning is overridden by the partition size from      |
-|        | 0xEE2 if that specifies a smaller size. The setting in bits 11-14 |
-|        | is only effective if bit 15 is clear, and specifies the following |
-|        | partition sizes:                                                  |
+|        | The setting in bits 11-14 is only effective if bit 15 is clear,   |
+|        | and specifies the following partition sizes:                      |
 |        |                                                                   |
 |        | - 0:  2 Words (1 * 32 bit cell)                                   |
 |        | - 1:  4 Words (2 * 32 bit cells)                                  |
@@ -763,6 +771,10 @@ preserved unless an accelerator operation overwrites them.
 | 0xEFF  | location starts the accelerator operation using the current       |
 |        | values in the other registers.                                    |
 +--------+-------------------------------------------------------------------+
+
+The source reads only use the Source partitioning setting from 0xEF7 (so
+ignore the Video RAM partition size in 0xEE2). Destination writes are affected
+by the Video RAM partition size also including the carry disable bit.
 
 The Destination increment (0xEF4) normally should be set to one (1). Otherwise
 the Accelerator still performs the same way (also in calculating masks for

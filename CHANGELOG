@@ -1,13 +1,18 @@
-Version 00.001.000
+Version 00.002.000 (2014.04.23)
+ - Video RAM partitioning changes to support scrolling surfaces better: now
+   all four Video RAM banks can be partitioned seperately and have an X wrap
+   feature.
+
+Version 00.001.000 (2014.04.04)
  - Sprite clipping support introduced: the Block Blitter of the Graphics
    Accelerator is now able to start blitting from any source position which is
    necessary for this capability. The register layout of the accelerator was
    modified to properly fit in the new Block Blitter source fraction.
 
 
-Version 00.000.001
+Version 00.000.001 (2014.04.02)
  - Typo and reStructuredText markup fixes.
 
 
-Version 00.000.000
+Version 00.000.000 (2014.03.30)
  - Initial version, core specification roughly complete.
