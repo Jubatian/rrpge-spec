@@ -1,5 +1,5 @@
                                RRPGE LICENSE
-                         Version 1, 29 March 2014
+                          Version 2, 02 May 2014
 
 Copyright (C) 2014 Sandor Zsuga (Jubatian) <http://jubatian.org/>
 Everyone is permitted to copy and distribute verbatim copies of this license
@@ -10,7 +10,7 @@ supplemented by the additional terms and permissions listed below.
 
   0. Additional Definitions.
 
-"RRPGE License" refers to version 1 of the RRPGE License.
+"RRPGE License" refers to version 2 of the RRPGE License.
 
 "GPL" refers to any version of the GNU General Public License.
 
@@ -60,32 +60,59 @@ exploit your rights under the RRPGE License, you are allowed to use The
 Program under terms and conditions of Lesser GPLv3, with the following
 exceptions:
 
-    a) Section 11 of GPLv3 shall remain in effect for covered works.
+    a) This permission does not apply to the specification of network
+    protocols and file formats used by the Combined Work.
+
+    b) Section 11 of GPLv3 shall remain in effect for Combined Works.
+
+    c) The "this License" definition of the Lesser GPLv3 is to be interpreted
+    as the RRPGE License. Where the Lesser GPLv3 requires accompanying the
+    work with a copy of "this license document", it means the RRPGE License
+    and the Lesser GPLv3 documents.
+
+    d) The act of conveying shall not be regarded as "commercial use" if the
+    Combined Work's license specifically regulates such uses. Terms
+    regulating "commercial uses" shall not apply to the act of conveying, the
+    other terms of the license shall apply.
+
+    e) If the Combined Work is an RRPGE Application, incorporating it in
+    binary form as an exact copy or through a generic recompiler into an
+    another work whose primary purpose is executing the application shall not
+    be considered a modification or a derivative work and shall be permitted,
+    however the conveying of such works may be regulated by the Combined
+    Work's license terms on conveying.
 
   5. Additional permissions for RRPGE Applications
 
-You are allowed to make RRPGE Applications as covered works using The Program
-under the terms and conditions of Lesser GPLv3 if those RRPGE Applications
-meet the following requirements:
+You are allowed to make RRPGE Applications as Combined Works using The Program
+under the terms and conditions of Lesser GPLv3, with the following exceptions:
 
-    a) The RRPGE Application shall only use any networking feature of RRPGE to
-    communicate with other instances of the same RRPGE Application, where the
-    definition of same accords with RRPGE's interpretation of compatibility
-    across application versions. The RRPGE Application shall not restrict the
-    user's freedom of selecting parties to establish connections between.
+    a) This permission does not apply to the specification of network
+    protocols and file formats used by the Combined Work.
 
-    b) The RRPGE Application shall only interface with external files whose
-    specifications are open, or the manner of interfacing is documented, which
-    documentation is available for anyone without restrictions on use and
-    further distribution. This requirement does not apply to the RRPGE
-    Application's own nonvolatile saves.
+    b) Section 11 of GPLv3 shall remain in effect for Combined Works.
 
-    c) The RRPGE Application shall be licensed under the terms of one of the
+    c) The "this License" definition of the Lesser GPLv3 is to be interpreted
+    as the RRPGE License. Where the Lesser GPLv3 requires accompanying the
+    work with a copy of "this license document", it means the RRPGE License
+    and the Lesser GPLv3 documents.
+
+    d) The act of conveying shall not be regarded as "commercial use" if the
+    Combined Work's license specifically regulates such uses. Terms
+    regulating "commercial uses" shall not apply to the act of conveying, the
+    other terms of the license shall apply.
+
+    e) Incorporating the RRPGE Application in binary form as an exact copy or
+    through a generic recompiler into an another work whose primary purpose is
+    executing the application shall not be considered a modification or a
+    derivative work and shall be permitted, however the conveying of such
+    works may be regulated by the RRPGE Application's license terms on
+    conveying.
+
+    f) The RRPGE Application shall be licensed under the terms of one of the
     allowed licenses. Additional alternative licenses may be provided at will.
 
-    d) Section 11 of GPLv3 shall remain in effect for the RRPGE Application.
-
-To comply with subsection 5c the following licenses are allowed:
+To comply with subsection 5f the following licenses are allowed:
 
     a) Version 2 or any later version of GNU Lesser General Public License.
     b) Apache License, Version 2.0.
