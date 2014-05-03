@@ -556,40 +556,8 @@ Kernel functions, Input devices (0x0400 - 0x04FF)
 - N/S:    May always return 0 indicating no devices are available.
 - Ret. A: Bit mask of available devices.
 
-Returns the input devices available, up to 16. Bit 15 of the return refers to
+Returns the input devices available, up to 16. Bit 0 of the return refers to
 device 0. Devices not necessary occur continuously.
-
-
-0x0401: Get most suitable primary devices
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- F.name: kc_inp_getbest
-- Cycles: 800
-- Host:   Required.
-- N/S:    May always return 0 (see notes).
-- Ret. A: Most suitable devices.
-
-Returns the most suitable devices for the application's primary device
-requirements. The host should provide this information by examining it's
-physical devices determining which of those fit best for emulating or
-replicating the device suggested by the application.
-
-The return value consists the following fields:
-
-- bit 12-15: Most suitable device ID.
-- bit  8-11: Second most suitable device ID.
-- bit  4- 7: Third most suitable device ID.
-- bit  0- 3: Fourth most suitable device ID.
-
-If there are less than four devices attached, the least suitable device should
-repeat on the remaining positions.
-
-If this function is not supported by the host, it should list available
-devices in an implementation defined order so applications using the result
-may still work acceptably. Normally device 0 should be available so returning
-0 typically may be acceptable.
-
-For more information see "inputdev.rst".
 
 
 0x0410: Get device properties
@@ -605,35 +573,20 @@ For more information see "inputdev.rst".
 The return value provides the properties of the device queried. It is composed
 of the following fields:
 
-- bit    15: 0
-- bit 12-14: Input device type; 0: not available
-- bit    11: Provides text input if set (if 12-14 are nonzero)
-- bit    10: Touch device if set (if 12-14 are nonzero)
-- bit     9: Alternative controller if set.
-- bit     8: Secondary controller if set.
-- bit     7: Tilt compensation may be applied if set.
-- bit  5- 6: 0
+- bit 12-15: Input device type.
+- bit    11: Nonzero indicating the device is available.
+- bit  5-10: 0
 - bit     4: Set if bits 0-3 contain a valid device ID.
-- bit  0- 3: Device ID the alternative maps to or the secondary expands.
+- bit  0- 3: Device ID which this device maps to.
 
-Input device types (also see the appropriate field of "bin.rpa.rst"):
+If the device is not available, the return value is zero.
 
-- 1: Digital gamepad
-- 2: Pointing device (mouse type devices or touch screens)
-- 3: Analog joystick
-- 4: Steering wheel
-- 5: Tilt sensor
+Only device types allowed in the Application Header (see "bin_rpa.rst") may be
+returned.
 
-If the device is not available, the return value is zero. Only device 0 may be
-a touch device. This bit is normally clear (0) for any other device (devices
-1-15), however it may be set if the device is an alternative controller
-mapping to device 0 or a secondary expanding device 0.
-
-If neither alternative nor secondary controllers are requested in the
-Application Header (see "bin_rpa.rst"), the input device type always matches
-that of requested if it is available. Bits 10 and 11 may only be set in
-accordance with the application's respective properties (field 0xBC1 in the
-Application Header, bits 10 and 11).
+If bit 4 is set, it indicates that de device maps to the same physical device
+as an another, and that another device is a more accurate representation (for
+example a device type of digital gamepad may map to a keyboard).
 
 For more on the behavior and handling of input devices, see "inputdev.rst".
 
@@ -646,21 +599,24 @@ For more on the behavior and handling of input devices, see "inputdev.rst".
 - Host:   Required.
 - N/S:    May always return 0 indicating the input does not exist.
 - Param1: Device to query (only low 4 bits used).
-- Param2: Input to query (only low 4 bits used).
+- Param2: Input group to query.
+- Param3: Input to query within the group (only low 4 bits used).
 - Ret. C: High 16 bits of UTF-32 character.
 - Ret. A: Low 16 bits of UTF-32 character.
 
-Returns a descriptive symbol for the given input point of the given device.
-This function may assist users using their physical controllers within the
-application by providing information by which they may identify the
-appropriate controls on their hardware.
+Returns a descriptive symbol for the given input point of the given device, or
+the information that the input is not available. This function may assist
+users using their physical controllers within the application by providing
+information by which they may identify the appropriate controls on their
+hardware.
 
 The highest bit of the 32bit return value (bit 15 of C) if set identifies
 special codes for specific (non-keyboard, or special keys on a keyboard)
 devices.
 
-A zero return indicates that the input does not exist (however it still may be
-activated by touch if touch is enabled and the areas are defined).
+A zero return indicates that the input does not exist (however in group 0 it
+still may be activated by touch if touch is enabled and the areas are
+defined).
 
 See "inputdev.rst" for the usage and the complete mapping of this return
 value.
@@ -674,74 +630,27 @@ value.
 - Host:   Required.
 - N/S:    May always return 0 indicating none of the inputs are active.
 - Param1: Device to query (only low 4 bits used).
+- Param2: Input group to query.
 - Ret. A: Digital inputs.
 
-The layout of the digital inputs are as follows:
-
-- bit    15: Direction up
-- bit    14: Direction right
-- bit    13: Direction down
-- bit    12: Direction left
-- bit    11: Pointing device primary / primary fire
-- bit    10: Pointing device secondary / secondary fire
-- bit     9: Button 2
-- bit     8: Button 3
-- bit     7: Button 4
-- bit     6: Button 5
-- bit     5: Button 6
-- bit     4: Button 7
-- bit     3: Button 8
-- bit     2: Button 9
-- bit     1: Button 10
-- bit     0: Button 11
-
-The exact role and layout of the directions and buttons vary slightly by
-device type. Directions are only available (may only report activity) for
-digital controllers. For more information see "inputdev.rst".
+The exact role and layout of the directions and buttons vary by device type.
+Note that for group 0 touch sensitive areas may also provide input. For more
+information see "inputdev.rst".
 
 
-0x0421: Get analog positions
+0x0421: Get analog inputs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- F.name: kc_inp_getap
+- F.name: kc_inp_getai
 - Cycles: 800
 - Host:   Required.
-- N/S:    May always return 320:200 indicating the device is centered.
+- N/S:    May always return 0 indicating the device is centered.
 - Param1: Device to query (only low 4 bits used).
-- Ret. C: X position; 0 - 639.
-- Ret. A: Y position; 0 - 399.
+- Param2: Analog input to query.
+- Ret. A: 2's complement input value.
 
-The position information is identical for all analog device types mapping to
-display positions. The X component has no relation to the selected display
-mode, in the case of a mouse, the cursor should be located at X/2 on 8bit
-(320x400) mode.
-
-In the case of a steering wheel, the X position should steer, and the Y
-position may be a combined acceleration / brake information with the brake
-dominating.
-
-For more information see "inputdev.rst".
-
-
-0x0422: Get further analog inputs
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- F.name: kc_inp_getapext
-- Cycles: 800
-- Host:   Required.
-- N/S:    May always return 320:200 indicating the device is centered.
-- Param1: Device to query (only low 4 bits used).
-- Ret. C: X / R position; 0 - 639.
-- Ret. A: Y / Z position; 0 - 399.
-
-Returns extended analog information from the device if any. The following
-extended analog information may be available:
-
-- A touch pointing device may supply a secondary touch location.
-- A joystick may provide a throttle controller's input as Z position.
-- A steering wheel may provide gas and brake pressures as Z and R.
-
-For more information see "inputdev.rst".
+The exact role an layout of the analog inputs vary by device type. For more
+information see "inputdev.rst".
 
 
 0x0423: Pop text input FIFO
@@ -783,14 +692,9 @@ even if the particular host does not support touch. Saving the application
 state and restoring it on a touch capable device will so work properly.
 
 The touch sensitive areas generate digital input activity for the "Get digital
-inputs" (0x0420) function for Device 0. This happens irrespective of the
-device type (but only if touch is enabled in the application header, see 0xBC1
-at "Application binary header map" in "bin_rpa.rst" for details). The area ID
-to define matches the bit's number it activates on the digital input.
-
-Note that if a pointing device is used, the host should realize the touch
-sensitive areas even if the actual device is a mouse, which case mouse primary
-(left) button presses over the areas should generate the inputs.
+inputs" (0x0420) function for pointing devices or devices emulated on a
+physical touch device. The area ID to define matches the bit's number it
+activates on the digital input, input group 0.
 
 For more information, see "inputdev.rst".
 
@@ -1092,17 +996,13 @@ abbreviations used in the table are:
 +--------+--------+---+---+----+-----+---------------------------------------+
 | 0x0400 |    800 |   | O |  0 |  A  | kc_inp_getdev                         |
 +--------+--------+---+---+----+-----+---------------------------------------+
-| 0x0401 |    800 |   | O |  0 |  A  | kc_inp_getbest                        |
-+--------+--------+---+---+----+-----+---------------------------------------+
 | 0x0410 |    800 |   | O |  1 |  A  | kc_inp_getprops                       |
 +--------+--------+---+---+----+-----+---------------------------------------+
-| 0x0411 |    800 |   | O |  2 | C:A | kc_inp_getdidesc                      |
+| 0x0411 |    800 |   | O |  3 | C:A | kc_inp_getdidesc                      |
 +--------+--------+---+---+----+-----+---------------------------------------+
-| 0x0420 |    800 |   | O |  1 |  A  | kc_inp_getdi                          |
+| 0x0420 |    800 |   | O |  2 |  A  | kc_inp_getdi                          |
 +--------+--------+---+---+----+-----+---------------------------------------+
-| 0x0421 |    800 |   | O |  1 | C:A | kc_inp_getap                          |
-+--------+--------+---+---+----+-----+---------------------------------------+
-| 0x0422 |    800 |   | O |  1 | C:A | kc_inp_getapext                       |
+| 0x0421 |    800 |   | O |  1 |  A  | kc_inp_getai                          |
 +--------+--------+---+---+----+-----+---------------------------------------+
 | 0x0423 |    800 |   | O |  1 | C:A | kc_inp_popchar                        |
 +--------+--------+---+---+----+-----+---------------------------------------+

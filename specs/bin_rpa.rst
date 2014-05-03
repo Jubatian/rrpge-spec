@@ -127,9 +127,8 @@ value 0x0A.
 +--------+---+---------------------------------------------------------------+
 |        |   | Application properties.                                       |
 | 0xBC1  | M |                                                               |
-|        |   | - bit    15: 0                                                |
-|        |   | - bit 12-14: Input controller suggestion; 0: no input         |
-|        |   | - bit    11: Uses text input if set                           |
+|        |   | - bit 12-15: Input controller type the application uses       |
+|        |   | - bit    11: If set, bit 12-15 is valid, otherwise no input   |
 |        |   | - bit    10: Touch aware if set                               |
 |        |   | - bit  8- 9: Suggested data caching scheme                    |
 |        |   | - bit     7: Has media total length information if set        |
@@ -192,22 +191,12 @@ value 0x0A.
 |        |   | order. It should seek at or before the passed seek parameter  |
 |        |   | in response. Defaults to 0x0000. Used if 0xBC1, bit6 is set.  |
 +--------+---+---------------------------------------------------------------+
-|        |   | Alternative controller specification if any. See              |
-| 0xBD0  | O | "inputdev.rst" for further details.                           |
-|        |   |                                                               |
-|        |   | - bit    15: 0                                                |
-|        |   | - bit 12-14: Input controller suggestion; 0: no input         |
-|        |   | - bit    11: Uses text input if set                           |
-|        |   | - bit  0-10: 0                                                |
+|        |   | Selects multiple input controller types, in addition to the   |
+| 0xBD0  | O | type selected by bits 11-15 of 0xBC1. Each bit refers to one  |
+|        |   | of the controller types (bit 0 corresponding to controller    |
+|        |   | type 0). Defaults to 0x0000. See "inputdev.rst" for details.  |
 +--------+---+---------------------------------------------------------------+
-|        |   | Secondary controller specification if any. See "inputdev.rst" |
-| 0xBD1  | O | for further details.                                          |
-|        |   |                                                               |
-|        |   | - bit    15: 0                                                |
-|        |   | - bit 12-14: Input controller suggestion; 0: no input         |
-|        |   | - bit  0-12: 0                                                |
-+--------+---+---------------------------------------------------------------+
-| 0xBD2  |   | Arbitrary data, reserved for further header expansion if the  |
+| 0xBD1  |   | Arbitrary data, reserved for further header expansion if the  |
 | \-     |   | appropriate fields in 0xBC5 - 0xBC7 are set. Those fields     |
 | 0xBFF  |   | should be clear to ignore this area for header processing.    |
 +--------+---+---------------------------------------------------------------+
@@ -261,7 +250,7 @@ Licenses
 The License field is meant to identify the license of the application using a
 common acronym. The following acronyms are available:
 
-- RRPGEv1: Version 1 of the RRPGE License.
+- RRPGEv2: Version 2 of the RRPGE License.
 - GPLv3: Version 3 of GNU General Public License.
 - GPLv3+: Version 3 or any later version of GNU General Public License.
 - GPLv2: Version 2 of GNU General Public License.
@@ -269,7 +258,7 @@ common acronym. The following acronyms are available:
 
 License compatibility chart: ::
 
-    RRPGEv1 ----> GPLv2+ -----> GPLv2
+    RRPGEv2 ----> GPLv2+ -----> GPLv2
        |            |
        |            |
        |            V
@@ -356,23 +345,15 @@ the seek entry point.
 
 
 
-Input related properties (bit 10-15 in 0xBC1, 0xBD0 and 0xBD1)
+Input related properties (bit 10-15 in 0xBC1 and 0xBD0)
 ------------------------------------------------------------------------------
 
 
 For more information on the supported input devices, and the overall
 architecture of processing user input, see "inputdev.rst".
 
-The encoding of bits 12-14 is as follows:
-
-- 0: The application receives no user input
-- 1: Digital gamepad
-- 2: Pointing device (mouse type devices or touch screens)
-- 3: Analog joystick
-- 4: Steering wheel
-- 5: Tilt sensor
-- 6: (Invalid)
-- 7: (Invalid)
+Bit 11 of 0xBC1 (disabling bits 12-15) does not disable input completely, the
+0xBD0 field may still define a set of controllers to use this case.
 
 Note that these values do not require the host to actually have a given
 hardware device, they only suggest that the application wishes to use one or

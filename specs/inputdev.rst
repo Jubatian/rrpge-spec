@@ -23,9 +23,9 @@ The input peripherals are accessible through kernel functions (see the
 further information).
 
 Moreover the application specifies it's device requirements in it's
-Application Header (see locations 0xBC1, 0xBD0 and 0xBD1 at "Application
-binary header map" in "bin_rpa.rst" for details), so the host may select the
-most appropriate way it may serve the application.
+Application Header (see locations 0xBC1 and 0xBD0 at "Application binary
+header map" in "bin_rpa.rst" for details), so the host may select the most
+appropriate way it may serve the application.
 
 In this part of the specification, the additional details required for
 completing the input system are defined, along with acceptable suggested
@@ -34,35 +34,33 @@ means of implementation and usages of the system.
 
 
 
-Input device types
+Input device type summary
 ------------------------------------------------------------------------------
 
 
-The RRPGE system is capable to use the following genres of input devices:
+The RRPGE system is capable to use the following types of input devices:
 
-- Digital gamepads. These typically provide four buttons for directions, and
-  typically four or more additional buttons. They have no capability for
-  producing analog inputs. The host may use a physical keyboard to simulate
-  one, however on a keyboardless device it may be difficult to emulate.
-
-- Pointing devices. Two major types are understood: Mice or similar devices
+- Pointing devices. Two major types are supported: Mice or similar devices
   which require an on-screen cursor for feeding back position information to
   the user, and typically have multiple buttons, and Touch screens which
   operate on the concept of the user interacting with the display itself, thus
   not requiring an on-screen cursor, but typically having only a single
   "button".
 
+- Digital gamepads. These typically provide four buttons for directions, and
+  typically four or more additional buttons. They have no capability for
+  producing analog inputs. The host may use a physical keyboard to simulate
+  one, however on a keyboardless device it may be difficult to emulate.
+
 - Analog joysticks. A generic analog device usually meant to be used for
   flight simulators and similar applications.
 
-- Steering wheels. An analog device meant to be used for driving simulation.
-  Typically this is not a real physical device, but suggests the host to
-  provide a configuration more resembling to such a device (such as using a
-  handheld device's orientation sensors to provide an impression of a steering
-  wheel).
+- Text input. This device is meant to provide a stream of characters and
+  optionally control codes, not necessarily from a physical keyboard.
 
-- Tilt sensors. An analog device meant to rely on tilt to simulate gravity
-  based applications, such as ball guiding toys.
+- Keyboards. The keyboard is supported for those situations where the text
+  input feature is not adequate since the application's requirement is rather
+  a larger set of buttons in a deterministic layout.
 
 In addition to the genres, the application may suggest the following
 properties of it's input requirements (using the Application Header's 0xBC1
@@ -75,272 +73,349 @@ field):
   the host that it does not need to resort to some awkward emulation to
   provide virtual digital inputs to operate the application.
 
-- The use of text input. This indicates that the application makes use of text
-  input devices. Note that these devices not necessarily have to be keyboards.
-  If this flag is set, if possible, the host should provide some mean of
-  providing text input for the application, otherwise it need not provide such
-  a feature.
 
 
 
-
-Additional devices, combinations
+Multiple devices, combinations
 ------------------------------------------------------------------------------
 
 
 While the most simple applications may work well with a single type of input
-device, some may find it beneficial to directly support alternatives, or may
-need a combination of devices for proper control.
+device, some may find it beneficial to work with multiple devices either for
+easing the use (such as by a keyboard and a mouse), or for providing better
+support for a wider number of devices (such as supporting both mice and touch
+devices).
 
-There are two distinct ways to add extra devices:
+If an application wants to use more than one device type, it can indicate this
+using the 0xBD0 field in the Application Header (see "bin_rpa.rst" for further
+details).
 
-- Alternative controllers (0xBD0 in the Application Header)
-- Secondary controllers (0xBD1 in the Application Header)
+When multiple devices are present, the host may decide to provide multiple
+logical presentations for a single physical device. This condition can be
+detected using the 0x0410 "Get device properties" kernel call, on bits 0-4 of
+the return value. If a valid target device is provided here, it indicates that
+device representing better the actual physical device.
 
-
-Alternative controllers
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-An alternative controller is meant to be supported as an alternate "fallback"
-solution if the controller originally suggested is not available or would be
-cumbersome to be emulated by the host or to the user.
-
-If the application specifies an alternate controller, it allows the host to
-discard cumbersome emulation solutions probably replacing those with directly
-providing the alternative controller.
-
-For this property these input devices may map directly to an other provided by
-the host. To identify this mapping when it happens, the Kernel function 0x0410
-"Get device properties" may be used.
-
-Note that always the alternate controller is which maps to a primary
-controller and not vice-versa even if the primary provided by the host is a
-poor quality emulation.
-
-The application using this feature must be aware of these, and should not
-attempt to use an alternative controller and the primary controller it maps to
-simultaneously.
-
-
-Secondary controllers
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-A secondary controller is meant to expand the functionality of a primary or
-alternative controller.
-
-If the application specifies it benefits from a secondary, the host should not
-use suitable secondary controllers to emulate primary or alternate
-controllers, instead it should provide the secondary.
-
-The secondary may also map to a primary (or alternate) controller which this
-case means it is physically part of that device. A typical example may be a
-pointing device combined with a steering wheel on a handheld device.
-
-If the mapping is present, the buttons of the secondary controller may be
-absent. This case the application should combine the two controllers and
-use them as one by relying on the primary controller's buttons.
+This feature may be used to provide very different abstractions to the same
+physical device facilitating the use from applications. A typical example
+would be a text input device and a keyboard, both supported by a physical
+keyboard.
 
 
 
 
-The uses of tilt compensation
+Touch awareness
 ------------------------------------------------------------------------------
 
 
-Using the tilt compensation flag (returned by the kernel function 0x0410 "Get
-device properties") the host may indicate that the actions on the controller
-cause a change in the orientation of the device's display which the
-application may want to compensate.
+An application can indicate that it is touch aware by the 0xBC1 field of the
+Application Header (see "bin_rpa.rst").
 
-The meaning of the flag is described in the following subsections for each
-device type it may affect.
+This flag if set indicates that the application will set up the touch
+sensitive areas according to the controller it actively uses (the areas map to
+digital input bank zero). This case the host may provide a specific emulated
+device (such as a digital gamepad) without actually providing any physical
+buttons or switches for it.
 
+If the application does not provide this (has the flag cleared), the host
+should assume it won't use the touch sensitive areas to complement a
+controller, and so may use different means of emulation or may provide a more
+limited set of input devices.
 
-Steering wheels
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-At the centered (X = 320) position the display is landscape oriented.
-Increasing X also indicates a clockwise rotation of 1/3 degree for each step
-in X, so the maximal X = 639 indicating a rotation of 106.33 degrees
-clockwise. Decreasing X has the opposing effect.
-
-
-Tilt sensors
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-In the case of a tilt sensor the display is assumed to be tilted. The centered
-position is X = 320, Y = 200. For each step in either direction an 1/8 degree
-of tilt is assumed. X increments correspond to tilts to the right, Y
-increments correspond to tilts to the bottom.
+If the application accepts a touch pointing device as input device and
+provides this flag, the host should provide the virtual devices which are
+supposed to be complemented with touch buttons as mapping to the touch
+pointing device (see "Multiple devices, combinations" above). If the
+application does not accept a touch pointing device, these may be provided
+stand-alone.
 
 
 
 
-The mapping of digital inputs
+The description of device types
 ------------------------------------------------------------------------------
 
 
-The kernel function 0x0420 "Get digital inputs" returns the currently active
-digital inputs. The layout and roles of these inputs depend on the type of the
-device. If touch buttons are enabled, either of these inputs may be provided
-from a touch sensitive area as defined using function 0x0430 "Define touch
-sensitive area".
-
-Following the roles of the buttons are defined for each input device type.
+Here each of the supported input devices are described with their digital and
+analog input mappings.
 
 
-Digital gamepads
+0x0: Mouse pointing device
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- bit 15: Direction Up
-- bit 14: Direction Right
-- bit 13: Direction Down
-- bit 12: Direction Left
-- bit 11: Primary fire / action
-- bit 10: Secondary fire / action
+The mouse pointing device provides a normal computer mouse requiring a cursor
+presented for the user to assist tracking it's position. The touch sensitive
+areas can be used to specify automatic buttons for this device, which are
+activated by a primary mouse button (typically left) press.
 
-The rest of the buttons (if any) may be assigned ordered by accessibility on
-the following positions.
+Digital input mapping:
+
++------+-------+-------------------------------------------------------------+
+| Bank | Input | Description                                                 |
++======+=======+=============================================================+
+| 0    | 0-15  | Touch sensitive areas (buttons)                             |
++------+-------+-------------------------------------------------------------+
+|      | 0     | Scroll up (if any)                                          |
+| 1    +-------+-------------------------------------------------------------+
+|      | 1     | Scroll right (if any)                                       |
+|      +-------+-------------------------------------------------------------+
+|      | 2     | Scroll down (if any)                                        |
+|      +-------+-------------------------------------------------------------+
+|      | 3     | Scroll left (if any)                                        |
+|      +-------+-------------------------------------------------------------+
+|      | 4     | Primary (left) mouse button                                 |
+|      +-------+-------------------------------------------------------------+
+|      | 5     | Secondary (right) mouse button (if any)                     |
+|      +-------+-------------------------------------------------------------+
+|      | 6     | Middle mouse button (if any)                                |
+|      +-------+-------------------------------------------------------------+
+|      | 7-15  | Additional mouse buttons (if any)                           |
++------+-------+-------------------------------------------------------------+
+
+Analog input mapping:
+
++-------+--------------------------------------------------------------------+
+| Input | Description                                                        |
++=======+====================================================================+
+| 0     | Position X (0-639, even in 8 bit mode)                             |
++-------+--------------------------------------------------------------------+
+| 1     | Position Y (0-399)                                                 |
++-------+--------------------------------------------------------------------+
 
 
-Pointing devices
+0x1: Touch pointing device
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- bit 15: Mouse wheel Up
-- bit 13: Mouse wheel Down
-- bit 11: Primary (left) mouse button or press on touch device
-- bit 10: Secondary (right) mouse button or secondary press on touch device
-- bit  9: Middle mouse button
+The touch pointing device assumes a touch display where no cursor is necessary
+to feed back to the user's actions. The device may support multi-touch, and
+so the touch sensitive areas may return press information simultaneously even
+if they don't overlap.
 
-The rest of the buttons (if any) may be assigned ordered by accessibility on
-the following positions. Bits 14 and 12 may be used for Right and Left
-respectively if the mouse has a horizontal scroll feature.
+Digital input mapping:
 
-Note that a touch device may only provide a single press input, any other
-buttons may have to be provided using physical buttons on the device or as
-touch sensitive areas. Multi-touch devices may provide a secondary press
-accompanied with further analog inputs. Touch aware applications should use
-the pointing device accordingly.
++------+-------+-------------------------------------------------------------+
+| Bank | Input | Description                                                 |
++======+=======+=============================================================+
+| 0    | 0-15  | Touch sensitive areas (buttons)                             |
++------+-------+-------------------------------------------------------------+
+|      | 4     | Primary touch activity                                      |
+| 1    +-------+-------------------------------------------------------------+
+|      | 5     | Secondary touch activity (if supported)                     |
++------+-------+-------------------------------------------------------------+
+
+Analog input mapping:
+
++-------+--------------------------------------------------------------------+
+| Input | Description                                                        |
++=======+====================================================================+
+| 0     | Primary touch last position X (0-639, even in 8 bit mode)          |
++-------+--------------------------------------------------------------------+
+| 1     | Primary touch last position Y (0-399)                              |
++-------+--------------------------------------------------------------------+
+| 2     | Secondary touch last position X (0-639, even in 8 bit mode)        |
++-------+--------------------------------------------------------------------+
+| 3     | Secondary touch last position Y (0-399)                            |
++-------+--------------------------------------------------------------------+
 
 
-Analog joysticks
+0x2: Digital gamepad
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- bit 11: Primary fire / action
-- bit 10: Secondary fire / action
+The usual digital gamepad with a direction pad and a set of buttons.
 
-The rest of the buttons (if any) may be assigned ordered by accessibility on
-the following positions. Bits 12-15 may be used if the joystick is capable to
-provide digital directions by some extra device.
+Digital input mapping:
+
++------+-------+-------------------------------------------------------------+
+| Bank | Input | Description                                                 |
++======+=======+=============================================================+
+| 0    | 0     | Direction up                                                |
++------+-------+-------------------------------------------------------------+
+| 0    | 1     | Direction right                                             |
++------+-------+-------------------------------------------------------------+
+| 0    | 2     | Direction down                                              |
++------+-------+-------------------------------------------------------------+
+| 0    | 3     | Direction left                                              |
++------+-------+-------------------------------------------------------------+
+| 0    | 4     | Primary action button                                       |
++------+-------+-------------------------------------------------------------+
+| 0    | 5     | Secondary action button (if any)                            |
++------+-------+-------------------------------------------------------------+
+| 0    | 6     | Additional button (if any; "Menu" if possible)              |
++------+-------+-------------------------------------------------------------+
+| 0    | 7-15  | Additional buttons (if any)                                 |
++------+-------+-------------------------------------------------------------+
 
 
-Steering wheels
+0x3: Analog joystick
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- bit 11: Primary fire / action
-- bit 10: Secondary fire / action
-- bit  9: Gear Up
-- bit  8: Gear Down
-- bit  7: Apply hand brakes
+The usual at least 2 axis plus at least one fire button analog stick.
 
-The rest of the buttons (if any) may be assigned ordered by accessibility on
-the following positions.
+Digital input mapping:
+
++------+-------+-------------------------------------------------------------+
+| Bank | Input | Description                                                 |
++======+=======+=============================================================+
+|      | 0     | Hat/POV switch up (if any)                                  |
+| 0    +-------+-------------------------------------------------------------+
+|      | 1     | Hat/POV switch right (if any)                               |
+|      +-------+-------------------------------------------------------------+
+|      | 2     | Hat/POV switch down (if any)                                |
+|      +-------+-------------------------------------------------------------+
+|      | 3     | Hat/POV switch left (if any)                                |
+|      +-------+-------------------------------------------------------------+
+|      | 4     | Primary (left) action button                                |
+|      +-------+-------------------------------------------------------------+
+|      | 5     | Secondary (right) action button (if any)                    |
+|      +-------+-------------------------------------------------------------+
+|      | 6     | Additional button (if any; "Menu" if possible)              |
+|      +-------+-------------------------------------------------------------+
+|      | 7-15  | Additional buttons (if any)                                 |
++------+-------+-------------------------------------------------------------+
+
+Analog input mapping:
+
++-------+--------------------------------------------------------------------+
+| Input | Description                                                        |
++=======+====================================================================+
+| 0     | Position X (-0x8000 - 0x7FFF)                                      |
++-------+--------------------------------------------------------------------+
+| 1     | Position Y (-0x8000 - 0x7FFF)                                      |
++-------+--------------------------------------------------------------------+
+| 2     | Position Z (-0x8000 - 0x7FFF; usually twisting the stick)          |
++-------+--------------------------------------------------------------------+
+| 3     | Throttle controller (-0x8000 - 0x7FFF)                             |
++-------+--------------------------------------------------------------------+
 
 
-
-
-Extended analog inputs
-------------------------------------------------------------------------------
-
-
-Extended analog inputs may be provided by kernel function 0x0422 "Get further
-analog inputs". The assignment of these inputs depend on the device type.
-
-
-Pointing devices
+0x4: Text input
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A touch device may use these information to report secondary touch if it is
-capable to do so. If so, the secondary button press should be connected with
-these position information.
+The text input device is special in that it is accessible through a separate
+kernel call (0x0423: Pop text input FIFO). It provides no digital or analog
+inputs. It may typically be backed by a keyboard, but other physical devices
+might be possible.
+
+More on this device can be found in the "Text input control codes" chapter.
 
 
-Analog joysticks
+0x5: Keyboard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If the joystick has a throttle controller, it's information should return in
-A. The throttle controller is meant to be interpreted as zero or above, so the
-return value accordingly has to ramp from 200 to 399 inclusive (since 200
-refers to the idle position). If the joystick's design suggests the
-possibility of negative throttle having a well defined idle position, it
-should be exploited by assigning 0 to 199 to the positions below idle level.
+The keyboard device is provided as a large array of buttons for application
+requiring such an input device. Note that for text input, the Text input
+device is more suitable.
 
-The C return should be used as a horizontal orientation control; if the stick
-may be twisted, this control might be assigned to this return.
+The descriptions for the digital inputs should be applied by the standard US
+QWERTY layout as below (only the alphanumeric portion shown): ::
 
+    +----------------------------------------------------------------...
+    | +---+   +---+---+---+---+ +---+---+---+---+ +---+---+---+---+
+    | |ESC|   | F1| F2| F3| F4| | F5| F6| F7| F8| | F9|F10|F11|F12|
+    | +---+   +---+---+---+---+ +---+---+---+---+ +---+---+---+---+
+    | +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+    | | ~ | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 0 | - | + | | |BKS|
+    | +---+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+---+
+    | | TAB | Q | W | E | R | T | Y | U | I | O | P | { | } |     |
+    | +-----++--++--++--++--++--++--++--++--++--++--++--++--+ENTER|
+    | | CAPS | A | S | D | F | G | H | J | K | L | : | " |        |
+    | +------+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+--------+
+    | | SHIFT  | Z | X | C | V | B | N | M | < | > | ? |  SHIFT   |
+    | +----+---++--+-+-+---+---+---+---+---+--++---+---+-----+----+
+    | |CTRL|    |ALTG|         SPACE          |ALT |         |CTRL|
+    | +----+    +----+------------------------+----+         +----+
+    +----------------------------------------------------------------...
 
-Steering wheels
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+If necessary, the actual labeling of the keys may be requestable using the
+0x0411 "Get digital input description symbols" kernel call.
 
-The pressure on the gas pedal may be returned in A. This is a positive only
-value, so it should ramp accordingly from 200 to 399 inclusive.
+The first input bank is a combined button state, provided for easing some
+typical keyboard uses, and to make it possible to support these uses with
+touch in touch aware applications.
 
-The pressure on the brakes may be returned in C. This is a positive only
-value, so it should ramp accordingly from 320 to 639 inclusive.
+Digital input mapping of bank zero:
 
++------+-------+-------------------------------------------------------------+
+| Bank | Input | Description                                                 |
++======+=======+=============================================================+
+|      | 0     | Direction key up; Numpad 8; key 8                           |
+| 0    +-------+-------------------------------------------------------------+
+|      | 1     | Direction key right; Numpad 6; key 6                        |
+|      +-------+-------------------------------------------------------------+
+|      | 2     | Direction key down; Numpad 2; key 2                         |
+|      +-------+-------------------------------------------------------------+
+|      | 3     | Direction key left; Numpad 4; key 4                         |
+|      +-------+-------------------------------------------------------------+
+|      | 4     | SPACE; ENTER; Numpad Enter                                  |
+|      +-------+-------------------------------------------------------------+
+|      | 5     | ALT; ALTG; Numpad 0; key 0; Insert                          |
+|      +-------+-------------------------------------------------------------+
+|      | 6     | ESC; Numpad Del; Delete                                     |
+|      +-------+-------------------------------------------------------------+
+|      | 7     | F1; Numpad 5; key 5                                         |
+|      +-------+-------------------------------------------------------------+
+|      | 8     | Numpad 9, key 9, Page Up                                    |
+|      +-------+-------------------------------------------------------------+
+|      | 9     | Numpad 3, key 3, Page Down                                  |
+|      +-------+-------------------------------------------------------------+
+|      | 10    | Numpad 1, key 1, End                                        |
+|      +-------+-------------------------------------------------------------+
+|      | 11    | Numpad 7, key 7, Home                                       |
+|      +-------+-------------------------------------------------------------+
+|      | 12    | Numpad /                                                    |
+|      +-------+-------------------------------------------------------------+
+|      | 13    | Numpad *                                                    |
+|      +-------+-------------------------------------------------------------+
+|      | 14    | Numpad -                                                    |
+|      +-------+-------------------------------------------------------------+
+|      | 15    | Numpad +                                                    |
++------+-------+-------------------------------------------------------------+
 
+The mapping of the individual keys are shown on the following tables. Empty
+indicates unused slots. If the keyboard does not contain a numeric pad, but a
+switch, then the switch should be interpreted by the host and keys should be
+returned accordingly. Notes (#x) in the table are described below it.
 
++---+--------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+|Bnk|  Area  | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |10 |11 |12 |13 |14 |15 |
++===+========+===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+
+| 1 | Numpad | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |ENT|Del| / | * | - | + |
++---+--------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+| 2 | F-Row  |ESC| F1| F2| F3| F4| F5| F6| F7| F8| F9|F10|F11|F12|#0 |#0 |#0 |
++---+--------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+| 3 | NumRow | ~ | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 0 | - | + | | |BKS|   |
++---+--------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+| 4 | UpRow  |TAB| Q | W | E | R | T | Y | U | I | O | P | { | } |           |
++---+--------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+-------+
+| 5 | HomeRow|#1 | A | S | D | F | G | H | J | K | L | : | " |#2 |ENT|       |
++---+--------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+-------+
+| 6 | BotRow |SHL|#3 | Y | X | C | V | B | N | M | < | > | ? |#3 |SHR|       |
++---+--------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+-------+
+| 7 | Control|CTL|#4 |ALG|SPC|ALT|#4 |#4 |CTR|#5 |                           |
++---+--------+---+---+---+---+---+---+---+---+---+---+-----------------------+
+| 8 | Dirs   |Up |Rig|Dwn|Lft|Ins|Del|Hom|End|PgU|PgD|                       |
++---+--------+---+---+---+---+---+---+---+---+---+---+-----------------------+
+| 9 | Extra  | #6                                                            |
++---+--------+---------------------------------------------------------------+
 
-Pointing device specific concerns
-------------------------------------------------------------------------------
+- #0: If the host supports returning presses for the Print Screen, Scroll Lock
+  and Break keys, they may be provided here.
 
+- #1: If the host supports returning presses for the Caps Lock key, it may be
+  returned here.
 
-Touch aware applications (as set by the 0xBC1 field in the Application Header)
-should be designed so they work both with a mouse and a touch device.
+- #2: Place for an extra key in the Home row if any.
 
-The type of the pointing device should be determined by reading bit 10 of the
-return of kernel function 0x0410 "Get device properties". If this bit
-indicates that it is not a touch device, a mouse has to be assumed.
+- #3: Places for extra keys in the Bottom row if any.
 
-In case of having a mouse, the application should provide a cursor displayed
-at the position acquired by function 0x0421 "Get analog positions".
+- #4: If the host supports returning presses for the menu keys, they may be
+  returned here.
 
-For most part a mouse and a touch device may be assumed to behave similarly to
-each other. No matter which is the actual device, touch sensitive areas may be
-defined and will behave appropriately.
+- #5: If the host supports returning presses for the Num Lock key, it may be
+  returned here.
 
-The following differences may be kept in mind however:
-
-- Touch devices may provide secondary touch while mice don't. This should be
-  paid attention to when assigning functions to the secondary mouse button.
-
-- Touch devices have no additional controls (extra buttons, scroll wheels), so
-  these features should be provided using touch sensitive areas.
-
-- Functions requiring secondary touch are not directly possible with a mouse
-  or a touch device not capable to detect secondary touch.
-
-- Pressing touch buttons likely change the analog positions reported on a
-  touch device. This should be kept in mind when assigning functions to those
-  with a mouse in mind.
-
-
-
-
-Steering wheel specific concerns
-------------------------------------------------------------------------------
-
-
-In the case of a steering wheel acceleration and brake information (pressures)
-are provided as extended analog inputs. These, particularly if the steering
-wheel is emulated, may come from a single source, so some simple applications
-might want to simplify the model as well.
-
-For this purpose on the Y return of 0x0421 "Get analog positions" a combined
-acceleration / brake information is available. Above 200 values indicate
-acceleration, below 200 indicate braking. If these information come from
-separate sources, they are merged by making the brake dominating if possible
-(but may be merged by adding as well).
+- #6: If the keyboard contains additional keys to those defined, they may be
+  implemented in this area.
 
 
 
@@ -452,7 +527,7 @@ it represents (for example a physical joystick serving a joystick type input
 device).
 
 The "Native control" indicates a control on the device itself if the device
-physically matches to the device type it represents.
+physically matches to the device type it represents (except for keyboard).
 
 
 
