@@ -109,13 +109,6 @@ File "bin_rpa.rst"
 The Application Binary format defining the application and it's data.
 
 
-File "bin_rpn.rst"
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The Nonvolatile Save binary format defining the format of nonvolatile saves
-the application may use to store user-made content.
-
-
 File "bin_rps.rst"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -147,6 +140,12 @@ File "data.rst"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Constant data provided for the application, and the layout of those.
+
+
+File "file_io.rst"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The usage of the file I/O interface provided by the kernel.
 
 
 File "index.rst"
@@ -192,8 +191,7 @@ audio sample mixing.
 File "names.rst"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Conventions for the interpretation of ID values (User ID's and Nonvolatile
-save ID's).
+Conventions for the interpretation of User ID values.
 
 
 File "ropddump.rst"

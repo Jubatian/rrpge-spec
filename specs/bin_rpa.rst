@@ -136,8 +136,8 @@ value 0x0A.
 |        |   | - bit     5: Has playlist if set                              |
 |        |   | - bit     4: Has important audio output if set                |
 |        |   | - bit     3: Has important video output if set                |
-|        |   | - bit     2: Requires arbitrary file load / save if set       |
-|        |   | - bit     1: Requires nonvolatile saves if set                |
+|        |   | - bit     2: 0                                                |
+|        |   | - bit     1: Requires file load / save if set                 |
 |        |   | - bit     0: Requires network if set                          |
 +--------+---+---------------------------------------------------------------+
 |        |   | Code pages, audio configuration, and extra data page bits.    |
@@ -216,22 +216,18 @@ Version information
 
 There are two version informations at 0x02A and 0x034, one specifying the
 application version, the other the specification's version the application
-conforms to. The application's version controls how the host may allow or deny
-showing or loading nonvolatile saves produced by other versions. The
-specification's version likewise suggests the host whether it may or may not
-load and run the application.
+conforms to. The specification's version suggests the host whether it may or
+may not load and run the application.
 
-For both versions the following compatibility rules shall be followed:
+For the versions the following compatibility rules shall be followed:
 
-- If major versions differ, it means complete incompatibility. An application
-  may not load a nonvolatile save produced by one of different major version,
-  likewise the host implementing one major version of the specification should
-  not attempt to load an application conforming to a different major version.
+- If major versions differ, it means complete incompatibility. The host
+  implementing one major version of the specification should not attempt to
+  load an application conforming to a different major version.
 
-- Minor versions are upwards compatible. An application may load a nonvolatile
-  save if it's major version matches, and it's minor version is less or equal.
-  A host may load and run an application designed for a specification whose
-  major version matches and the minor is less or equal.
+- Minor versions are upwards compatible. A host may load and run an
+  application designed for a specification whose major version matches and the
+  minor is less or equal.
 
 - Patch versions are compatible either way.
 

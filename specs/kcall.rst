@@ -267,183 +267,123 @@ Binary pages in the application binary start after the Code pages with Page 0
 The task always returns 0x8000 on completion.
 
 
-0x0110: Task: Start loading nonvolatile save
+0x0110: Task: Start loading page from file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- F.name: kc_sfi_loadnv
+- F.name: kc_sfi_load
 - Cycles: 800
 - Host:   Required.
-- N/S:    The task may always return 0x8000 indicating unsuccessful load.
-- Param1: First target Data memory page.
-- Param2: Maximal number of pages to fill.
-- Param3 - Param5: 3 word Save ID to load from.
-- Ret. A: Index of kernel task or 0x8000 if no more task slots are available.
-
-Loads a nonvolatile save starting from the target Data memory page. The
-maximal number of pages to fill must select pages in the user accessible Data
-memory page range only (pages 0x4000 - 0x40DF). If the parameters don't meet
-these constraints, the kernel terminates the application.
-
-The return of the kernel task has bit 15 set (indicating the task is
-finished), and in the lower bits (bits 0-14) the count of pages the source
-actually had, zero indicating unsuccessful load.
-
-The target area is always completely filled: pages for which no source data
-was available are filled with zeroes. If the source had more pages than the
-provided range, the excess pages are not loaded.
-
-For guidelines on forming Save ID's, see "names.rst". For more information on
-the format of nonvolatile saves, see "bin_rpn.rst".
-
-
-0x0111: Task: Start saving nonvolatile save
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- F.name: kc_sfi_savenv
-- Cycles: 800
-- Host:   Required.
-- N/S:    The task may always return 0x8000 indicating unsuccessful save.
-- Param1: First source Data memory page.
-- Param2: Number of pages to save.
-- Param3 - Param5: 3 word Save ID to save into.
-- Ret. A: Index of kernel task or 0x8000 if no more task slots are available.
-
-Saves an area of Data memory into a nonvolatile save. It will delete and
-refill any existing save with the same Save ID. If the number of pages to save
-is zero, no new save is created: this can be used to delete existing saves.
-The task returns 0x8001 on success indicating that the save could be written.
-In the case of deletion the result is always success if after the operation no
-save exists by the given Save ID. In case of failure the task returns 0x8000.
-
-Before writing the save the kernel will apply the appropriate nonvolatile save
-header on the output data overriding any content on this area. This affects
-the first 48 words of the source which will be overwritten by this header
-during the execution of this task. Note that this part of the operation is
-atomic from the point of the user program, that is it has no possibility to
-alter the output of the header in any manner.
-
-For guidelines on forming Save ID's, see "names.rst". For more information on
-the format of nonvolatile saves, see "bin_rpn.rst".
-
-
-0x0112: Task: List available nonvolatile saves
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- F.name: kc_sfi_listnv
-- Cycles: 800
-- Host:   Required.
-- N/S:    The task may always return 0x8000 indicating no saves are available.
+- N/S:    The task may always return 0xC000 indicating unsuccessful load.
 - Param1: Target Data memory page.
+- Param2: Page to load from the file, high word.
+- Param3: Page to load from the file, low word.
+- Param4: Number of bytes to load from the page of the file (0 - 8192).
+- Param5: File name page in Data memory.
+- Param6: File name offset in page (only bits 7-12 are used).
 - Ret. A: Index of kernel task or 0x8000 if no more task slots are available.
 
-Builds a list of all existing saves. In the target bank one save takes 4
-words, in total up to 1024 nonvolatile saves are supported for a given
-application. The layout of the fields are as follows:
+Loads bytes from a page of a source file. The bytes are loaded in Big Endian
+order (so first byte of the page in the file will be the high byte of the
+first word of the target).
 
-- Word 0: First word of the Save ID.
-- Word 1: Second word of the Save ID.
-- Word 2: Third word of the Save ID.
-- Word 3: Size of the save in pages.
+If no data is loaded from the file, or the page is only partially filled, the
+unfilled area is zeroed.
 
-The existing saves are listed in an incremental order by their Save ID's. The
-rest of the page is padded with zeros. The size of the save can only be zero
-in the padding, note that a save with all three ID words of zero may also
-exists. The maximal allowed size for a save is 224 pages (the size of Data
-memory accessible to the user), the host should generally not allow larger
-saves to exist. If so, their size should be reported to be 224 pages.
+The number of bytes to load is set 8192 (load full page) by the kernel if an
+out of range value is passed for it.
 
-The return of the kernel task has bit 15 set (indicating the task is
-finished), and on the lower bits the number of saves found (0 - 1024
-inclusive).
+The file name is a zero terminated UTF-8 string.
 
-For guidelines on forming Save ID's, see "names.rst". For more information on
-the format of nonvolatile saves, see "bin_rpn.rst".
+The return of the kernel task has bit 14 clear if the load was successful,
+bits 0 - 13 indicating the number of bytes successfully loaded (0 - 8192).
+This may be less than the requested number of bytes (maybe even zero) if the
+file was too small. Bit 14 set in the return value indicates failure, bits
+0 - 13 providing a fault code.
+
+See "file_io.rst" for further details including fault codes.
 
 
-0x0120: Load arbitrary file
+0x0111: Task: Start saving page into file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- F.name: kc_sfi_loadfile
-- Cycles: -
+- F.name: kc_sfi_save
+- Cycles: 800
 - Host:   Required.
-- N/S:    May always return zero (0) indicating no file was loaded.
-- Param1: First target Data memory page.
-- Param2: Maximal number of pages to fill.
-- Ret. C: File size in bits, high (number of full pages it occupies).
-- Ret. A: File size in bits, low.
+- N/S:    The task may always return 0xC000 indicating unsuccessful save.
+- Param1: Source Data memory page.
+- Param2: Page to save into the file, high word.
+- Param3: Page to save into the file, low word.
+- Param4: Number of bytes to save into the page of the file (0 - 8192).
+- Param5: File name page in Data memory.
+- Param6: File name offset in page (only bits 7-12 are used).
+- Ret. A: Index of kernel task or 0x8000 if no more task slots are available.
 
-Asks the kernel to offer loading an arbitrary file. The kernel takes over
-presenting some kind of file selection screen to allow the user loading a
-file, then when the user either selected a file or canceled the selection,
-returns. If the file load failed for an other reason than the user canceling
-it, the kernel produces an appropriate error message within this file
-selection screen. In case of an emulated system, these tasks are performed by
-the host.
+Saves bytes into a page of a target file. The bytes are saved in Big Endian
+order (so first byte of the page in the file will be from the high byte of the
+first word in the source page).
 
-The target area is always filled, excess area beyond the size of the file (or
-the whole area if the return is zero) with zeroes.
+Note that the host need not pad automatically the file to save the requested
+page, and will fail if the file is not sufficiently large already so the new
+data can be added without gaps.
 
-The target area must be at least one page long. Otherwise (and on any other
-invalid parameter combination) the kernel terminates the application.
+The number of bytes to save is set 8192 (save full page) by the kernel if an
+out of range value is passed for it.
 
-The return value contains the size of the complete file (if it is larger than
-64K words, the size is truncated to fit), or zero if no file was selected or
-it could not be loaded.
+The file name is a zero terminated UTF-8 string.
 
-When executing this function (even if unsupported), on return the kernel
-clears the first 32 Video memory pages and the Video peripheral registers are
-reset (see "boot.rst" for their initial state) including the Reindex table. No
-other registers are affected: The palette is restored by the kernel before
-return.
+The return of the kernel task has bit 14 clear if the save was successful,
+bits 0 - 13 indicating the number of bytes successfully saved (0 - 8192).
+This equals to the requested number of bytes to save. Bit 14 set in the return
+value indicates failure, bits 0 - 13 providing a fault code.
 
-A well-behaving kernel should return on the start of a Vertical blank so the
-user program can set up the next display frame without glitching. This however
-is not mandatory.
-
-The host may attempt to figure out the preferred file type to load by
-examining the data found in the area offered for loading the file into. To
-assist this the application may prepare a header resembling the file type it
-would like to load.
+See "file_io.rst" for further details including fault codes.
 
 
-0x0121: Save arbitrary file
+0x0112: Task: Find next file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- F.name: kc_sfi_savefile
-- Cycles: -
+- F.name: kc_sfi_next
+- Cycles: 800
 - Host:   Required.
-- N/S:    May always return zero (0) indicating failure.
-- Param1: First source Data memory page.
-- Param2: File size in bits to save, high (number of full pages).
-- Param3: File size in bits to save, low.
-- Ret. A: 1 on success, 0 on failure.
+- N/S:    The target area may always be zeroed to indicate no files.
+- Param0: File name page in Data memory.
+- Param1: File name offset in page (only bits 7-12 are used).
+- Ret. A: Index of kernel task or 0x8000 if no more task slots are available.
 
-Asks the kernel to offer saving an arbitrary file. The kernel takes over
-presenting some kind of file selection screen to allow the user saving a
-file, then when the user either selected a file, gave a file name, and the
-save was carried out, or the user canceled the selection, returns. If the
-file save failed for an other reason than the user canceling it, the kernel
-produces an appropriate error message within this file selection screen. In
-case of an emulated system, these tasks are performed by the host.
+Finds and fills in the next valid file after the one passed. The passed file
+name does not need to be valid. If there are no files after the given name,
+fills the area with zeroes (empty string).
 
-The file is padded with zeroes if necessary to fit with the host's constraints
-on file size granularity.
+Zero (terminator) at a character position is always the first entry for that
+position. 0xFF (which is invalid in a file name) is always the last entry.
+Otherwise the ordering is implementation defined. The file name need not be
+formatted properly (it may even lack a terminator).
 
-The source size must be at least one bit. Otherwise (and on any other invalid
-parameter combination) the kernel terminates the application.
+The return of the kernel task on completion is always 0x8000.
 
-When executing this function (even if unsupported), on return the kernel
-clears the first 32 Video memory pages and the Video peripheral registers are
-reset (see "boot.rst" for their initial state) including the Reindex table. No
-other registers are affected: The palette is restored by the kernel before
-return.
+See "file_io.rst" for further details.
 
-A well-behaving kernel should return on the start of a Vertical blank so the
-user program can set up the next display frame without glitching. This however
-is not mandatory.
 
-The host may attempt to figure out the preferred file type to save by
-examining the data offered for saving.
+0x0113: Task: Move a file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- F.name: kc_sfi_move
+- Cycles: 800
+- Host:   Required.
+- N/S:    The task may always return 0xC000 indicating unsuccessful move.
+- Param0: Target file name page in Data memory.
+- Param1: Target file name offset in page (only bits 7-12 are used).
+- Param2: Source file name page in Data memory.
+- Param3: Source file name offset in page (only bits 7-12 are used).
+- Ret. A: Index of kernel task or 0x8000 if no more task slots are available.
+
+Moves (renames) a file, or deletes it. Deleting can be performed by setting
+the target name an empty string.
+
+The return of the kernel task is 0x8000 if the move succeed. Otherwise bit 14
+is set, and bits 0 - 13 provides a fault code.
+
+See "file_io.rst" for further details including fault codes.
 
 
 
@@ -957,7 +897,7 @@ Following a table is provided briefly listing all kernel functions. The
 abbreviations used in the table are:
 
 - T:  Whether the function starts a kernel task ('X' if so).
-- H:  Host requirement: 'M': mandatory, 'O': Optional.
+- H:  Host requirement: 'M': Mandatory, 'O': Optional, empty: No host.
 - P:  Count of parameters.
 - R:  Return value registers used.
 - VS: Video Stall.
@@ -976,15 +916,13 @@ abbreviations used in the table are:
 +--------+--------+---+---+----+-----+---------------------------------------+
 | 0x0100 |    800 | X | M |  3 |  A  | kc_sfi_loadbin                        |
 +--------+--------+---+---+----+-----+---------------------------------------+
-| 0x0110 |    800 | X | O |  5 |  A  | kc_sfi_loadnv                         |
+| 0x0110 |    800 | X | O |  6 |  A  | kc_sfi_load                           |
 +--------+--------+---+---+----+-----+---------------------------------------+
-| 0x0111 |    800 | X | O |  5 |  A  | kc_sfi_savenv                         |
+| 0x0111 |    800 | X | O |  6 |  A  | kc_sfi_save                           |
 +--------+--------+---+---+----+-----+---------------------------------------+
-| 0x0112 |    800 | X | O |  1 |  A  | kc_sfi_listnv                         |
+| 0x0112 |    800 | X | O |  2 |  A  | kc_sfi_next                           |
 +--------+--------+---+---+----+-----+---------------------------------------+
-| 0x0120 |     \- |   | O |  2 | C:A | kc_sfi_loadfile                       |
-+--------+--------+---+---+----+-----+---------------------------------------+
-| 0x0121 |     \- |   | O |  3 |  A  | kc_sfi_savefile                       |
+| 0x0113 |    800 | X | O |  4 |  A  | kc_sfi_move                           |
 +--------+--------+---+---+----+-----+---------------------------------------+
 | 0x0210 |    150 |   |   |  1 |     | kc_aud_sethnd                         |
 +--------+--------+---+---+----+-----+---------------------------------------+

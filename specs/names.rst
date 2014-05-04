@@ -1,5 +1,5 @@
 
-RRPGE name and ID formatting specification
+RRPGE user ID formatting specification
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
@@ -10,24 +10,13 @@ RRPGE name and ID formatting specification
 
 
 
-Introduction, the usage of names
-------------------------------------------------------------------------------
-
-
-In the RRPGE system there are two important locations where special long IDs
-are used. These are the 8 word user ID and the 3 word nonvolatile save ID. The
-interpretation of these are outlined in the following chapters.
-
-
-
-
 Common representation conventions
 ------------------------------------------------------------------------------
 
 
-The ID should be interpreted as a sequential set of 6 bit units in Big Endian
-order (so the first unit is bits 10-15 of the first word). Each such unit's
-values represent the following characters:
+The User ID should be interpreted as a sequential set of 6 bit units in Big
+Endian order (so the first unit is bits 10-15 of the first word). Each such
+unit's values represent the following characters:
 
 - 0x00: '_', whitespace, or padding depending on context
 - 0x01: '-'
@@ -43,18 +32,7 @@ Further in this document these units are referred as "character units".
 
 
 
-Nonvolatile save IDs
-------------------------------------------------------------------------------
-
-
-The 3 words represent 8 character units. The character unit value of 0x00
-should be interpreted as '_'. Any combination of the character units compose a
-valid nonvolatile save ID.
-
-
-
-
-User IDs
+The formatting of User IDs
 ------------------------------------------------------------------------------
 
 
