@@ -42,10 +42,10 @@ The RRPGE system is capable to use the following types of input devices:
 
 - Pointing devices. Two major types are supported: Mice or similar devices
   which require an on-screen cursor for feeding back position information to
-  the user, and typically have multiple buttons, and Touch screens which
+  the user and typically have multiple buttons, and Touch screens which
   operate on the concept of the user interacting with the display itself, thus
-  not requiring an on-screen cursor, but typically having only a single
-  "button".
+  not requiring an on-screen cursor but typically having only a single press
+  information ("button").
 
 - Digital gamepads. These typically provide four buttons for directions, and
   typically four or more additional buttons. They have no capability for
@@ -67,7 +67,7 @@ properties of it's input requirements (using the Application Header's 0xBC1
 field):
 
 - The capability to use touch. This indicates that the application is touch -
-  aware, that is it will use the appropriate kernel functions to set up touch
+  aware, that is it will use the appropriate kernel calls to set up touch
   sensitive areas to make it's digital inputs functional even if physical
   digital inputs can not be provided at all by the host. This flag suggests
   the host that it does not need to resort to some awkward emulation to
@@ -191,16 +191,24 @@ to feed back to the user's actions. The device may support multi-touch, and
 so the touch sensitive areas may return press information simultaneously even
 if they don't overlap.
 
+Hover activites may be returned if the physical device supports it. These
+indicate that the user did not actually press, but the respective analog
+inputs are valid.
+
 Digital input mapping:
 
 +------+-------+-------------------------------------------------------------+
 | Bank | Input | Description                                                 |
 +======+=======+=============================================================+
-| 0    | 0-15  | Touch sensitive areas (buttons)                             |
+| 0    | 0-15  | Touch sensitive areas (press sensitive)                     |
 +------+-------+-------------------------------------------------------------+
-|      | 4     | Primary touch activity                                      |
+|      | 4     | Primary touch press activity                                |
 | 1    +-------+-------------------------------------------------------------+
-|      | 5     | Secondary touch activity (if supported)                     |
+|      | 5     | Secondary touch press activity (if supported)               |
+|      +-------+-------------------------------------------------------------+
+|      | 12    | Primary touch hover activity (if supported)                 |
+|      +-------+-------------------------------------------------------------+
+|      | 13    | Secondary touch hover activity (if supported)               |
 +------+-------+-------------------------------------------------------------+
 
 Analog input mapping:
@@ -322,7 +330,7 @@ QWERTY layout as below (only the alphanumeric portion shown): ::
     | +------+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+--------+
     | | SHIFT  | Z | X | C | V | B | N | M | < | > | ? |  SHIFT   |
     | +----+---++--+-+-+---+---+---+---+---+--++---+---+-----+----+
-    | |CTRL|    |ALTG|         SPACE          |ALT |         |CTRL|
+    | |CTRL|    |ALT |         SPACE          |ALTG|         |CTRL|
     | +----+    +----+------------------------+----+         +----+
     +----------------------------------------------------------------...
 
@@ -350,7 +358,7 @@ Digital input mapping of bank zero:
 |      +-------+-------------------------------------------------------------+
 |      | 5     | ALT; ALTG; Numpad 0; key 0; Insert                          |
 |      +-------+-------------------------------------------------------------+
-|      | 6     | ESC; Numpad Del; Delete                                     |
+|      | 6     | ESC; Numpad Del; Delete (+ Optionally "menu" if available)  |
 |      +-------+-------------------------------------------------------------+
 |      | 7     | F1; Numpad 5; key 5                                         |
 |      +-------+-------------------------------------------------------------+
@@ -381,7 +389,7 @@ returned accordingly. Notes (#x) in the table are described below it.
 +===+========+===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+
 | 1 | Numpad | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |ENT|Del| / | * | - | + |
 +---+--------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-| 2 | F-Row  |ESC| F1| F2| F3| F4| F5| F6| F7| F8| F9|F10|F11|F12|#0 |#0 |#0 |
+| 2 | F-Row  |ESC| F1| F2| F3| F4| F5| F6| F7| F8| F9|F10|F11|F12| #0        |
 +---+--------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 | 3 | NumRow | ~ | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 0 | - | + | | |BKS|   |
 +---+--------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
@@ -391,7 +399,7 @@ returned accordingly. Notes (#x) in the table are described below it.
 +---+--------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+-------+
 | 6 | BotRow |SHL|#3 | Y | X | C | V | B | N | M | < | > | ? |#3 |SHR|       |
 +---+--------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+-------+
-| 7 | Control|CTL|#4 |ALG|SPC|ALT|#4 |#4 |CTR|#5 |                           |
+| 7 | Control|CTL|#4 |ALT|SPC|ALG| #4    |CTR|#5 |                           |
 +---+--------+---+---+---+---+---+---+---+---+---+---+-----------------------+
 | 8 | Dirs   |Up |Rig|Dwn|Lft|Ins|Del|Hom|End|PgU|PgD|                       |
 +---+--------+---+---+---+---+---+---+---+---+---+---+-----------------------+
@@ -479,35 +487,35 @@ Otherwise the following special codes are available:
 | \-           | 'Fxx' function keys, typically 'F1' - 'F12'.                |
 | 0x8000008C   |                                                             |
 +--------------+-------------------------------------------------------------+
-| 0x80000090   | Left 'Shift' key                                            |
+| 0x80000090   | Up direction key                                            |
 +--------------+-------------------------------------------------------------+
-| 0x80000091   | Right 'Shift' key                                           |
+| 0x80000091   | Right direction key                                         |
 +--------------+-------------------------------------------------------------+
-| 0x80000092   | Left 'Ctrl' key                                             |
+| 0x80000092   | Down direction key                                          |
 +--------------+-------------------------------------------------------------+
-| 0x80000093   | Right 'Ctrl' key                                            |
+| 0x80000093   | Left direction key                                          |
 +--------------+-------------------------------------------------------------+
-| 0x80000094   | Left 'Alt' key                                              |
+| 0x80000094   | 'Insert' key                                                |
 +--------------+-------------------------------------------------------------+
-| 0x80000095   | Right 'Alt' key (Alt Gr)                                    |
+| 0x80000096   | 'Home' key                                                  |
 +--------------+-------------------------------------------------------------+
-| 0x80000096   | 'Insert' key                                                |
+| 0x80000097   | 'End' key                                                   |
 +--------------+-------------------------------------------------------------+
-| 0x80000098   | 'Home' key                                                  |
+| 0x80000098   | 'Page Up' key                                               |
 +--------------+-------------------------------------------------------------+
-| 0x80000099   | 'End' key                                                   |
+| 0x80000099   | 'Page Down' key                                             |
 +--------------+-------------------------------------------------------------+
-| 0x8000009A   | 'Page Up' key                                               |
+| 0x8000009A   | Left 'Shift' key                                            |
 +--------------+-------------------------------------------------------------+
-| 0x8000009B   | 'Page Down' key                                             |
+| 0x8000009B   | Right 'Shift' key                                           |
 +--------------+-------------------------------------------------------------+
-| 0x8000009C   | Left direction key                                          |
+| 0x8000009C   | Left 'Ctrl' key                                             |
 +--------------+-------------------------------------------------------------+
-| 0x8000009D   | Down direction key                                          |
+| 0x8000009D   | Right 'Ctrl' key                                            |
 +--------------+-------------------------------------------------------------+
-| 0x8000009E   | Right direction key                                         |
+| 0x8000009E   | Left 'Alt' key                                              |
 +--------------+-------------------------------------------------------------+
-| 0x8000009F   | Up direction key                                            |
+| 0x8000009F   | Right 'Alt' key (Alt Gr)                                    |
 +--------------+-------------------------------------------------------------+
 | 0xFFFFFFFD   | Special keyboard control                                    |
 +--------------+-------------------------------------------------------------+
@@ -568,21 +576,21 @@ Following the special codes are listed:
 +--------------+-------------------------------------------------------------+
 | 0x0000007F   | Delete: Delete character after the text cursor (if any)     |
 +--------------+-------------------------------------------------------------+
-| 0x80000096   | Insert: Toggle insertion mode                               |
+| 0x80000090   | Up: Move text cursor up a line                              |
 +--------------+-------------------------------------------------------------+
-| 0x80000098   | Home: Position the text cursor at the beginning of the line |
+| 0x80000091   | Right: Move text cursor right a character                   |
 +--------------+-------------------------------------------------------------+
-| 0x80000099   | End: Position the text cursor at the end of the line        |
+| 0x80000092   | Down: Move text cursor down a line                          |
 +--------------+-------------------------------------------------------------+
-| 0x8000009A   | Page Up: Move text cursor up a page                         |
+| 0x80000093   | Left: Move text cursor left a character                     |
 +--------------+-------------------------------------------------------------+
-| 0x8000009B   | Page Down: Move text cursor down a page                     |
+| 0x80000094   | Insert: Toggle insertion mode                               |
 +--------------+-------------------------------------------------------------+
-| 0x8000009C   | Left: Move text cursor left a character                     |
+| 0x80000096   | Home: Position the text cursor at the beginning of the line |
 +--------------+-------------------------------------------------------------+
-| 0x8000009D   | Down: Move text cursor down a line                          |
+| 0x80000097   | End: Position the text cursor at the end of the line        |
 +--------------+-------------------------------------------------------------+
-| 0x8000009E   | Right: Move text cursor right a character                   |
+| 0x80000098   | Page Up: Move text cursor up a page                         |
 +--------------+-------------------------------------------------------------+
-| 0x8000009F   | Up: Move text cursor up a line                              |
+| 0x80000099   | Page Down: Move text cursor down a page                     |
 +--------------+-------------------------------------------------------------+

@@ -557,7 +557,7 @@ Kernel functions, Input devices (0x0400 - 0x04FF)
 - Ret. A: Bit mask of available devices.
 
 Returns the input devices available, up to 16. Bit 0 of the return refers to
-device 0. Devices not necessary occur continuously.
+device 0. Devices not necessarily occur continuously.
 
 
 0x0410: Get device properties
@@ -584,7 +584,7 @@ If the device is not available, the return value is zero.
 Only device types allowed in the Application Header (see "bin_rpa.rst") may be
 returned.
 
-If bit 4 is set, it indicates that de device maps to the same physical device
+If bit 4 is set, it indicates that the device maps to the same physical device
 as an another, and that another device is a more accurate representation (for
 example a device type of digital gamepad may map to a keyboard).
 
@@ -684,17 +684,17 @@ may be used to assist editing the text. For more information, see
 
 The kernel truncates the rectangle to fit on the display treating the upper
 left corners as 2's complement values. Note that valid X positions range from
-0 - 639 even on 8bit (320x200) display mode, 639 specifying the rightmost
-valid location. A width or height of zero turns off the touch sensitive area.
+0 - 639 even on 8bit (320 pixels wide) display mode, 639 specifying the
+rightmost valid location. A width or height of zero turns off the touch
+sensitive area.
 
 The definition of the rectangle always updates within the application's state
 even if the particular host does not support touch. Saving the application
 state and restoring it on a touch capable device will so work properly.
 
 The touch sensitive areas generate digital input activity for the "Get digital
-inputs" (0x0420) function for pointing devices or devices emulated on a
-physical touch device. The area ID to define matches the bit's number it
-activates on the digital input, input group 0.
+inputs" (0x0420) function, for each appropriate device. The area ID to define
+matches the bit's number it activates on the digital input, input group 0.
 
 For more information, see "inputdev.rst".
 
