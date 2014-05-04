@@ -1,3 +1,9 @@
+Version 00.003.000 (2014.05.04)
+ - Update to RRPGE License version 2.
+ - Input devices reworked, simplified, now supporting keyboard.
+ - File system interface reworked for a more generic approach.
+
+
 Version 00.002.000 (2014.04.23)
  - Video RAM partitioning changes to support scrolling surfaces better: now
    all four Video RAM banks can be partitioned seperately and have an X wrap
