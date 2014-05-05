@@ -270,7 +270,8 @@ page which relate the mixer. Note that these repeat every 16 words in the
 |        | - bit     3: Unused.                                              |
 |        | - bit  0- 2: Destination bank select.                             |
 +--------+-------------------------------------------------------------------+
-| 0xEDE  | Unused.                                                           |
+| 0xEDE  | Addresses for next audio DMA. Does not belong to the mixer, see   |
+|        | "snd_arch.rst" for details.                                       |
 +--------+-------------------------------------------------------------------+
 | 0xEDF  | Start on write & DMA mode                                         |
 |        |                                                                   |

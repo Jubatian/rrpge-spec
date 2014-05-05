@@ -70,32 +70,18 @@ Kernel calls and internal kernel tasks are not necessarily interruptible, so
 they may also delay the execution of an event handler.
 
 
-Audio half-buffer exhausted
+Audio buffer exhausted
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This interrupt triggers, so the event is called when the audio output DMA
-passes half buffer boundary. The event has two parameters prepared by the
-kernel:
+exhausts it's buffer. It has no parameters.
 
-- Left or Mono target sample pointer in sample (byte) units
-- Right target sample pointer in sample (byte) units
-
-For the possible values of these, check "snd_arch.rst", the "DMA buffers"
-chapter. The parameters provide pointers to the buffer half just finished by
-the audio DMA, so from the rise of the event there is a whole audio tick for
-the call to happen and to fill these in.
-
-The right target sample pointer equals the left in Mono mode.
+The event should be used to update the DMA buffer pointers as described in
+"snd_arch.rst".
 
 The audio events come at a fixed rate, called the audio tick. This rate is
-consistent across any realization of the RRPGE system, only depending on the
-configuration of the application. The following rates are possible:
-
-- 23.4375 Hz (24 KHz sample rate, 1024 sample half buffer).
-- 46.8750 Hz (48 KHz / 1024 samples or 24KHz / 512 samples half buffer).
-- 93.7500 Hz (48 KHz sample rate, 512 sample half buffer).
-
-This should be used as the time base of the application.
+consistent across any realization of the RRPGE system, a stable 93.75 Hz. This
+should be used as the time base of the application.
 
 
 Video raster passed

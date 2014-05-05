@@ -77,9 +77,9 @@ is not visible to the application, and is only meant to be used by emulators.
 +--------+-------------------------------------------------------------------+
 | 0xD55  | Cycles remaining from video accelerator operation, low.           |
 +--------+-------------------------------------------------------------------+
-| 0xD56  | Currently output audio buffer half; 0: low, 1: high.              |
-+--------+-------------------------------------------------------------------+
-| 0xD57  | Unused, must be 0x0000.                                           |
+| 0xD56  |                                                                   |
+| \-     | Unused, must be 0x0000.                                           |
+| 0xD57  |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xD58  | Display layer 0, offset of current line, whole.                   |
 +--------+-------------------------------------------------------------------+

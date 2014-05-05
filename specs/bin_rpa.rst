@@ -140,12 +140,9 @@ value 0x0A.
 |        |   | - bit     1: Requires file load / save if set                 |
 |        |   | - bit     0: Requires network if set                          |
 +--------+---+---------------------------------------------------------------+
-|        |   | Code pages, audio configuration, and extra data page bits.    |
+|        |   | Code pages and extra data page bits.                          |
 | 0xBC2  | M |                                                               |
-|        |   | - bit    15: 0                                                |
-|        |   | - bit    14: Channels: 0: Mono, 1: Stereo                     |
-|        |   | - bit    13: Audio buffer size: 0: 2x512; 1: 2x1024 samples   |
-|        |   | - bit    12: Audio sampling rate: 0: 24000Hz; 1: 48000Hz      |
+|        |   | - bit 12-15: 0                                                |
 |        |   | - bit  8-11: Code page count, 0: 16 pages; 1-15: 1-15 pages   |
 |        |   | - bit  0- 7: Data page count, high bits (bits 16-24)          |
 +--------+---+---------------------------------------------------------------+
