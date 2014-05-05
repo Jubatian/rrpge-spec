@@ -481,6 +481,30 @@ Note that at least 49 Vertical blank lines are available, however up to 17 of
 these may be taken by the kernel for internal tasks.
 
 
+0x0330: Change video mode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- F.name: kc_vid_mode
+- Cycles: - (up to one frame or more)
+- Host:   Required.
+- Param1: Requested video mode.
+
+Changes the video mode. The action is performed after Video stall (after all
+accelerator operations finish using the current video mode), then may include
+extra stalls to meet implementation-specific timing requirements during the
+video mode change.
+
+The contents of the Video RAM, the configuration of the Accelerator, and the
+palette is not changed by this action.
+
+The following video modes are available:
+
+- 0: 640x400; 4 bit (16 colors).
+- 1: 320x400; 8 bit (256 colors).
+
+Other values passed in Param1 set mode 0 (640x400; 4 bit).
+
+
 
 
 Kernel functions, Input devices (0x0400 - 0x04FF)
@@ -931,6 +955,8 @@ abbreviations used in the table are:
 | 0x0310 | VS+150 |   |   |  2 |     | kc_vid_sethnd                         |
 +--------+--------+---+---+----+-----+---------------------------------------+
 | 0x0320 | VS+150 |   |   |  0 |  A  | kc_vid_getline                        |
++--------+--------+---+---+----+-----+---------------------------------------+
+| 0x0330 |      - |   | M |  1 |     | kc_vid_mode                           |
 +--------+--------+---+---+----+-----+---------------------------------------+
 | 0x0400 |    800 |   | O |  0 |  A  | kc_inp_getdev                         |
 +--------+--------+---+---+----+-----+---------------------------------------+

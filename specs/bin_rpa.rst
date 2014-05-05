@@ -118,12 +118,7 @@ value 0x0A.
 |        |   | RRPGE variant to be used.                                     |
 | 0xBC0  | M |                                                               |
 |        |   | - bit  8-15: 0x00 (terminates any string data)                |
-|        |   | - bit  0- 7: RRPGE variant.                                   |
-|        |   |                                                               |
-|        |   | Valid values for RRPGE variant:                               |
-|        |   |                                                               |
-|        |   | - 0: 640x400 display, 4 bit color (16 colors)                 |
-|        |   | - 1: 320x400 display, 8 bit color (256 colors)                |
+|        |   | - bit  0- 7: 0x00 (reserved for RRPGE variant)                |
 +--------+---+---------------------------------------------------------------+
 |        |   | Application properties.                                       |
 | 0xBC1  | M |                                                               |

@@ -164,6 +164,12 @@ The palette is populated initially by the RRPGE Incremental palette. See the
 palette is loaded even in 4 bit mode.
 
 
+Video mode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The starting mode is mode 0 (640x400; 4 bit).
+
+
 Accelerator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
