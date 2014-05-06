@@ -1,3 +1,8 @@
+Version 00.004.000 (2014.05.06)
+ - Audio output reworked into a simpler more flexible concept.
+ - Video mode change (between 4 bit and 8 bit) added.
+
+
 Version 00.003.000 (2014.05.04)
  - Update to RRPGE License version 2.
  - Input devices reworked, simplified, now supporting keyboard.
