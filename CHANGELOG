@@ -1,3 +1,8 @@
+Version 00.004.001 (2014.05.07)
+ - Fixed kc_usr_getutf to accept the user ID as parameter.
+ - Fixed parameter descriptions of kc_usr_getcolors.
+
+
 Version 00.004.000 (2014.05.06)
  - Audio output reworked into a simpler more flexible concept.
  - Video mode change (between 4 bit and 8 bit) added.

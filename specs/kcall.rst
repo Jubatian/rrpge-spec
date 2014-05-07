@@ -729,6 +729,7 @@ For the layout of User ID's, see "names.rst".
 - N/S:    May not provide this information returning zero strings.
 - Param1: Target Data memory page to load the data into.
 - Param2: Start offset within page (only bits 8-11 are used).
+- Param3 - Param10: 8 word User ID to get the UTF-8 representation of.
 - Ret. A: Index of kernel task or 0x8000 if no more task slots are available.
 
 The User ID is broken in two parts, each of which an UTF-8 representation may
@@ -766,8 +767,8 @@ information is present for this and any subsequent language numbers.
 - Cycles: 2400
 - Host:   Required.
 - N/S:    May not provide this information returning zero.
-- Ret. C: Preferred foreground color in 5-6-5 RGB.
-- Ret. A: Preferred background color in 5-6-5 RGB.
+- Ret. C: Preferred foreground color in (4-)4-4-4 (0)RGB.
+- Ret. A: Preferred background color in (4-)4-4-4 (0)RGB.
 
 Returns the preferred color set of the user if any. If the two colors match
 the user has no such preference provided.
@@ -976,7 +977,7 @@ abbreviations used in the table are:
 +--------+--------+---+---+----+-----+---------------------------------------+
 | 0x0600 |   2400 |   | O |  2 |     | kc_usr_getlocal                       |
 +--------+--------+---+---+----+-----+---------------------------------------+
-| 0x0601 |   2400 | X | O |  2 |  A  | kc_usr_getutf                         |
+| 0x0601 |   2400 | X | O | 10 |  A  | kc_usr_getutf                         |
 +--------+--------+---+---+----+-----+---------------------------------------+
 | 0x0610 |   2400 |   | O |  1 | C:A | kc_usr_getlang                        |
 +--------+--------+---+---+----+-----+---------------------------------------+
