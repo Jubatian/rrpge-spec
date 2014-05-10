@@ -279,7 +279,7 @@ The task always returns 0x8000 on completion.
 - Param3: Page to load from the file, low word.
 - Param4: Number of bytes to load from the page of the file (0 - 8192).
 - Param5: File name page in Data memory.
-- Param6: File name offset in page (only bits 7-12 are used).
+- Param6: File name offset in page (only bits 7-11 are used).
 - Ret. A: Index of kernel task or 0x8000 if no more task slots are available.
 
 Loads bytes from a page of a source file. The bytes are loaded in Big Endian
@@ -292,7 +292,7 @@ unfilled area is zeroed.
 The number of bytes to load is set 8192 (load full page) by the kernel if an
 out of range value is passed for it.
 
-The file name is a zero terminated UTF-8 string.
+The file name is excepted to be a zero terminated UTF-8 string.
 
 The return of the kernel task has bit 14 clear if the load was successful,
 bits 0 - 13 indicating the number of bytes successfully loaded (0 - 8192).
@@ -315,7 +315,7 @@ See "file_io.rst" for further details including fault codes.
 - Param3: Page to save into the file, low word.
 - Param4: Number of bytes to save into the page of the file (0 - 8192).
 - Param5: File name page in Data memory.
-- Param6: File name offset in page (only bits 7-12 are used).
+- Param6: File name offset in page (only bits 7-11 are used).
 - Ret. A: Index of kernel task or 0x8000 if no more task slots are available.
 
 Saves bytes into a page of a target file. The bytes are saved in Big Endian
@@ -329,7 +329,7 @@ data can be added without gaps.
 The number of bytes to save is set 8192 (save full page) by the kernel if an
 out of range value is passed for it.
 
-The file name is a zero terminated UTF-8 string.
+The file name is excepted to be a zero terminated UTF-8 string.
 
 The return of the kernel task has bit 14 clear if the save was successful,
 bits 0 - 13 indicating the number of bytes successfully saved (0 - 8192).
@@ -346,13 +346,13 @@ See "file_io.rst" for further details including fault codes.
 - Cycles: 800
 - Host:   Required.
 - N/S:    The target area may always be zeroed to indicate no files.
-- Param0: File name page in Data memory.
-- Param1: File name offset in page (only bits 7-12 are used).
+- Param1: File name page in Data memory.
+- Param2: File name offset in page (only bits 7-11 are used).
 - Ret. A: Index of kernel task or 0x8000 if no more task slots are available.
 
 Finds and fills in the next valid file after the one passed. The passed file
-name does not need to be valid. If there are no files after the given name,
-fills the area with zeroes (empty string).
+name does not need to be valid (zero terminated UTF-8 string). If there are no
+files after the given name, fills the area with zeroes (empty string).
 
 Zero (terminator) at a character position is always the first entry for that
 position. 0xFF (which is invalid in a file name) is always the last entry.
@@ -371,14 +371,16 @@ See "file_io.rst" for further details.
 - Cycles: 800
 - Host:   Required.
 - N/S:    The task may always return 0xC000 indicating unsuccessful move.
-- Param0: Target file name page in Data memory.
-- Param1: Target file name offset in page (only bits 7-12 are used).
-- Param2: Source file name page in Data memory.
-- Param3: Source file name offset in page (only bits 7-12 are used).
+- Param1: Target file name page in Data memory.
+- Param2: Target file name offset in page (only bits 7-11 are used).
+- Param3: Source file name page in Data memory.
+- Param4: Source file name offset in page (only bits 7-11 are used).
 - Ret. A: Index of kernel task or 0x8000 if no more task slots are available.
 
 Moves (renames) a file, or deletes it. Deleting can be performed by setting
 the target name an empty string.
+
+The file names are excepted to be zero terminated UTF-8 strings.
 
 The return of the kernel task is 0x8000 if the move succeed. Otherwise bit 14
 is set, and bits 0 - 13 provides a fault code.

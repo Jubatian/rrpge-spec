@@ -1,3 +1,8 @@
+Version 00.004.002 (2014.05.10)
+ - Fixed some inaccuracies in some kernel calls (kcall.rst), mostly relating
+   to file I/O functions.
+
+
 Version 00.004.001 (2014.05.07)
  - Fixed kc_usr_getutf to accept the user ID as parameter.
  - Fixed parameter descriptions of kc_usr_getcolors.
