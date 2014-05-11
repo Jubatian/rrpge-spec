@@ -62,9 +62,8 @@ The RRPGE system is capable to use the following types of input devices:
   input feature is not adequate since the application's requirement is rather
   a larger set of buttons in a deterministic layout.
 
-In addition to the genres, the application may suggest the following
-properties of it's input requirements (using the Application Header's 0xBC1
-field):
+In addition to the types, the application may suggest the following properties
+of it's input requirements (using the Application Header's 0xBC1 field):
 
 - The capability to use touch. This indicates that the application is touch -
   aware, that is it will use the appropriate kernel calls to set up touch
@@ -128,6 +127,69 @@ supposed to be complemented with touch buttons as mapping to the touch
 pointing device (see "Multiple devices, combinations" above). If the
 application does not accept a touch pointing device, these may be provided
 stand-alone.
+
+
+
+
+Hotplug support
+------------------------------------------------------------------------------
+
+
+Devices may be plugged in and out in an RRPGE application's lifetime
+(especially indirectly through an application state save and later reload).
+The system is capable to support this adequately, even without the awareness
+of the application.
+
+When the 0x0410 "Get device properties" kernel call is called, the kernel also
+populates the appropriate field in the application state (Read Only Process
+Descriptor, see "ropddump.rst") with the return value. This indicates the type
+of the device at the given device ID (or the fact that the device is absent).
+The 0x0411 "Drop device" kernel call may be used to drop out devices from this
+state indicating they are no longer used.
+
+When an used device is removed, the application might still be excepting it to
+function. A removed device however returns complete inactivity (just as a
+nonexistent device does) which is the intended behavior.
+
+
+Host side
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When a device is plugged in, the host should normally check the application
+state (0xEC0 - 0xECF in the ROPD), to see if there is a device ID where the
+application expects no device, and add the new device there. If the host is
+capable to identify that the device added matches (at least by type) one
+previously removed, it may reuse the device ID.
+
+When restoring a state, the host should repopulate the device ID's by simple
+type matching (as it has no information on the application's previous device
+layout).
+
+If during adding devices, the device ID's are exhausted, the host should
+restrain from adding new devices until a device ID frees up naturally (the
+application polls with the 0x0410 "Get device properties" kernel call, so
+earlier removed devices may be dropped out).
+
+To always utilize the devices the best way even across state saves and
+loads, the host should allocate the device ID's incrementally, with the "best"
+devices first as far as possible.
+
+
+Application side
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If an application needs an input device of a particular type, it should use
+the device with the lowest ID which matches (it should be the best).
+
+To make an application hotplug aware, it simply needs to call the 0x0410 "Get
+device properties" kernel call regularly for the devices it uses. This way it
+can detect the absence of a previously used device, and may act accordingly.
+
+It is not strictly required, but beneficial to also call the 0x0411 "Drop
+device" kernel call on any device the application does not want to use. By
+this the host can get a more exact image on what the application actually
+uses, so may manage the devices better especially across state saves and
+reloads.
 
 
 
@@ -300,7 +362,7 @@ Analog input mapping:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The text input device is special in that it is accessible through a separate
-kernel call (0x0423: Pop text input FIFO). It provides no digital or analog
+kernel call (0x0424: "Pop text input FIFO"). It provides no digital or analog
 inputs. It may typically be backed by a keyboard, but other physical devices
 might be possible.
 
@@ -335,7 +397,7 @@ QWERTY layout as below (only the alphanumeric portion shown): ::
     +----------------------------------------------------------------...
 
 If necessary, the actual labeling of the keys may be requestable using the
-0x0411 "Get digital input description symbols" kernel call.
+0x0412 "Get digital input description symbols" kernel call.
 
 The first input bank is a combined button state, provided for easing some
 typical keyboard uses, and to make it possible to support these uses with
@@ -432,7 +494,7 @@ Digital input description symbols
 ------------------------------------------------------------------------------
 
 
-The kernel function 0x0411 "Get digital input description symbols" return the
+The kernel function 0x0412 "Get digital input description symbols" return the
 assignment of digital inputs to specific physical devices, typically the keys
 on a keyboard.
 
@@ -544,7 +606,7 @@ Text input control codes
 ------------------------------------------------------------------------------
 
 
-The kernel function 0x0423 "Pop text input FIFO" returns the next character or
+The kernel function 0x0424 "Pop text input FIFO" returns the next character or
 control code in the text input buffer if any.
 
 Normally the input is an UTF-32 character, however special control codes also

@@ -1,3 +1,8 @@
+Version 00.005.000 (2014.05.11)
+ - Introduced proper hotplug support for input devices.
+ - Input device kernel call layout rearranged to be more consistent.
+
+
 Version 00.004.002 (2014.05.10)
  - Fixed some inaccuracies in some kernel calls (kcall.rst), mostly relating
    to file I/O functions.

@@ -489,6 +489,7 @@ these may be taken by the kernel for internal tasks.
 - F.name: kc_vid_mode
 - Cycles: - (up to one frame or more)
 - Host:   Required.
+- N/S:    This function must be supported if the host produces display.
 - Param1: Requested video mode.
 
 Changes the video mode. The action is performed after Video stall (after all
@@ -511,19 +512,6 @@ Other values passed in Param1 set mode 0 (640x400; 4 bit).
 
 Kernel functions, Input devices (0x0400 - 0x04FF)
 ------------------------------------------------------------------------------
-
-
-0x0400: Get input device availability
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- F.name: kc_inp_getdev
-- Cycles: 800
-- Host:   Required.
-- N/S:    May always return 0 indicating no devices are available.
-- Ret. A: Bit mask of available devices.
-
-Returns the input devices available, up to 16. Bit 0 of the return refers to
-device 0. Devices not necessarily occur continuously.
 
 
 0x0410: Get device properties
@@ -554,10 +542,35 @@ If bit 4 is set, it indicates that the device maps to the same physical device
 as an another, and that another device is a more accurate representation (for
 example a device type of digital gamepad may map to a keyboard).
 
+Before first calling this function, the given device ID behaves like there is
+no device behind (all functions returning according to N/S). By calling, the
+application notifies the kernel (and by it, the host) that it might want to
+use the device, so the device (if any) may come live. The kernel the same time
+updates the application state (0xEC0 - 0xECF in ROPD, see "ropddump.rst")
+according to the return.
+
 For more on the behavior and handling of input devices, see "inputdev.rst".
 
 
-0x0411: Get digital input description symbols
+0x0411: Drop device
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- F.name: kc_inp_dropdev
+- Cycles: 800
+- Host:   Required.
+- N/S:    May ignore it if this functionality is not necessary for the host.
+- Param1: Device to drop (only low 4 bits used).
+
+Notifies the kernel that the application does not need the given device any
+more. When encountering this call, the kernel discards the device from the
+application state, resetting it's field to zero (0xEC0 - 0xECF in ROPD, see
+"ropddump.rst"). Furthermore the given device will behave as non-existent (all
+functions returning according to N/S).
+
+For more on the behavior and handling of input devices, see "inputdev.rst".
+
+
+0x0412: Get digital input description symbols
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_inp_getdidesc
@@ -588,7 +601,7 @@ See "inputdev.rst" for the usage and the complete mapping of this return
 value.
 
 
-0x0420: Get digital inputs
+0x0422: Get digital inputs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_inp_getdi
@@ -604,7 +617,7 @@ Note that for group 0 touch sensitive areas may also provide input. For more
 information see "inputdev.rst".
 
 
-0x0421: Get analog inputs
+0x0423: Get analog inputs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_inp_getai
@@ -619,7 +632,7 @@ The exact role an layout of the analog inputs vary by device type. For more
 information see "inputdev.rst".
 
 
-0x0423: Pop text input FIFO
+0x0424: Pop text input FIFO
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_inp_popchar
@@ -659,7 +672,7 @@ even if the particular host does not support touch. Saving the application
 state and restoring it on a touch capable device will so work properly.
 
 The touch sensitive areas generate digital input activity for the "Get digital
-inputs" (0x0420) function, for each appropriate device. The area ID to define
+inputs" (0x0422) function, for each appropriate device. The area ID to define
 matches the bit's number it activates on the digital input, input group 0.
 
 For more information, see "inputdev.rst".
@@ -961,17 +974,17 @@ abbreviations used in the table are:
 +--------+--------+---+---+----+-----+---------------------------------------+
 | 0x0330 |      - |   | M |  1 |     | kc_vid_mode                           |
 +--------+--------+---+---+----+-----+---------------------------------------+
-| 0x0400 |    800 |   | O |  0 |  A  | kc_inp_getdev                         |
-+--------+--------+---+---+----+-----+---------------------------------------+
 | 0x0410 |    800 |   | O |  1 |  A  | kc_inp_getprops                       |
 +--------+--------+---+---+----+-----+---------------------------------------+
-| 0x0411 |    800 |   | O |  3 | C:A | kc_inp_getdidesc                      |
+| 0x0411 |    800 |   | O |  1 |     | kc_inp_dropdev                        |
 +--------+--------+---+---+----+-----+---------------------------------------+
-| 0x0420 |    800 |   | O |  2 |  A  | kc_inp_getdi                          |
+| 0x0412 |    800 |   | O |  3 | C:A | kc_inp_getdidesc                      |
 +--------+--------+---+---+----+-----+---------------------------------------+
-| 0x0421 |    800 |   | O |  1 |  A  | kc_inp_getai                          |
+| 0x0422 |    800 |   | O |  2 |  A  | kc_inp_getdi                          |
 +--------+--------+---+---+----+-----+---------------------------------------+
-| 0x0423 |    800 |   | O |  1 | C:A | kc_inp_popchar                        |
+| 0x0423 |    800 |   | O |  1 |  A  | kc_inp_getai                          |
++--------+--------+---+---+----+-----+---------------------------------------+
+| 0x0424 |    800 |   | O |  1 | C:A | kc_inp_popchar                        |
 +--------+--------+---+---+----+-----+---------------------------------------+
 | 0x0430 |    800 |   | O |  5 |     | kc_inp_settouch                       |
 +--------+--------+---+---+----+-----+---------------------------------------+

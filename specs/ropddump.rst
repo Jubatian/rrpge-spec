@@ -143,9 +143,9 @@ is not visible to the application, and is only meant to be used by emulators.
 | \-     | for digital input bit 0. Allowed range is so combined with Y it   |
 | 0xEBF  | fits within the display height of 400 units.                      |
 +--------+-------------------------------------------------------------------+
-| 0xEC0  |                                                                   |
-| \-     | Unused, must be 0x0000.                                           |
-| 0xECF  |                                                                   |
+| 0xEC0  | Excepted devices at each device ID's. The 0x0410 "Get device      |
+| \-     | properties" and the 0x0411 "Drop device" kernel calls manage      |
+| 0xECF  | these fields.                                                     |
 +--------+-------------------------------------------------------------------+
 | 0xED0  |                                                                   |
 | \-     | Mixer DMA peripheral registers. See "mix_arch.rst" for details.   |
@@ -244,6 +244,18 @@ When restoring a state having an incomplete kernel task, the task should be
 restarted. This normally shouldn't affect the application (except if it
 attempts to rely on an undefined behavior described in the "Kernel tasks"
 chapter of "kcall.rst").
+
+
+0xEC0, Last device types
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This area is populated by the types of devices encountered at each device ID,
+as returned by the 0x0410 "Get device properties" kernel call. The return
+value is stored as-is on these fields (see "kcall.rst" for details). The
+0x0411 "Drop device" kernel call may clear these fields. Using this
+information the host may manage device hotplugging better, and allocate
+devices better on reloading a saved state. See "Hotplug support" in
+"inputdev.rst" for details.
 
 
 0xED0, Mixer DMA
