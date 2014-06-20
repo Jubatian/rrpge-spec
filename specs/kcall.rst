@@ -20,8 +20,8 @@ specific actions. Moreover kernel calls are in place to support the tight
 user mode - supervisor mode separation of the RRPGE CPU, such as to provide
 means for switching in and out memory banks from the CPU's address space.
 
-Other important aspects of the kernel including events (interrupts) and their
-handlers are detailed in the "kernel.rst" documentation.
+Other important aspects of the kernel are detailed in the "kernel.rst"
+documentation.
 
 The kernel call interface is implemented using the "JSV" opcode of the RRPGE
 CPU (see "JSV" in "cpu_inst.rst"). The first parameter of the call selects the
@@ -394,17 +394,7 @@ Kernel functions, Audio (0x0200 - 0x02FF)
 ------------------------------------------------------------------------------
 
 
-0x0210: Set audio event handler
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- F.name: kc_aud_sethnd
-- Cycles: 150
-- Host:   Not required.
-- Param1: Event handler entry point.
-
-Sets the audio half-buffer exhausted event handler function. Setting it to
-zero cancels the event handler. For more on this handler see the "Audio
-half-buffer exhausted" section of "kernel.rst".
+(No kernel function in this group)
 
 
 
@@ -438,33 +428,6 @@ The change of a color may only affect display data produced after the call: a
 conforming implementation must strictly follow this rule (it may be an issue
 on true palettized display modes not in sync with the emulator). The actual
 palette updates may delay by multiple frames.
-
-
-0x0310: Set video event handler
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- F.name: kc_vid_sethnd
-- Cycles: 150 + Video stall
-- Host:   Not required.
-- Param1: Event handler entry point.
-- Param2: Line to fire the event on.
-
-Sets the video raster passed event handler function. Setting it to zero
-cancels the event handler. For more on this handler see the "Video raster
-passed" section of "kernel.rst".
-
-Lines 0 - 399 can be specified for requesting an event on entering the
-Horizontal blanking (preceding the display) of these lines. Line 400 or
-above specifies requesting an event on entering the Vertical blanking period
-(note that the actual value above 400 is ignored, they all request an event on
-the beginning of the vertical blanking).
-
-When designing graphic engines depending on this feature, attention should be
-paid to the minimal timing constraints defined in "Basic properties of the
-display" of "vid_arch.rst" and "Kernel timing constraints" of "kernel.rst".
-
-Note that if the requested line to fire the event on is equal or smaller than
-the currently displaying line, the event will only happen in the next frame.
 
 
 0x0320: Query current display line
@@ -694,13 +657,12 @@ Kernel functions, Delay (0x0500 - 0x05FF)
 
 Passes back control to the kernel while waiting for some event. It will wait
 at most the given amount of cycles (consuming up to 200 cycles is allowed
-irrespective of the request in the parameter), but will terminate sooner if
-either an audio or video event occurs. It might also terminate sooner for any
-other implementation specific reasons.
+irrespective of the request in the parameter), but might terminate sooner for
+implementation specific reasons.
 
 Applications should use this function to "burn" cycles while synchronizing to
-absolute time (using audio events): by this they strain less a properly
-designed emulator.
+absolute time (by audio ticks): by this they strain less a properly designed
+emulator.
 
 On real hardware implementations when the kernel receives this call it may use
 the provided cycles to perform internal tasks, such as accelerating running
@@ -964,11 +926,7 @@ abbreviations used in the table are:
 +--------+--------+---+---+----+-----+---------------------------------------+
 | 0x0113 |    800 | X | O |  4 |  A  | kc_sfi_move                           |
 +--------+--------+---+---+----+-----+---------------------------------------+
-| 0x0210 |    150 |   |   |  1 |     | kc_aud_sethnd                         |
-+--------+--------+---+---+----+-----+---------------------------------------+
 | 0x0300 | VS+100 |   | M |  2 |     | kc_vid_setpal                         |
-+--------+--------+---+---+----+-----+---------------------------------------+
-| 0x0310 | VS+150 |   |   |  2 |     | kc_vid_sethnd                         |
 +--------+--------+---+---+----+-----+---------------------------------------+
 | 0x0320 | VS+150 |   |   |  0 |  A  | kc_vid_getline                        |
 +--------+--------+---+---+----+-----+---------------------------------------+

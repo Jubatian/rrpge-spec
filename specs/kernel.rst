@@ -29,77 +29,10 @@ The most prominent feature of the kernel is it's interface exposed through
 supervisor calls (the "JSV" opcode). These are detailed in the "kcall.rst"
 part of the specification.
 
-The other feature exposed to the user is the provision of two event handlers,
-detailed later below. These are called upon specific interrupts.
-
 On a real hardware implementation the kernel also has several internal tasks
 to perform in order to be able to support it's interface, timing constraints
 are defined for these to make it possible for them to conform with this
 specification.
-
-
-
-
-Supported events
-------------------------------------------------------------------------------
-
-
-In the RRPGE CPU interrupts are served by supervisor code (see "Interrupts" in
-"cpu_arch.rst"). This supervisor code (the kernel) after dealing with any
-necessary internal aspects, can call back user code to act on these events.
-
-There are two such interrupts for which user events may be provided: The audio
-and the video raster interrupts. These are described below. The audio
-interrupt has higher priority than the video raster interrupt, so the video
-event handler might be interrupted by an audio handler.
-
-The overhead imposed by the kernel for both event types is up to 400 cycles
-total. This overhead only exist if the particular event is enabled and
-triggers. It is not defined how large portion of this overhead takes part
-before or after the execution of the user event handler.
-
-User event handlers might also be interrupted by the kernel as long as these
-are kept within the constraints for internal kernel tasks.
-
-While one type of interrupt or related user event is processed, even one of
-the same type may queue, triggering as soon as the currently executing handler
-returns. Only one interrupt may queue this way, any further events are
-discarded.
-
-Kernel calls and internal kernel tasks are not necessarily interruptible, so
-they may also delay the execution of an event handler.
-
-
-Audio buffer exhausted
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This interrupt triggers, so the event is called when the audio output DMA
-exhausts it's buffer. It has no parameters.
-
-The event should be used to update the DMA buffer pointers as described in
-"snd_arch.rst".
-
-The audio events come at a fixed rate, called the audio tick. This rate is
-consistent across any realization of the RRPGE system, a stable 93.75 Hz. This
-should be used as the time base of the application.
-
-
-Video raster passed
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This interrupt triggers, so the event is called when the video display enters
-a set raster line. It has no parameters.
-
-Note that as the "vid_arch.rst" part states, the display's update frequency
-may range from 50Hz to 70Hz (or probably even more) arbitrarily, so the rate
-of this event is not fixed across implementations. The frequency may even
-change during the execution of the application such as if it's state was saved
-and restored on a different host.
-
-Moreover it is not possible to specify lines within the vertical blanking
-period; it is only possible to select the beginning of the vertical blank area
-to generate an event at.
-
 
 
 
@@ -116,10 +49,9 @@ designing timing critical components (such as audio output or certain types of
 graphics engines).
 
 The constraints described here do not involve the cycle requirements of
-processing particular kernel calls, neither the (up to 400 cycle) overhead of
-interrupt entries and returns described above. They however include any other
-time spent by the kernel, including time required to serve user initiated
-kernel tasks (such as asynchronously loading a binary page).
+processing particular kernel calls. They however include any other time spent
+by the kernel, including time required to serve user initiated kernel tasks
+(such as asynchronously loading a binary page).
 
 The constraints:
 
@@ -138,11 +70,7 @@ The constraints:
 
 The second and third constraints may be relaxed if the particular
 implementation realizes a slower display (such as 60Hz) by taking more time
-from the (longer) vertical blanking. This relaxing is only allowed as long as
-it is guaranteed to not affect any audio code assuming conformance to these
-constraints (that is with the audio interrupt triggering at any time the
-event handler must be guaranteed to have at least the time a strictly
-conforming kernel would provide within an audio tick).
+from the (longer) vertical blanking.
 
 The constraints in overall may be relaxed if the implementation is faster than
 required by the specification as long as equivalent processing power is
@@ -180,13 +108,18 @@ parameters for validity, and only allowing the call to proceed and finish if
 the parameters are right (there are however some kernel calls which can
 purposefully return failure, indicated in their documentation).
 
-Otherwise there are two sources of termination:
+Otherwise there are four sources of termination:
 
 - Attempting to execute an instruction from the supervisor area (see the
   "Instruction Matrix" table in "cpu_inst.rst").
 
 - Malformed stack accesses (addressing outside the allowed stack area, see
   "Stack Management" in "cpu_arch.rst").
+
+- Improper CPU RAM addresses provided for the DMA peripherals (see "dma.rst").
+
+- Optionally improper uses of the Graphics FIFO may generate traps (see
+  "Graphics FIFO operation basics" in "grapfifo.rst").
 
 These in real hardware are realized by trap mechanisms. The result is the same
 like for inappropriately formatted kernel calls: the kernel terminates the

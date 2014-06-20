@@ -25,7 +25,7 @@ for details) which contains the Application Header with the necessary
 identification and version information so the state can be matched to the
 application along with the internal state of the RRPGE system.
 
-The total size of the state save is 361 pages or 2.82 Mbytes (2957312 bytes).
+The total size of the state save is 593 pages or 4.63 Mbytes (4857856 bytes).
 
 
 
@@ -50,9 +50,13 @@ state save binary are listed.
 +--------+-------------------------------------------------------------------+
 | 0x0009 |                                                                   |
 | \-     | Data memory pages.                                                |
-| 0x00E8 |                                                                   |
+| 0x01C8 |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0x00E9 |                                                                   |
+| 0x01C9 |                                                                   |
 | \-     | Video memory pages.                                               |
-| 0x0168 |                                                                   |
+| 0x0148 |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0x0149 |                                                                   |
+| \-     | Graphics FIFO pages.                                              |
+| 0x0150 |                                                                   |
 +--------+-------------------------------------------------------------------+

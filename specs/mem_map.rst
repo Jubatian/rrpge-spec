@@ -39,53 +39,37 @@ that since the kernel performs the page switches in a controlled way, it is
 not possible to bank in inappropriate pages, so page contents and usage need
 not be defined for those areas.
 
-The stall field indicates which stall region the pages belong to. DMA
-processes operating on a given region will stall the CPU if accessing the
-same region. Mainly it indicates the area the Video hardware affects when it
-blocks.
-
-+--------+-----+-------+-----------------------------------------------------+
-| Range  | R/W | Stall | Description                                         |
-+========+=====+=======+=====================================================+
-| 0x0000 |     |       |                                                     |
-| \-     | \-  |   0   | Reserved                                            |
-| 0x3FFF |     |       |                                                     |
-+--------+-----+       +-----------------------------------------------------+
-| 0x4000 |     |       | Data memory. Audio buffers are defined in page      |
-| \-     | RW  |       | 0x4000.                                             |
-| 0x40DF |     |       |                                                     |
-+--------+-----+       +-----------------------------------------------------+
-|        |     |       | Read Only Process Descriptor (ROPD). For the        |
-| 0x40E0 |  R  |       | application this is read only; the kernel may write |
-|        |     |       | into it to pass information to the application.     |
-+--------+-----+       +-----------------------------------------------------+
-| 0x40E1 |     |       |                                                     |
-| \-     | \-  |       | Reserved                                            |
-| 0x7FFE |     |       |                                                     |
-+--------+-----+       +-----------------------------------------------------+
-|        |     |       | Audio peripheral area. This region is used to       |
-| 0x7FFF | RW  |       | operate the Mixer DMA, and the first Data memory    |
-|        |     |       | page is also visible here for convenient access to  |
-|        |     |       | the audio output buffers.                           |
-+--------+-----+-------+-----------------------------------------------------+
-| 0x8000 |     |       | Video memory. Can only be banked in for writing if  |
-| \-     | RW* |   1   | the same page is also banked in for read at the     |
-| 0x807F |     |       | same location in the CPU's address space.           |
-+--------+-----+       +-----------------------------------------------------+
-| 0x8080 |     |       |                                                     |
-| \-     | \-  |       | Reserved                                            |
-| 0xBFFE |     |       |                                                     |
-+--------+-----+       +-----------------------------------------------------+
-|        |     |       | Video peripheral area. This region is used to       |
-| 0xBFFF | RW* |       | configure the display and to operate the graphics   |
-|        |     |       | accelerators. The last Video memory page is also    |
-|        |     |       | visible here. Can only banked in for writing if it  |
-|        |     |       | is also banked in for read at the same location.    |
-+--------+-----+       +-----------------------------------------------------+
-| 0xC000 |     |       |                                                     |
-| \-     | \-  |       | Reserved                                            |
-| 0xFFFF |     |       |                                                     |
-+--------+-----+-------+-----------------------------------------------------+
++--------+-----+-------------------------------------------------------------+
+| Range  | R/W | Description                                                 |
++========+=====+=============================================================+
+| 0x0000 |     |                                                             |
+| \-     | \-  | Reserved                                                    |
+| 0x3FFF |     |                                                             |
++--------+-----+-------------------------------------------------------------+
+| 0x4000 |     |                                                             |
+| \-     | RW  | Data memory (CPU RAM).                                      |
+| 0x41BF |     |                                                             |
++--------+-----+-------------------------------------------------------------+
+|        |     | Read Only Process Descriptor (ROPD). For the application    |
+| 0x41C0 |  R  | this is read only. The kernel may write into it to pass     |
+|        |     | information to the application.                             |
++--------+-----+-------------------------------------------------------------+
+| 0x41C1 |     |                                                             |
+| \-     | \-  | Reserved                                                    |
+| 0x7FFE |     |                                                             |
++--------+-----+-------------------------------------------------------------+
+|        |     | User peripheral page. This region provides the user         |
+| 0x7FFF | RW  | accessible memory mapped registers, and part of the first   |
+|        |     | Data memory page is also visible here.                      |
++--------+-----+-------------------------------------------------------------+
+| 0x8000 |     | Video memory (VRAM). Can only be banked in for writing if   |
+| \-     | RW* | the same page is also banked in for read at the same        |
+| 0x807F |     | location in the CPU's address space.                        |
++--------+-----+-------------------------------------------------------------+
+| 0x8080 |     |                                                             |
+| \-     | \-  | Reserved                                                    |
+| 0xFFFF |     |                                                             |
++--------+-----+-------------------------------------------------------------+
 
 The areas in "R/W" marked with "*" need the same page banked in for read at
 the same location in the CPU's address space.
@@ -121,17 +105,7 @@ smaller data source as it contains the application binary's header (see
 | \-     | Pages mapped in the CPU's Data write address space.               |
 | 0xD1F  |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xD20  | Raster line to fire Video line interrupt at.                      |
-+--------+-------------------------------------------------------------------+
-| 0xD21  |                                                                   |
-| \-     | Empty (reads as 0x0000)                                           |
-| 0xD2F  |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0xD30  | Video line event handler offset. 0x0000: Handler off.             |
-+--------+-------------------------------------------------------------------+
-| 0xD31  | Audio half-empty event handler offset. 0x0000: Handler off.       |
-+--------+-------------------------------------------------------------------+
-| 0xD32  |                                                                   |
+| 0xD20  |                                                                   |
 | \-     | Empty (reads as 0x0000)                                           |
 | 0xD3E  |                                                                   |
 +--------+-------------------------------------------------------------------+
@@ -145,51 +119,196 @@ smaller data source as it contains the application binary's header (see
 
 
 
-Video peripheral area
+User peripheral page
 ------------------------------------------------------------------------------
 
 
-The video peripheral area (one page) contains the registers of the Graphics
-display & Accelerator, and provides access to part of the last Video memory
-page. This last page may be used to set up and access display lists along with
-the peripheral registers.
+The user peripheral page contains the memory mapped registers of the DMA
+peripherals, the Graphics FIFO, and the audio output on it's higher addresses.
+On the low part the first Data memory page is accessible.
 
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0x000  |                                                                   |
-| \-     | Shadow of the last Video memory page (page 0x807F).               |
-| 0xDFF  |                                                                   |
+| 0x000  | Shadow of the first memory page (page 0x4000) where the initial   |
+| \-     | audio buffers are located. This area is also populated with       |
+| 0xDFF  | important initial data, see "data.rst" for details.               |
 +--------+-------------------------------------------------------------------+
-| 0xE00  | Graphics display & Accelerator peripheral registers. They repeat  |
-| \-     | every 32 words in this range. See the memory maps in              |
-| 0xEFF  | "vid_arch.rst" and "acc_arch.rst" for details.                    |
-+--------+-------------------------------------------------------------------+
-| 0xF00  |                                                                   |
-| \-     | Reindex table. See memory map in "acc_arch.rst" for details.      |
+| 0xE00  | User peripheral registers. They repeat every 32 words in this     |
+| \-     | range.                                                            |
 | 0xFFF  |                                                                   |
 +--------+-------------------------------------------------------------------+
 
-
-
-
-Audio peripheral area
-------------------------------------------------------------------------------
-
-
-The audio peripheral area (one page) contains the registers of the Mixer
-peripheral, and provides access to part of the first memory page where the
-audio DMA buffers are located.
+Summary of the user peripheral registers. For more detailed descriptions of
+the registers, see the appropriate peripheral.
 
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0x000  | Shadow of the first memory page (page 0x4000) where the audio     |
-| \-     | buffers are located. See "DMA buffers" in "snd_arch.rst" for      |
-| 0xDFF  | details. This area is also populated by important initial data,   |
-|        | see "data.rst" for details.                                       |
+| 0xE00  | DMA source 256 word area or fill value (see "dma.rst")            |
 +--------+-------------------------------------------------------------------+
-| 0xE00  | Mixer peripheral registers. They repeat every 16 words in this    |
-| \-     | range. See "Mixer peripheral memory map" in "mix_arch.rst" for    |
-| 0xFFF  | details.                                                          |
+| 0xE01  | CPU fill DMA target 256 word area & trigger (see "dma.rst")       |
++--------+-------------------------------------------------------------------+
+| 0xE02  | CPU <=> CPU DMA target 256 word area & trigger (see "dma.rst")    |
++--------+-------------------------------------------------------------------+
+| 0xE03  | CPU <=> VRAM DMA target 128 cell VRAM area, direction and trigger |
+|        | (see "dma.rst")                                                   |
++--------+-------------------------------------------------------------------+
+| 0xE04  | Unused, always reads zero                                         |
++--------+-------------------------------------------------------------------+
+| 0xE05  | Graphics FIFO non-empty flag & start trigger (see "gfifo.rst")    |
++--------+-------------------------------------------------------------------+
+| 0xE06  | Graphics FIFO command word (see "gfifo.rst")                      |
++--------+-------------------------------------------------------------------+
+| 0xE07  | Graphics FIFO data word & store trigger (see "gfifo.rst")         |
++--------+-------------------------------------------------------------------+
+| 0xE08  | Audio left channel DMA start offset bits (see "snd_arch.rst")     |
++--------+-------------------------------------------------------------------+
+| 0xE09  | Audio right channel DMA start offset bits (see "snd_arch.rst")    |
++--------+-------------------------------------------------------------------+
+| 0xE0A  | Audio DMA buffer size mask bits (see "snd_arch.rst")              |
++--------+-------------------------------------------------------------------+
+| 0xE0B  | Audio clock divider (see "snd_arch.rst")                          |
++--------+-------------------------------------------------------------------+
+| 0xE0C  | Audio DMA sample counter / next read offset (see "snd_arch.rst")  |
++--------+-------------------------------------------------------------------+
+| 0xE0D  | Audio DMA base clock (see "snd_arch.rst")                         |
++--------+-------------------------------------------------------------------+
+| 0xE0E  | Mixer DMA frequency table whole pointer (see "mix_arch.rst")      |
++--------+-------------------------------------------------------------------+
+| 0xE0F  | Mixer DMA frequency table fractional pointer (see "mix_arch.rst") |
++--------+-------------------------------------------------------------------+
+| 0xE10  | Mixer DMA frequency source partition select (see "mix_arch.rst")  |
++--------+-------------------------------------------------------------------+
+| 0xE11  | Mixer DMA frequency source start, whole (see "mix_arch.rst")      |
++--------+-------------------------------------------------------------------+
+| 0xE12  | Mixer DMA frequency source start, fraction (see "mix_arch.rst")   |
++--------+-------------------------------------------------------------------+
+| 0xE13  | Mixer DMA amplitude source partition select (see "mix_arch.rst")  |
++--------+-------------------------------------------------------------------+
+| 0xE14  | Mixer DMA amplitude source start, whole (see "mix_arch.rst")      |
++--------+-------------------------------------------------------------------+
+| 0xE15  | Mixer DMA amplitude source start, fraction (see "mix_arch.rst")   |
++--------+-------------------------------------------------------------------+
+| 0xE16  | Mixer DMA frequency indices for AM / FM (see "mix_arch.rst")      |
++--------+-------------------------------------------------------------------+
+| 0xE17  | Mixer DMA partitioning settings (see "mix_arch.rst")              |
++--------+-------------------------------------------------------------------+
+| 0xE18  | Mixer DMA destination start and partition select (see             |
+|        | "mix_arch.rst")                                                   |
++--------+-------------------------------------------------------------------+
+| 0xE19  | Mixer DMA 64KWord bank selection settings (see "mix_arch.rst")    |
++--------+-------------------------------------------------------------------+
+| 0xE1A  | Mixer DMA amplitude multiplier (see "mix_arch.rst")               |
++--------+-------------------------------------------------------------------+
+| 0xE1B  | Mixer DMA sample source partition select (see "mix_arch.rst")     |
++--------+-------------------------------------------------------------------+
+| 0xE1C  | Mixer DMA sample source start, whole (see "mix_arch.rst")         |
++--------+-------------------------------------------------------------------+
+| 0xE1D  | Mixer DMA sample source start, fraction (see "mix_arch.rst")      |
++--------+-------------------------------------------------------------------+
+| 0xE1E  | Mixer DMA frequency select (see "mix_arch.rst")                   |
++--------+-------------------------------------------------------------------+
+| 0xE1F  | Mixer DMA mode & start trigger (see "mix_arch.rst")               |
++--------+-------------------------------------------------------------------+
+
+
+
+
+Graphics FIFO memory map
+------------------------------------------------------------------------------
+
+
+The Graphics FIFO can write on a separate unidirectional bus (FIFO bus),
+accessible only to it for writing, which bus connects to the graphics
+hardware.
+
+There are 9 address bits for this 16 bit bus, providing a range between 0x000
+and 0x1FF. This range is assigned to the graphics hardware components as
+follows:
+
++--------+-------------------------------------------------------------------+
+| Range  | Description                                                       |
++========+===================================================================+
+| 0x000  | Graphics display generator & Accelerator registers. They repeat   |
+| \-     | every 32 words in this range. See the memory maps in              |
+| 0x0FF  | "vid_arch.rst" and "acc_arch.rst" for details.                    |
++--------+-------------------------------------------------------------------+
+| 0x100  |                                                                   |
+| \-     | Reindex table. See memory map in "acc_arch.rst" for details.      |
+| 0x1FF  |                                                                   |
++--------+-------------------------------------------------------------------+
+
+Summary of the Graphics display generator & Accelerator registers. For more
+detailed descriptions of the registers, see the appropriate peripheral.
+
++--------+-------------------------------------------------------------------+
+| Range  | Description                                                       |
++========+===================================================================+
+| 0x000  | VRAM write mask high (see "vid_arch.rst")                         |
++--------+-------------------------------------------------------------------+
+| 0x001  | VRAM write mask low (see "vid_arch.rst")                          |
++--------+-------------------------------------------------------------------+
+| 0x002  | Unused                                                            |
++--------+-------------------------------------------------------------------+
+| 0x003  | Background display list offset (see "vid_arch.rst")               |
++--------+-------------------------------------------------------------------+
+| 0x004  | Layer 0 display list offset (see "vid_arch.rst")                  |
++--------+-------------------------------------------------------------------+
+| 0x005  | Layer 1 display list offset (see "vid_arch.rst")                  |
++--------+-------------------------------------------------------------------+
+| 0x006  | Layer 0 bank select (see "vid_arch.rst")                          |
++--------+-------------------------------------------------------------------+
+| 0x007  | Layer 1 bank select (see "vid_arch.rst")                          |
++--------+-------------------------------------------------------------------+
+| 0x008  | Accelerator source bank & partition select (see "acc_arch.rst")   |
++--------+-------------------------------------------------------------------+
+| 0x009  | Accelerator destination bank & partition select (see              |
+|        | "acc_arch.rst")                                                   |
++--------+-------------------------------------------------------------------+
+| 0x00A  | Accelerator reindex bank select & destination increment (see      |
+|        | "acc_arch.rst")                                                   |
++--------+-------------------------------------------------------------------+
+| 0x00B  | Accelerator source barrel rotate & partitioning settings (see     |
+|        | "acc_arch.rst")                                                   |
++--------+-------------------------------------------------------------------+
+| 0x00C  | Accelerator source masks (see "acc_arch.rst")                     |
++--------+-------------------------------------------------------------------+
+| 0x00D  | Accelerator colorkey & control flags (see "acc_arch.rst")         |
++--------+-------------------------------------------------------------------+
+| 0x00E  | Accelerator count of pixels to process (see "acc_arch.rst")       |
++--------+-------------------------------------------------------------------+
+| 0x00F  | Accelerator pattern for fill mode & trigger (see "acc_arch.rst")  |
++--------+-------------------------------------------------------------------+
+| 0x010  | Accelerator source Y whole (see "acc_arch.rst")                   |
++--------+-------------------------------------------------------------------+
+| 0x011  | Accelerator source Y fraction (see "acc_arch.rst")                |
++--------+-------------------------------------------------------------------+
+| 0x012  | Accelerator source Y increment whole (see "acc_arch.rst")         |
++--------+-------------------------------------------------------------------+
+| 0x013  | Accelerator source Y increment fraction (see "acc_arch.rst")      |
++--------+-------------------------------------------------------------------+
+| 0x014  | Accelerator source Y post-add whole (see "acc_arch.rst")          |
++--------+-------------------------------------------------------------------+
+| 0x015  | Accelerator source Y post-add fraction (see "acc_arch.rst")       |
++--------+-------------------------------------------------------------------+
+| 0x016  | Accelerator source X whole (see "acc_arch.rst")                   |
++--------+-------------------------------------------------------------------+
+| 0x017  | Accelerator source X fraction (see "acc_arch.rst")                |
++--------+-------------------------------------------------------------------+
+| 0x018  | Accelerator source X increment whole (see "acc_arch.rst")         |
++--------+-------------------------------------------------------------------+
+| 0x019  | Accelerator source X increment fraction (see "acc_arch.rst")      |
++--------+-------------------------------------------------------------------+
+| 0x01A  | Accelerator source X post-add whole (see "acc_arch.rst")          |
++--------+-------------------------------------------------------------------+
+| 0x01B  | Accelerator source X post-add fraction (see "acc_arch.rst")       |
++--------+-------------------------------------------------------------------+
+| 0x01C  | Accelerator destination whole (see "acc_arch.rst")                |
++--------+-------------------------------------------------------------------+
+| 0x01D  | Accelerator destination fraction (see "acc_arch.rst")             |
++--------+-------------------------------------------------------------------+
+| 0x01E  | Accelerator destination post-add whole (see "acc_arch.rst")       |
++--------+-------------------------------------------------------------------+
+| 0x01F  | Accelerator destination post-add fraction (see "acc_arch.rst")    |
 +--------+-------------------------------------------------------------------+

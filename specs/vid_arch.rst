@@ -1,5 +1,5 @@
 
-RRPGE Graphics Display & Accelerator, Display component architecture
+Graphics Display Generator architecture
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
@@ -14,10 +14,10 @@ Introduction
 ------------------------------------------------------------------------------
 
 
-This part of the specification defines the display component from the Graphics
-Display & Accelerator unit. The display component is responsible for
-generating the signals producing the visual image on the display hardware, as
-required by the targeted display standard.
+This part of the specification defines the Graphics Display Generator
+component of the RRPGE system. This component is responsible for generating
+the signals producing the visual image on the display hardware, as required by
+the targeted display standard.
 
 
 
@@ -35,7 +35,7 @@ The limits of the RRPGE system's display generator are set as follows:
 - At least 49 vertical blank lines (for a total of at least 449 lines)
 - At least 400 main clock cycles per display line
 - Interlaced display generation is supported for standards requiring it
-- 32 bit Video RAM memory bus width is assumed
+- 32 bit Video bus width
 
 The minimal number of main clock cycles required to be present under a
 vertical blanking period or a display frame can be derived from these
@@ -44,22 +44,22 @@ a vertical blanking period and at least 179600 cycles for a frame). Note that
 the kernel is allowed to take a certain maximal amount of cycles for internal
 tasks which reduces the amount of cycles available for user mode programs
 within these periods. See "Kernel timing constraints" in "kernel.rst" for
-further details. The ultimate low end limit for the available cycles in a
-vertical blanking period is 12800, and within a display frame is 143680.
+further details. Note that with the proper use of the Graphics FIFO (see
+"grapfifo.rst"), which is normally not affected by the kernel, these timings
+should not be of too much concern.
 
-To support the 4bit mode the graphic display normally has to be clocked by
-twice the frequency of the main clock.
+To support the 4bit mode (640px width) the graphic display normally has to be
+clocked by twice the frequency of the main clock.
 
 Interlaced modes are implemented in a transparent way: they require the same
 programming from the user like non-interlaced modes. The only exception is
 that the user needs to be aware of that it might need two frames to produce a
 complete image. See the "Interlaced rendering" chapter for more information.
 
-The Video RAM memory bus width is assumed to be 32 bits. Several aspects of
-the Graphics Display & Accelerator are specified with this in mind, and the
-minimal memory access characteristics normally also require the 32 bit bus.
-Other implementations might be possible as long as they meet the minimal
-requirements of this specification.
+The Video bus width is 32 bits. Several aspects of the graphics subsystems are
+specified with this in mind, and the minimal memory access characteristics
+normally also require the 32 bit bus. Other implementations might be possible
+as long as they meet the minimal requirements of this specification.
 
 Note that faster rates than 70Hz may be provided by an implementation if it
 meets the minimal processing power requirements for a display frame outlined
@@ -125,13 +125,13 @@ Display generator architecture
 ------------------------------------------------------------------------------
 
 
-The display generator provides a background pattern and up to four
+The display generator provides a background pattern and up to two
 independently scrollable display layers of which it composes the display in
 real time.
 
 The display layers' properties and pixel sources are controlled through
 display lists, a common one for most properties and a background pattern, and
-four layer specific ones for defining each layer's output. These all contain
+two layer specific ones for defining each layer's output. These all contain
 one 32 bit entry for each of the 400 displayed lines.
 
 Pixel data is rendered from left to right, and within the Video RAM it is laid
@@ -148,56 +148,32 @@ seen by the user, simplified: ::
     | +-------+ |       | +-------+ |  +----Bg.pattern------>|   |
     | |Backgrn| |       | | Backg | |  :                     |   |
     | | list  |-----+---->| disp. |----+  +--------------+   |   |
-    | |pointer| |   ^   | | list  | |  :  | Layer, bank, |   |   |
-    | +-------+ |   :   | +-------+ |  +->| mask and     |   |   |
-    |           |   :   |           |     | colorkey     |   |   |
-    |           |   :   |           |     | selector     |   | S |
-    | +-------+ |   :   | +-------+ |     +--------------+   | h |
+    | |pointer| |   ^   | | list  | |  :  | Layer, mask, |   |   |
+    | +-------+ |   :   | +-------+ |  +->| and colorkey |   |   |
+    |           |   :   |           |     | selector     |   |   |
+    |           |   :   |           |     +--------------+   | S |
+    | +-------+ |   :   | +-------+ |        :    :   :      | h |
     | |Display| |   :   | | Disp. | |        V    :   :      | i |
     | |list 0 |-----+---->| list  |----->+<--+    :   :      | f |
     | |pointer| |   ^   | | 0     | |    :   :    :   :      | t |
-    | +-------+ |   :   | +-------+ |    :  |E|   :   :      |   |
-    |           |   :   |           |    :  |n|   :   :      | & |
-    |           |   :   | +-------+ |    :  |a|   :   :      |   |
-    |           |   :   | | Line  |<-----+  |b|   :   :      | C |
-    |           |   :   | | pixel | |       |l|   V   V      | o |
-    |           |   :   | | data  |--------)|e|(--+===+=====>| m |
-    |           |   :   | +-------+ |       |d|   :   :      | b |  +---+
-    |           |   :   |           |        :   |M| |C|     | i |  | P |
+    | +-------+ |  |L|  | +-------+ |    :  |E|   :   :      |   |
+    |           |  |i|  |           |    :  |n|   :   :      | & |
+    |           |  |n|  | +-------+ |    :  |a|   :   :      |   |
+    |           |  |e|  | | Line  |<-----+  |b|   :   :      | C |
+    |           |  | |  | | pixel | |       |l|   V   V      | o |
+    |           |  |p|  | | data  |--------)|e|(--+===+=====>| m |
+    |           |  |t|  | +-------+ |       |d|   :   :      | b |  +---+
+    |           |  |r|  |           |        :   |M| |C|     | i |  | P |
     | +-------+ |   :   | +-------+ |        :   |a| |o|     | n |  | a |
-    | |Display| |   :   | | Disp. | |        V   |s| |l|     | e |  | l |
+    | |Display| |   V   | | Disp. | |        V   |s| |l|     | e |  | l |
     | |list 1 |-----+---->| list  |----->+<--+   |k| |o|     |   |  | e |
-    | |pointer| |   ^   | | 1     | |    :   :    :  |r|     |   |  | t |
-    | +-------+ |  |L|  | +-------+ |    :   :    :  |k|     |   |  | t |
-    |           |  |i|  |           |    :   :    :  |e|     |   |  | e |
-    |           |  |n|  | +-------+ |    :   :    :  |y|     |   |  +---+
-    |           |  |e|  | | Line  |<-----+   :    :   :      |   |    :
-    |           |  | |  | | pixel | |        :    V   V      |   |    V
-    |           |  |p|  | | data  |---------):(---+===+=====>|   |----+--->
-    |           |  |t|  | +-------+ |        :    :   :      |   |
-    |           |  |r|  |           |        :    :   :      |   |
-    | +-------+ |   :   | +-------+ |        :    :   :      |   |
-    | |Display| |   V   | | Disp. | |        V    :   :      |   |
-    | |list 2 |-----+---->| list  |----->+<--+    :   :      |   |
-    | |pointer| |   :   | | 2     | |    :   :    :   :      |   |
-    | +-------+ |   :   | +-------+ |    :   :    :   :      |   |
-    |           |   :   |           |    :   :    :   :      |   |
-    |           |   :   | +-------+ |    :   :    :   :      |   |
-    |           |   :   | | Line  |<-----+   :    :   :      |   |
-    |           |   :   | | pixel | |        :    V   V      |   |
-    |           |   :   | | data  |---------):(---+===+=====>|   |
-    |           |   :   | +-------+ |        :    :   :      |   |
-    |           |   :   |           |        :    :   :      |   |
-    | +-------+ |   :   | +-------+ |        :    :   :      |   |
-    | |Display| |   V   | | Disp. | |        V    :   :      |   |
-    | |list 3 |-----+---->| list  |----->+<--+    :   :      |   |
-    | |pointer| |       | | 3     | |    :        :   :      |   |
-    | +-------+ |       | +-------+ |    :        :   :      |   |
-    |           |       |           |    :        :   :      |   |
-    |           |       | +-------+ |    :        :   :      |   |
-    |           |       | | Line  |<-----+        :   :      |   |
-    |           |       | | pixel | |             V   V      |   |
-    |           |       | | data  |---------------+===+=====>|   |
+    | |pointer| |       | | 1     | |    :        :  |r|     |   |  | t |
+    | +-------+ |       | +-------+ |    :        :  |k|     |   |  | t |
+    |           |       |           |    :        :  |e|     |   |  | e |
+    |           |       | +-------+ |    :        :  |y|     |   |  +---+
+    |           |       | | Line  |<-----+        :   :      |   |    :
+    |           |       | | pixel | |             V   V      |   |    V
+    |           |       | | data  |---------------+===+=====>|   |----+--->
     |           |       | +-------+ |                        |   |
     |           |       |           |                        |   |
     +-----------+       +-----------+                        +---+
@@ -205,7 +181,7 @@ seen by the user, simplified: ::
 
 Within every displayed line (that is lines 0-399), in the horizontal blanking
 period before the line, the data at the offset specified by the line pointer
-is read from all five display lists (background and four layer display lists).
+is read from all five display lists (background and two layer display lists).
 
 For the display cycles of the line (this is 320 main clock cycles) each of
 the enabled layer's display data is read, combined, and output to the display.
@@ -215,14 +191,12 @@ several memory accesses which cause stalls. Read the "Addressing stalls"
 section for further information on the layout and effects of these. The
 Display component has the highest priority in accessing the Video RAM.
 
-The background pattern and the four display layers have fixed priority order.
+The background pattern and the two display layers have fixed priority order.
 From lowest to highest this is as follows:
 
 - Background pattern
 - Display layer 0
 - Display layer 1
-- Display layer 2
-- Display layer 3
 
 A higher priority layer may hide parts of the image composed from the lower
 priority layers in two ways:
@@ -251,86 +225,36 @@ it's high 16 bits as it's first word, and the low 16 bits as it's second word.
 +-------+--------------------------------------------------------------------+
 | Bits  | Description                                                        |
 +=======+====================================================================+
-| 30-31 | Layer 0 Video RAM bank selection (0-3)                             |
+|    31 | Layer 0 Disabled (0) / Enabled (1)                                 |
 +-------+--------------------------------------------------------------------+
-| 28-29 | Layer 1 Video RAM bank selection (0-3)                             |
+|    30 | Layer 1 Mask (0) / Colorkey (1) mode                               |
 +-------+--------------------------------------------------------------------+
-| 26-27 | Layer 2 Video RAM bank selection (0-3)                             |
+| 24-29 | Unused                                                             |
 +-------+--------------------------------------------------------------------+
-| 24-25 | Layer 3 Video RAM bank selection (0-3)                             |
-+-------+--------------------------------------------------------------------+
-| 21-23 | Global mask (number of bits masked starting from the high end)     |
-|       |                                                                    |
-|       | - 0: 0xFF (8bit) / 0xF (4bit); 256 colors (all enabled)            |
-|       | - 1: 0x7F (8bit) / 0xF (4bit); 128 colors                          |
-|       | - 2: 0x3F (8bit) / 0xF (4bit); 64 colors                           |
-|       | - 3: 0x1F (8bit) / 0xF (4bit); 32 colors                           |
-|       | - 4: 0x0F (8bit) / 0xF (4bit); 16 colors                           |
-|       | - 5: 0x07 (8bit) / 0x7 (4bit); 8 colors                            |
-|       | - 6: 0x03 (8bit) / 0x3 (4bit); 4 colors                            |
-|       | - 7: 0x01 (8bit) / 0x1 (4bit); 2 colors                            |
-+-------+--------------------------------------------------------------------+
-| 19-20 | Layer mask & colorkey usage. Defines the usage of the mask and     |
-|       | colorkey field in the layer display lists.                         |
-|       |                                                                    |
-|       | - 0: Layer0: CKey; Layer1: Mask; Layer2: Mask; Layer3: Mask        |
-|       | - 1: Layer0: CKey; Layer1: Ckey; Layer2: Mask; Layer3: Mask        |
-|       | - 2: Layer0: CKey; Layer1: Ckey; Layer2: Ckey; Layer3: Mask        |
-|       | - 3: Layer0: CKey; Layer1: Ckey; Layer2: Ckey; Layer3: Ckey        |
-+-------+--------------------------------------------------------------------+
-| 16-18 | Layer configuration (enabled layers). See table further below.     |
+| 16-23 | Global mask. Only low 4 bits used in 4 bit mode.                   |
 +-------+--------------------------------------------------------------------+
 |  0-15 | Background pattern. In 4bit mode this is 4 colors in the usual     |
 |       | high (leftmost) to low (rightmost) order, in 8 bit mode 2 colors.  |
 |       | The global mask does not affect this field.                        |
 +-------+--------------------------------------------------------------------+
 
-The Video RAM is partitioned into 64K * 32 bit unit banks across which
-addresses may not increment (this increment is further limited by the
-partition size setting at 0xEE2 for each bank, see later). The Video RAM bank
-selection fields for each layer select one from the first four such
-partitions. Note that even if the actual display memory would be larger,
-displaying from beyond the first four banks is not supported (in the RRPGE
-system however the display memory is defined to be exactly four such banks).
+Layer 0 is always in Colorkey mode. Layer 1 is always enabled.
 
 The Global mask limits the effective color bits of all display layers except
 the background. It may be used to force such limitation if the application
-uses less colors: this can be useful for freeing up bit planes of the higher
-bits for further data storage (such as sprites or tiles; which may be
-exploited using the Accelerator component).
+uses less colors: this can be useful for freeing up bit planes for further
+data storage (such as sprites or tiles; which may be exploited using the
+Accelerator).
 
 Note that the background is always fully covered by pixels not matching the
 colorkey of a colorkeyed layer even if it uses bit planes disabled for the
-layers by a global mask.
+layers by the global mask.
 
-Note that all colorkey layers share the same mask, that is the same bit planes
-will be effective of each determined by the Global mask and the higher
-priority layer masks as specified by the Layer mask & colorkey usage field.
+The effective bits of Layer 0 are determined by the Global mask, and
+optionally Layer 1's mask if it is in mask mode.
 
-The Layer configuration field provides the following configurations:
-
-+-------+---------+---------+---------+---------+
-| Value | Layer 0 | Layer 1 | Layer 2 | Layer 3 |
-+=======+=========+=========+=========+=========+
-|     0 |         |         | Enabled |         |
-+-------+---------+---------+---------+---------+
-|     1 | Enabled |         | Enabled |         |
-+-------+---------+---------+---------+---------+
-|     2 | Enabled |         | Enabled | Enabled |
-+-------+---------+---------+---------+---------+
-|     3 | Enabled | Enabled | Enabled | Enabled |
-+-------+---------+---------+---------+---------+
-|     4 | Enabled |         |         |         |
-+-------+---------+---------+---------+---------+
-|     5 | Enabled |         | Enabled |         |
-+-------+---------+---------+---------+---------+
-|     6 | Enabled | Enabled | Enabled |         |
-+-------+---------+---------+---------+---------+
-|     7 | Enabled | Enabled | Enabled | Enabled |
-+-------+---------+---------+---------+---------+
-
-Note that the mask of the layer is effective even if the layer is not enabled
-for graphics output.
+If Layer 1 is in Colorkey mode, it's effective bits are determined by the
+Global mask.
 
 
 Layer display lists
@@ -345,69 +269,74 @@ each entry being 32 bits in size.
 +=======+====================================================================+
 | 16-31 | Source pixel data pointer, whole (32bit VRAM cell unit) part       |
 +-------+--------------------------------------------------------------------+
-|  9-15 | Source pixel data pointer, fractional part                         |
+| 13-15 | Source pixel data pointer, fractional part                         |
 +-------+--------------------------------------------------------------------+
-|     8 | Absolute pointer if set, relative (additive) pointer if clear      |
+|    12 | Unused                                                             |
 +-------+--------------------------------------------------------------------+
-|  0- 7 | Mask or colorkey data. Only the bits not masked be the Global mask |
-|       | or higher priority layer masks are effective. In mask mode set     |
+|  8-11 | Partition size                                                     |
+|       |                                                                    |
+|       | - 0:  4 Words (2 * 32 bit cells)                                   |
+|       | - 1:  8 Words (4 * 32 bit cells)                                   |
+|       | - 2:  16 Words (8 * 32 bit cells)                                  |
+|       | - 3:  32 Words (16 * 32 bit cells)                                 |
+|       | - 4:  64 Words (32 * 32 bit cells)                                 |
+|       | - 5:  128 Words (64 * 32 bit cells)                                |
+|       | - 6:  256 Words (128 * 32 bit cells)                               |
+|       | - 7:  512 Words (256 * 32 bit cells)                               |
+|       | - 8:  1 KWords (512 * 32 bit cells)                                |
+|       | - 9:  2 KWords (1K * 32 bit cells)                                 |
+|       | - 10: 4 KWords (2K * 32 bit cells)                                 |
+|       | - 11: 8 KWords (4K * 32 bit cells)                                 |
+|       | - 12: 16 KWords (8K * 32 bit cells)                                |
+|       | - 13: 32 KWords (16K * 32 bit cells)                               |
+|       | - 14: 64 KWords (32K * 32 bit cells)                               |
+|       | - 15: 128 KWords (64K * 32 bit cells)                              |
++-------+--------------------------------------------------------------------+
+|  0- 7 | Mask or colorkey data. Only the bits not masked by the Global mask |
+|       | or a higher priority layer mask are effective. In mask mode set    |
 |       | bits indicate that the appropriate bit plane from this layer's     |
 |       | pixel data is effective.                                           |
 +-------+--------------------------------------------------------------------+
 
-For the first line (Line 0) the source pixel data pointer is assumed to be
-zero if the first entry of the display list contains a relative pointer.
-
-The relative pointer is applied before starting processing the line.
-
-Adding the relative pointer and increments during the output of the line are
-constrained by the 64K * 32 bit Video RAM banks, and further by the
-partition size setting at 0xEE2 for each bank. The partition to work within is
-selected by the absolute address (or the previous address in relative mode).
-The address will wrap around to the beginning of the partition when passing
-it's boundary.
-
-Using the relative pointer mode eases implementing the scrolling of the layer
-since using it only a singe absolute address have to be written to affect
-multiple lines.
+The Video RAM bank selection part of the source pixel data pointer is provided
+for each layer as peripheral registers accessible by the Graphics FIFO, easing
+the implementation of double buffering.
 
 The fractional part of the address determines the pixel precise start offset
 of the layer line, which is effectively a left shift of the 32 bit source
 data. In 4 bit mode the high 3 bits of the fraction give distinct visible
 shifts (as 8 pixels fill a 32 bit Video RAM cell), in 8 bit mode, the high 2
-bits. Note that the rest of the fraction bits are also implemented and may
-have visible effect through relative pointer additions in several consequent
-lines.
+bits.
+
+The partition size is used to wrap the offset during drawing the line to the
+beginning of the partition. This is useful for implementing horizontal
+scrolling.
 
 Note that for each display list line in total 81 Video RAM cells of pixel
-data are read in. The first cell is read in separately within the Horizontal
-Blanking period before the line, subsequent cells (80) are read in within the
-Display period of the line.
+data are read in.
 
 
 The line counter & pointer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The line counter & pointer have two roles. First as pointer it addresses the
-display lists in visible lines (lines 0-399), second as counter it triggers
-raster interrupts and provides for the "Query current display line" kernel
-call (see the appropriate section in "kcall.rst", and the "Video raster
-passed" section in "kernel.rst").
+The line counter & pointer has three roles. First as pointer it addresses the
+display lists in visible lines (lines 0-399), second as counter it provides
+beam wait conditions for the Graphics FIFO (see "Beam wait condition" in
+"grapfifo.rst") and results for the "Query current display line" kernel call
+(see the appropriate section in "kcall.rst").
 
 Through these features it conveys information to the user application which
 may synchronize to it for various purposes implementing graphics engines.
 
-The line counter & pointer increments and triggers it's interrupt when
-entering the Horizontal Blanking period of the line it refers to. That is the
-Line counter & pointer will be zero within the first displayed line's
-Horizontal Blank, and it's 320 (main clock) Display cycles.
+The line counter & pointer increments when entering the Horizontal Blanking
+period of the line it refers to. That is the Line counter & pointer will be
+zero within the first displayed line's Horizontal Blank, and it's 320 (main
+clock) Display cycles.
 
-Note that the Vertical blanking period is handled specially. Raster interrupt
-can only be set to trigger at the start of the Vertical blank (that is, when
-completing Line 399 and incrementing from it). The "Query current display
-line" kernel call returns the lines remaining to the next frame's Line 0
-calculated from this value and the knowledge of the total number of VBlank
-lines.
+When entering the Horizontal Blanking, the Graphics Display Generator also
+latches all it's registers (the three display list offsets and the two video
+RAM bank selections), so any Graphics FIFO operation on these is guaranteed to
+only have effect in the next line.
 
 
 Palette
@@ -442,11 +371,9 @@ simpler emulation or to restrict probable hardware implementations less. These
 are as follows:
 
 - The timing of any display related Video RAM access within the rendered line.
-  Note that this does not refer to the layout of stalls which is defined, only
-  to the timing of data fetches. No Video RAM accesses for a line must happen
-  before incrementing the Line counter & pointer to the given line, and no
-  Video RAM accesses must happen for a line after the Line counter & pointer
-  is incremented beyond it.
+  No Video RAM accesses for a line must happen before incrementing the Line
+  counter & pointer to the given line, and no Video RAM accesses must happen
+  for a line after the Line counter & pointer is incremented beyond it.
 
 - After setting the palette data through the kernel call, it's effect may
   delay for up to "a few" frames, not even necessarily taking effect in
@@ -459,121 +386,68 @@ are as follows:
 
 
 
-Addressing stalls
+Graphics Display Generator timing
 ------------------------------------------------------------------------------
 
 
-The Video Display component only accesses the Video RAM in display lines (and
-not at all in VBlank), thus only generating stalls during these.
+The Graphics Display Generator uses a fixed scheme for accessing the Video
+bus, generating an access (read) every second cycle irrespective of it's
+tasks.
 
-The effect of the stalls from the point of minimal limits to support is
+The effect of these accesses from the point of minimal limits to support is
 described in the "Memory access stalls" section of the CPU instruction set
-("cpu_inst.rst") and in the "Accelerator operation timing" section of the
-Display accelerator's specification ("acc_arch.rst").
+("cpu_inst.rst").
 
-Below the hardware level assumptions are described leading to defining those
-minimal timing requirements.
+Below the hardware level assumptions are described leading to constraining the
+Graphics Display Generator to this bus access scheme.
 
-The Graphics Display & Accelerator unit is capable to perform one memory
-access each main clock cycle. Since it's bus width is 32 bits, this is a 32
-bit access. Both in 4 bit and 8 bit mode one layer of pixel data takes 320 + 4
-bytes, which is 80 + 1 Video RAM cells to read in. The extra (first of the
-line) cell is read in separately in the Horizontal Blanking period. If all
-four layers are enabled, the Display component necessarily has to access the
-Video RAM in every clock cycle of a 320 cycle Display period within the
-display line.
-
-To simplify hardware accesses are performed in a fixed pattern, as follows: ::
-
-    0  1  2  3  4  5  6  7  8  9  ... (main clock cycles)
-    L0 L1 L2 L3 L0 L1 L2 L3 L0 L1 ... (accessed layer)
-
-When some layers are disabled, their access is omitted, freeing that slot for
-the accelerator or the CPU if either waits for accessing the Video RAM. Note
-that two layers can only enabled as L0 + L2, so producing an alternating
-access pattern between display output and other functions. This is relied upon
-in the design of accelerators.
-
-In the Horizontal Blanking of displayed lines the same access pattern is
-assumed like if one layer was enabled. Note that up to 9 accesses need to be
-performed in total in this period: one access for each Display List, and four
-accesses for reading in the first cells of each line.
+Both in 4 bit and 8 bit mode one layer of pixel data takes 80 + 1 32 bit Video
+RAM cells to read in. To read both layers so 162 memory accesses are required,
+which take 324 cycles. In addition to these the display lists have to be read,
+adding another 3 memory accesses, incrementing the cycle requirements to 330
+cycles. This fits in the 400 cycle budget allowed for a line.
 
 
 
 
-Video peripheral, Display component related memory map
+Graphics Display Generator memory map
 ------------------------------------------------------------------------------
 
 
-The following table describes those elements of the Video peripheral area
-which are related to the Display component. Note that these are as seen from
-the CPU: the cells behind these offsets have a 16 bit width. Also note that
-these repeat every 32 words in the 0xE00 - 0xEFF range, so for example offsets
-0xE02, 0xE22, 0xE42 ... 0xEE2 all refer to the Video RAM partition size
-register.
+The following table describes those elements of the graphics registers which
+are related to the Display Generator component. Note that these registers are
+only accessible through the Graphics FIFO (see "grapfifo.rst" for details).
+
+The graphics registers in the 0x000 - 0x0FF range repeat every 32 words, so
+for example the address 0x020 also refers to the register at 0x000.
 
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0xEE0  | Video RAM write mask (0xEE0: High, 0xEE1: Low). Does not belong   |
-| \-     | to the display unit, see "acc_arch.rst" for details.              |
-| 0xEE1  |                                                                   |
+| 0x000  |                                                                   |
+| \-     | Accelerator registers. See "acc_arch.rst".                        |
+| 0x001  |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xEE2  | Video RAM partition size for each VRAM bank. Defines further      |
-|        | partitioning within the Video RAM banks. Note that this setting   |
-|        | also applies to the accelerator.                                  |
-|        |                                                                   |
-|        | bit    15: Bank 3: If set, carry from bit 6 -> 7 is disabled      |
-|        | bit 12-14: Bank 3: Partition setting                              |
-|        | bit    11: Bank 2: If set, carry from bit 6 -> 7 is disabled      |
-|        | bit  8-10: Bank 2: Partition setting                              |
-|        | bit     7: Bank 1: If set, carry from bit 6 -> 7 is disabled      |
-|        | bit  4- 6: Bank 1: Partition setting                              |
-|        | bit     3: Bank 0: If set, carry from bit 6 -> 7 is disabled      |
-|        | bit  0- 2: Bank 0: Partition setting                              |
-|        |                                                                   |
-|        | The available partition settings are as follows:                  |
-|        |                                                                   |
-|        | - 0: 512 * 32 bit cells                                           |
-|        | - 1: 1K * 32 bit cells                                            |
-|        | - 2: 2K * 32 bit cells                                            |
-|        | - 3: 4K * 32 bit cells                                            |
-|        | - 4: 8K * 32 bit cells                                            |
-|        | - 5: 16K * 32 bit cells                                           |
-|        | - 6: 32K * 32 bit cells                                           |
-|        | - 7: 64K * 32 bit cells                                           |
+| 0x002  | Unused.                                                           |
 +--------+-------------------------------------------------------------------+
-| 0xEE3  | Background display list offset in 512 * 32 bit VRAM cell units.   |
+| 0x003  | Background display list offset in 512 * 32 bit VRAM cell units.   |
 |        | The display list occupies the first 400 cells of the area. High   |
 |        | bits which would address outside the Video RAM are ignored.       |
 +--------+-------------------------------------------------------------------+
-| 0xEE4  | Layer 0 display list offset in 512 * 32 bit VRAM cell units.      |
+| 0x004  | Layer 0 display list offset in 512 * 32 bit VRAM cell units.      |
 |        | Works the same way like the Background display list offset.       |
 +--------+-------------------------------------------------------------------+
-| 0xEE5  | Layer 1 display list offset in 512 * 32 bit VRAM cell units.      |
+| 0x005  | Layer 1 display list offset in 512 * 32 bit VRAM cell units.      |
 |        | Works the same way like the Background display list offset.       |
 +--------+-------------------------------------------------------------------+
-| 0xEE6  | Layer 2 display list offset in 512 * 32 bit VRAM cell units.      |
-|        | Works the same way like the Background display list offset.       |
+| 0x006  | Layer 0 bank select. Only the low 2 bits are used.                |
 +--------+-------------------------------------------------------------------+
-| 0xEE7  | Layer 3 display list offset in 512 * 32 bit VRAM cell units.      |
-|        | Works the same way like the Background display list offset.       |
+| 0x007  | Layer 1 bank select. Only the low 2 bits are used.                |
 +--------+-------------------------------------------------------------------+
-| 0xEE8  | Scaled blitter pointers and increments. Does not belong to the    |
-| \-     | display unit, see "acc_arch.rst" for details.                     |
-| 0xEEF  |                                                                   |
+| 0x008  |                                                                   |
+| \-     | Accelerator registers. See "acc_arch.rst".                        |
+| 0x1FF  |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xEF0  | Video accelerator area. Does not belong to the display unit, see  |
-| \-     | "acc_arch.rst" for details.                                       |
-| 0xEFF  |                                                                   |
-+--------+-------------------------------------------------------------------+
-
-The carry disable bits in 0xEE2 affect only the rendering of display lines,
-and not the relative addressing of display lists (relative addressing is
-always only bounded by the respective partition setting). Setting the bit
-makes the line wrapping around reaching 1024 4 bit pixels, so can be used to
-assist X scrolling.
 
 
 

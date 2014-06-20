@@ -78,26 +78,20 @@ first, that is for example "ADD A, B" is equivalent to "A = A + B".
 Memory access stalls
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-When reading and writing the Video RAM or the Video peripheral area the access
-may be stalled by the Video Display & Accelerator unit. These stall cycles are
-defined as follows:
+When reading and writing through the 16 <=> 32 VRAM interface the accesses are
+stalled by the Graphics Display Generator, and may be stalled by the
+Accelerator unit. These stall cycles are defined as follows:
 
-- Until the end of the current display line if all display planes are enabled.
 - Until the end of the accelerator operation if any is running.
-- 1 cycle in the horizontal blanking area of display lines (0 - 399).
-- 1 cycle if one display plane is enabled.
-- 1 cycle if 2 display planes are enabled, and a Read access is performed.
-- 2 cycles if 2 display planes are enabled, and a R-M-W access is performed.
-- 3 cycles if 3 display planes are enabled, and a Read access is performed.
-- 5 cycles if 3 display planes are enabled, and a R-M-W access is performed.
+- 1 cycle for a Read access.
+- 2 cycles for a R-M-W access.
 
 Note that the processor always performs an R-M-W access when doing a write.
 
 Real hardware implementations may operate faster depending on how their
-accesses align with the Video Display & Accelerator unit's accesses (and so,
-it's stall requests). These minimal requirements release the need for
-designing slow cycle-exact emulators in order to reproduce the minimal
-requirements.
+accesses align with the Graphics Display Generator unit's accesses. These
+minimal requirements release the need for designing slow cycle-exact emulators
+in order to reproduce the minimal requirements.
 
 Accesses to the lower half of the address space (Data, Stack and Code
 memories) are assumed to perform without stalls. A real hardware

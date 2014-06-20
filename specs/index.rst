@@ -18,13 +18,15 @@ The RRPGE system is composed of the following fundamental functional
 components:
 
 - 16bit CISC CPU for running the application and kernel code. It is coupled
-  with 1 MWords of Data memory of which 896 KWords are visible to the user for
-  data.
+  with 2 MWords of Data memory of which 1984 KWords are visible to the user
+  for data.
 
-- 32bit Graphic Display & Accelerator unit coupled with 512 KWords of Video
+- 32bit Graphics system coupled with 512 KWords (256K x 32bit) of Video
   memory.
 
-- Mixer DMA peripheral coupled with the CPU and 512 Kwords of the data memory
+- Graphics FIFO supporting asynchronous rendering.
+
+- Mixer DMA peripheral coupled with the CPU and 1 Mwords of the data memory
   assisting in audio related algorithms.
 
 - Kernel providing interface for certain hardware (or in emulated case, host)
@@ -32,6 +34,14 @@ components:
 
 - Host system managing the kernel provided hardware (such as input devices and
   networking), and the file system (if any).
+
+
+Overall system architecture
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Check the "overview.rst" part for a block diagram displaying the connections
+of the user available hardware components. The "mem_map.rst" document provides
+the overall memory map of the system.
 
 
 Timing details
@@ -100,7 +110,7 @@ File "acc_arch.rst"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The architecture of the Video Accelerator and the data bus components provided
-for interfacing the 32 bit Video memory with the CPU's 16 bit bus.
+for interfacing the 32 bit Video bus through the CPU's 16 bit bus.
 
 
 File "bin_rpa.rst"
@@ -142,10 +152,23 @@ File "data.rst"
 Constant data provided for the application, and the layout of those.
 
 
+File "dma.rst"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Simple DMA copy & fill peripherals in the system.
+
+
 File "file_io.rst"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The usage of the file I/O interface provided by the kernel.
+
+
+File "grapfifo.rst"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The operation of the Graphics FIFO, providing support for asynchronous
+rendering.
 
 
 File "index.rst"
@@ -194,6 +217,12 @@ File "names.rst"
 Conventions for the interpretation of User ID values.
 
 
+File "overview.rst"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The overall hardware architecture of the system as seen by the user.
+
+
 File "ropddump.rst"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -210,5 +239,5 @@ The sound system of RRPGE.
 File "vid_arch.rst"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The Video Display component of RRPGE and the architecture of display
-generation.
+The Graphics Display Generator component of RRPGE and the architecture of
+display generation.

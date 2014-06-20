@@ -29,57 +29,68 @@ The audio output capabilities of the system can be summarized as follows:
 
 - Digital audio output only
 - 8 bit unsigned sample data
-- Two channel stereo output (mono output can be achieved using the mixer)
+- Two channel stereo output (mono output can also be used)
 - The output is governed by hardware DMA
 - 48 KHz sampling frequency is supported
-- A DMA buffer size of 512 samples (256 words) per channel is supported
-- Interrupt generation on buffer exhaustion
+- Clock for real time synchronization
 
-The audio output's interrupts should be used for the timing of the application
-since the rate of this interrupt is fixed in real time (93.75 Hz).
-
+The audio output's DMA sample counter should be used to synchronize to real
+time by applications.
 
 
 
-DMA buffers
+
+Output DMA buffers
 ------------------------------------------------------------------------------
 
 
-The audio DMA is capable to operate from the first 64 KWords (pages 0x4000 -
-0x400F) of the Data memory. An 512 sample (256 words) block may be selected
-individually for the Left and Right channels within this area.
+The audio output DMA is capable to operate from the first 1 MWords (pages
+0x4000 - 0x40FF) of the Data memory.
 
-The 0xEDE location (this repeats every 16 words within the 0xE00 - 0xFFF area)
-within the Audio peripheral area selects the DMA buffers to use when the
-currently output buffers are exhausted. This field is organized as follows:
+Seperate left & right channel DMA start offsets can select a region from this
+area where the audio output DMA may operate. The buffer size is defined by a
+mask which mixes bits from the DMA sample counter and these start offset bits,
+normally selecting the higher bits from the start offsets, the lower bits from
+the DMA sample counter.
 
-- bit  8-15: Buffer select for Right channel
-- bit  0- 7: Buffer select for Left channel
-
-The buffer selects provide address bits 8 - 15. Buffers 0 - 13 are also
-accessible within the Audio peripherial area (as it shadows Data memory page
-0x4000 in the 0x000 - 0xDFF range).
+Mono output may be used by making the left & right channel DMA offsets equal.
 
 
 
 
-Audio events (interrupts)
+Audio output memory map
 ------------------------------------------------------------------------------
 
 
-Audio events may be generated if requested from the kernel (check "Audio
-half-buffer exhausted" in "kernel.rst" for details).
+The following table lists the memory addresses within the User peripheral page
+which relate the audio output DMA. Note that these repeat every 32 words in
+the 0xE00 - 0xFFF range within this page.
 
-If enabled, this event trigger when the audio DMA buffers are exhausted, and
-the DMA hardware already loaded the pointers for the next buffer from 0xEDE.
-
-This event normally should be used to update the DMA buffer pointers for the
-subsequent 512 samples of audio data.
-
-The event should also be used as a time base for the application providing a
-stable, core and video timing independent 93.75 Hz rate.
-
-Note that to provide smooth audio playback, this event should not be stalled
-by more than at about 10 milliseconds. Since it is the highest priority event,
-and kernel tasks can not consume more than about 1ms in a burst, unless the
-event handler itself contains extensive code this should not happen.
++--------+-------------------------------------------------------------------+
+| Range  | Description                                                       |
++========+===================================================================+
+| 0xE08  | Audio left channel DMA start offset bits, specifying offset bits  |
+|        | 4 - 19. Low 4 start offset bits are always zero.                  |
++--------+-------------------------------------------------------------------+
+| 0xE09  | Audio right channel DMA start offset bits, specifying offset bits |
+|        | 4 - 19. Low 4 start offset bits are always zero.                  |
++--------+-------------------------------------------------------------------+
+|        | Audio DMA buffer size mask bits, specifying mask for offset bits  |
+| 0xE0A  | 4 - 19. Bits set in this mask come from the DMA start offset,     |
+|        | bits cleared from the DMA sample counter. Note that since the DMA |
+|        | sample counter only provides data for bits 0 - 15, bits 16 - 19   |
+|        | will be zero if the corresponding mask bits are cleared.          |
++--------+-------------------------------------------------------------------+
+|        | Audio clock divider. Writing it zero produces a sample counter    |
+| 0xE0B  | increment every 65536 base clocks. 1 produces a 48KHz sample      |
+|        | counter increment rate, the Audio DMA base clock always reading   |
+|        | zero. Writing it resets the Audio DMA base clock to zero.         |
++--------+-------------------------------------------------------------------+
+|        | Audio DMA sample counter / next read offset. Derived from the     |
+| 0xE0C  | base clock after applying the divider. Writes to this field are   |
+|        | ignored.                                                          |
++--------+-------------------------------------------------------------------+
+|        | Audio DMA base clock. Increments starting with zero at a fixed    |
+| 0xE0D  | 48 KHz rate until reaching the divider, resetting to zero when.   |
+|        | it matches. Writes to this field are ignored.                     |
++--------+-------------------------------------------------------------------+

@@ -19,8 +19,8 @@ This state is described here most importantly detailing the reset state of all
 registers and memories.
 
 Unless otherwise mentioned any memory area must be reset to zero. This
-includes the Data, the Stack and the Video memories. Note that some parts of
-the Data and Video memories however contain initial data.
+includes the Data, the Stack, the Graphics FIFO, and the Video memories. Note
+that some parts of the Data and Video memories however contain initial data.
 
 
 
@@ -32,7 +32,6 @@ RRPGE CPU reset state
 - The user register set (a, b, c, d, x0, x1, x2, x3, xm, xh) is zeroed.
 - The stack is empty (sp and bp is zeroed, the entire stack memory is zero).
 - The program counter (pc) points at offset 0x0000.
-- No event (interrupt) is waiting, no event handlers are set up.
 
 The CPU's address space is initialized to a suitable initial configuration as
 follows:
@@ -46,11 +45,11 @@ Data Read and Data Write pages are set up according to the following table:
 +----------+--------------------------------+--------------------------------+
 | CPU page | Read page assigned             | Write page assigned            |
 +==========+================================+================================+
-|        0 | ROPD (0x40E0)                  | Audio peripheral (0x7FFF)      |
+|        0 | ROPD (0x40E0)                  | User peripheral area (0x7FFF)  |
 +----------+--------------------------------+--------------------------------+
-|        1 | Audio peripheral (0x7FFF)      | Audio peripheral (0x7FFF)      |
+|        1 | User peripheral area (0x7FFF)  | User peripheral area (0x7FFF)  |
 +----------+--------------------------------+--------------------------------+
-|        2 | Video peripheral (0xBFFF)      | Video peripheral (0xBFFF)      |
+|        2 | Video memory page 127 (0x807F) | Video memory page 127 (0x807F) |
 +----------+--------------------------------+--------------------------------+
 |        3 | Data memory page 1 (0x4001)    | Data memory page 1 (0x4001)    |
 +----------+--------------------------------+--------------------------------+
@@ -86,8 +85,6 @@ Kernel reset state
 ------------------------------------------------------------------------------
 
 
-- Event handlers are disabled (both audio and video handler offset are set 0).
-- Video raster event is set to trigger (if enabled) on line 0.
 - No kernel tasks are running.
 - Network availability is unset (0).
 - Network buffers are empty.
@@ -101,7 +98,7 @@ behavior is implementation defined.
 
 
 
-Video peripheral reset state
+Video reset state
 ------------------------------------------------------------------------------
 
 
@@ -112,48 +109,42 @@ Display lists are set up to be found on the following locations:
 
 - Background list: Video RAM page 127; Offset 0x800.
 - Layer 0 list: Video RAM page 127; Offset 0x400.
-- Layer 1 list: Video RAM page 126; Offset 0x800.
-- Layer 2 list: Video RAM page 127; Offset 0x000.
-- Layer 3 list: Video RAM page 126; Offset 0xC00.
+- Layer 1 list: Video RAM page 127; Offset 0x000.
 
-Note that the Background list, Layer 0 and Layer 2 are accessible through the
-Video peripheral area. The offsets are word (16 bit) offsets.
+The offsets are word (16 bit) offsets (as seen by the CPU).
 
 The background display list is populated the following way:
 
-- Each line gets the 32 bit value 0x60100000.
+- Each line gets the 32 bit value 0x40FF0000.
 
 The meaning of the value is as follows:
 
-- Layer 0 is in Video RAM bank 1.
-- Layer 1 is in Video RAM bank 2.
-- Layer 2 is in Video RAM bank 0.
-- Layer 3 is in Video RAM bank 0.
 - Global mask is 0xFF (all bit planes enabled in both 4 bit and 8 bit modes).
-- Layer 0-2 is in Colorkey mode, Layer 3 is in mask mode.
-- Layer configuration enables only Layer 2.
+- Layer 0 is disabled.
+- Layer 1 is in Colorkey mode.
 - Background pattern is color index zero.
 
 Each of the display lists are populated as follows:
 
-- Line zero gets the 32 bit value 0x00000100.
-- Odd lines get the 32 bit value 0x00000000.
-- Even lines (except line zero) get the 32 bit value 0x00500000.
+- Line zero gets the 32 bit value 0x00000F00.
+- Odd lines repeat the value of the previous line.
+- Even lines (except line zero) increment the previous line by 0x00500000.
 
-The first line sets an absolute pointer of zero. Further lines set up double
-scanning, with a relative increment of 80 Video RAM cells every second line.
-The colorkey, or in the case of Layer 3, the mask is zero.
+The first line points to the beginning of the layer's Video RAM bank. Further
+lines set up double scanning, with a relative increment of 80 Video RAM cells
+every second line. The colorkey is zero (which with the zero background
+pattern makes this effect invisible).
 
-Note that for all five display lists only the 400 visible lines are populated
+Note that for all three display lists only the 400 visible lines are populated
 by the above scheme. All the remaining areas of the Video RAM are left zero.
+
+Layer 1 is pointed to Video RAM bank 0. Layer 0 is pointed to Video RAM bank
+1.
 
 This initial setup (coupled with that the first 8 Video RAM pages are banked
 in the processor's address space) allows for composing simple graphics
 directly after boot, without the need of altering the state of the Graphics
 Display unit.
-
-The partition size is set up to 128 KWords (full Video RAM bank) for all
-banks, with no carry disable.
 
 
 Palette
@@ -167,7 +158,7 @@ palette is loaded even in 4 bit mode.
 Video mode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The starting mode is mode 0 (640x400; 4 bit).
+The starting mode is mode 1 (320x400; 8 bit).
 
 
 Accelerator
@@ -177,17 +168,24 @@ All registers of the Graphics Accelerator are set zero including the whole
 reindex map.
 
 
+Graphics FIFO
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+All registers of the Graphics FIFO are set to zero, so the Graphics FIFO is
+empty and idle.
+
+
 Display state
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The application should be started with the display entering in Vertical
-blanking (line 400), so the application may have time to prepare some display.
-This behavior is not mandatory.
+The application may be started with the display entering in Vertical blanking
+(most negative line), so the application may have time to prepare some
+display. This behavior is not mandatory.
 
 
 
 
-Audio peripheral reset state
+Audio reset state
 ------------------------------------------------------------------------------
 
 
@@ -197,13 +195,12 @@ Audio related data
 Data memory page 0 is used primarily for audio. It has two major areas
 initialized:
 
-- 0x000 - 0x7FF: Filled with 0x8080, producing silence.
+- 0x000 - 0x7FF: Filled with 0x8080, producing silence if played.
 - 0x800 - 0xDFF: Populated according to the specification in "data.rst".
 - 0xE00 - 0xFFF: 0
 
-Note that the whole 0x000 - 0x7FF area is initialized to silence (0x80 bytes)
-even if the application's requested audio setup needs a smaller audio DMA
-buffer area.
+The Audio output DMA is prepared for mono 48KHz output, with the 0x000 - 0x7FF
+area used for DMA buffer (for both channels).
 
 
 Mixer peripheral
@@ -211,10 +208,10 @@ Mixer peripheral
 
 Most registers are initialized to zero except the followings:
 
-- 0xED3: 0x0100 (Amplitude)
-- 0xEDA: 0x000C (Frequency table whole pointer)
-- 0xEDB: 0x000D (Frequency table fractional pointer)
-- 0xEDC: 0x6667 (Partitioning: 256 samples for sources, 512 for destination)
+- 0xEDA: 0x0100 (Amplitude)
+- 0xECE: 0x000C (Frequency table whole pointer)
+- 0xECF: 0x000D (Frequency table fractional pointer)
+- 0xED7: 0x6667 (Partitioning: 256 samples for sources, 512 for destination)
 
 
 
@@ -234,27 +231,23 @@ dump replicates the application header.
 
 0xD00 - 0xD1F: ::
 
-    0x40E0U, 0x7FFFU, 0xBFFFU, 0x4001U, 0x4002U, 0x4003U, 0x4004U, 0x4005U,
+    0x40E0U, 0x7FFFU, 0x807FU, 0x4001U, 0x4002U, 0x4003U, 0x4004U, 0x4005U,
     0x8000U, 0x8001U, 0x8002U, 0x8003U, 0x8004U, 0x8005U, 0x8006U, 0x8007U,
-    0x7FFFU, 0x7FFFU, 0xBFFFU, 0x4001U, 0x4002U, 0x4003U, 0x4004U, 0x4005U,
+    0x7FFFU, 0x7FFFU, 0x807FU, 0x4001U, 0x4002U, 0x4003U, 0x4004U, 0x4005U,
     0x8000U, 0x8001U, 0x8002U, 0x8003U, 0x8004U, 0x8005U, 0x8006U, 0x8007U,
 
-0xD20 - 0xD4F: 0
+0xD20 - 0xECF: 0
 
-0xD50: ::
+0xEC0 - 0xEDF: ::
 
-    0x0190U,
-
-0xD51 - 0xECF: 0
-
-0xED0 - 0xEDF: ::
-
-    0x0000U, 0x0000U, 0x0000U, 0x0100U, 0x0000U, 0x0000U, 0x0000U, 0x0000U,
-    0x0000U, 0x0000U, 0x000CU, 0x000DU, 0x6667U, 0x0000U, 0x0000U, 0x0000U,
+    0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U,
+    0x0000U, 0x0000U, 0xFF80U, 0x0001U, 0x0000U, 0x0000U, 0x000CU, 0x000DU,
+    0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x6667U,
+    0x0000U, 0x0000U, 0x0100U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U,
 
 0xEE0 - 0xEFF: ::
 
-    0xFFFFU, 0xFFFFU, 0x7777U, 0x01FEU, 0x01FDU, 0x01FAU, 0x01FCU, 0x01FBU,
+    0xFFFFU, 0xFFFFU, 0x0000U, 0x01FEU, 0x01FDU, 0x01FCU, 0x0001U, 0x0000U,
     0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U,
     0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U,
     0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U,

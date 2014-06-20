@@ -65,63 +65,42 @@ is not visible to the application, and is only meant to be used by emulators.
 | \-     | Unused, must be 0x0000.                                           |
 | 0xD4F  |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xD50  | Current video line (0 - 399: Display; 400 -: VBlank)              |
+| 0xD50  | Current video line (2's complement; 0 - 399: Display; Negatives:  |
+|        | Vertical blank).                                                  |
 +--------+-------------------------------------------------------------------+
-| 0xD51  | Current cycle within line (0 - 79: HBlank; 80 - 399: Display)     |
+| 0xD51  | Cycles until next video line.                                     |
 +--------+-------------------------------------------------------------------+
-| 0xD52  | Cycles until next audio event, high.                              |
+| 0xD52  | Unused, must be 0x0000.                                           |
 +--------+-------------------------------------------------------------------+
-| 0xD53  | Cycles until next audio event, low.                               |
+| 0xD53  | Cycles until next audio base clock tick.                          |
 +--------+-------------------------------------------------------------------+
-| 0xD54  | Cycles remaining from video accelerator operation, high.          |
+| 0xD54  | Unused, must be 0x0000.                                           |
 +--------+-------------------------------------------------------------------+
-| 0xD55  | Cycles remaining from video accelerator operation, low.           |
+| 0xD55  | Cycles remaining from accelerator operation or FIFO fetch.        |
 +--------+-------------------------------------------------------------------+
 | 0xD56  | Unused, must be 0x0000.                                           |
 +--------+-------------------------------------------------------------------+
 | 0xD57  | Current video mode (0: 640x400, 4bit; 1: 320x400, 8bit).          |
 +--------+-------------------------------------------------------------------+
-| 0xD58  | Display layer 0, offset of current line, whole.                   |
+| 0xD58  |                                                                   |
+| \-     | Unused, must be 0x0000.                                           |
+| 0xD5B  |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xD59  | Display layer 0, offset of current line, fraction.                |
+| 0xD5C  | Graphics FIFO write pointer.                                      |
 +--------+-------------------------------------------------------------------+
-| 0xD5A  | Display layer 1, offset of current line, whole.                   |
+| 0xD5D  | Graphics FIFO read pointer.                                       |
 +--------+-------------------------------------------------------------------+
-| 0xD5B  | Display layer 1, offset of current line, fraction.                |
+| 0xD5E  | Graphics FIFO command word for next store.                        |
 +--------+-------------------------------------------------------------------+
-| 0xD5C  | Display layer 2, offset of current line, whole.                   |
+| 0xD5F  | Graphics FIFO started flag (on bit 0, bits 1-15 are zero).        |
 +--------+-------------------------------------------------------------------+
-| 0xD5D  | Display layer 2, offset of current line, fraction.                |
-+--------+-------------------------------------------------------------------+
-| 0xD5E  | Display layer 3, offset of current line, whole.                   |
-+--------+-------------------------------------------------------------------+
-| 0xD5F  | Display layer 3, offset of current line, fraction.                |
-+--------+-------------------------------------------------------------------+
-| 0xD60  |                                                                   |
-| \-     | First level interrupt CPU state (saves 0xD40 - 0xD4C).            |
-| 0xD6C  |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0xD6D  | Unused, must be 0x0000.                                           |
-+--------+-------------------------------------------------------------------+
-|        | Video interrupt flags:                                            |
-| 0xD6E  |                                                                   |
-|        | - bit 0: Set if video interrupt is flagged.                       |
-|        | - bit 1: Set if within video interrupt.                           |
-+--------+-------------------------------------------------------------------+
-|        | Audio interrupt flags:                                            |
-| 0xD6F  |                                                                   |
-|        | - bit 0: Set if audio interrupt is flagged.                       |
-|        | - bit 1: Set if within audio interrupt.                           |
+| 0xD60  | Excepted devices at each device ID's. The 0x0410 "Get device      |
+| \-     | properties" and the 0x0411 "Drop device" kernel calls manage      |
+| 0xD6F  | these fields.                                                     |
 +--------+-------------------------------------------------------------------+
 | 0xD70  |                                                                   |
-| \-     | Second level interrupt CPU state (saves 0xD60 - 0xD6C).           |
-| 0xD7C  |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0xD7D  | Unused, must be 0x0000.                                           |
-+--------+-------------------------------------------------------------------+
-| 0xD7E  | Current bottom of stack.                                          |
-+--------+-------------------------------------------------------------------+
-| 0xD7F  | Previous bottom of stack.                                         |
+| \-     | Unused, must be 0x0000.                                           |
+| 0xD7F  |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xD80  |                                                                   |
 | \-     | 16 * 16 words of kernel task data.                                |
@@ -143,20 +122,16 @@ is not visible to the application, and is only meant to be used by emulators.
 | \-     | for digital input bit 0. Allowed range is so combined with Y it   |
 | 0xEBF  | fits within the display height of 400 units.                      |
 +--------+-------------------------------------------------------------------+
-| 0xEC0  | Excepted devices at each device ID's. The 0x0410 "Get device      |
-| \-     | properties" and the 0x0411 "Drop device" kernel calls manage      |
-| 0xECF  | these fields.                                                     |
-+--------+-------------------------------------------------------------------+
-| 0xED0  |                                                                   |
-| \-     | Mixer DMA peripheral registers. See "mix_arch.rst" for details.   |
+| 0xEC0  |                                                                   |
+| \-     | User peripheral area contents. See "mem_map.rst" for details.     |
 | 0xEDF  |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xEE0  | Graphics Display & Accelerator registers. See "vid_arch.rst" and  |
-| \-     | "acc_arch.rst" for details.                                       |
+| 0xEE0  | Graphics registers in the 0x000 - 0x0FF range (repeating). See    |
+| \-     | "mem_map.rst" for details.                                        |
 | 0xEFF  |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xF00  |                                                                   |
-| \-     | Reindex table. See "acc_arch.rst" for details.                    |
+| 0xF00  | Graphics registers in the 0x100 - 0x1FF range (reindex table).    |
+| \-     | See "mem_map.rst" for details.                                    |
 | 0xFFF  |                                                                   |
 +--------+-------------------------------------------------------------------+
 
@@ -175,56 +150,32 @@ populated within emulators so the desired cross-compatibility may be achieved.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Depending on the display standard the emulator follows, the count of VBlank
-lines may differ. When loading a state which contains a line number larger
-than allowed by the emulated video standard, the display should immediately
-continue with the next frame, at line 0.
+lines may differ. Up to 250 remaining Vertical blank lines should be
+tolerated.
 
 
-0xD54, Accelerator
+0xD55, Accelerator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 After starting an accelerator operation, when exporting state before it's
 completion, the emulator should complete the entire operation, and save the
 state accordingly. This does not affect applications as they can not access
-the Video RAM and the Graphics Display & Accelerator peripheral until the
-completion of the operation. It may affect the display if the application
-performs operations falling under implementation defined rules (such as
-performing an accelerator operation over a display list which is the same
-time read for display).
+the Video RAM meanwhile and the Graphics FIFO also waits until the completion
+of the operation. It may affect the display if the application performs
+operations falling under implementation defined rules (such as performing an
+accelerator operation over a display list which is the same time read for
+display).
 
 
-0xD58, Display lists
+0xD5C, Graphics FIFO
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-An emulator should evaluate the line start offsets when transitioning to the
-next line and update the offsets immediately. Note that as defined in "Layer
-display lists" from "vid_arch.rst", Line 0 assumes a start offset of zero if a
-relative pointer is specified in the display list.
-
-
-0xD60, Interrupts
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-These locations are used to keep the necessary kernel state (mostly supposedly
-on a kernel stack) around for restoring interrupt levels stacked upon each
-other.
-
-The "interrupt flagged" flags indicate if an event is waiting to be serviced.
-These stay set until the kernel gets the chance to service these, and upon
-entry, before any user handler is called (if any is enabled), they are
-cleared.
-
-If both "within interrupt" flags are set, an audio interrupt is stacked upon a
-video interrupt (the audio interrupt has a higher priority).
-
-The stack bottom is a kernel barrier, guarding against accesses below it. In
-the mainline it is 0, upon entering an interrupt it is set to the location
-where BP + SP was before entry. The 0xD7E and 0xD7F fields realize the
-necessary stack of these barriers (note that while an audio interrupt which
-interrupted a video interrupt executes, both fields may be nonzero).
-
-For more information on interrupts, see "Interrupts" in "cpu_arch.rst" and
-"Supported events" in "kernel.rst".
+Graphics FIFO operations should be executed before modifying the ROPD data
+accordingly. The cycle requirements should be calculated as necessary (also
+including the operation of the Accelerator if triggered), and filled in 0xD55.
+Then in the same "atomic" operation the Graphics FIFO's state (read pointer
+and if needed, the clearing of the started flag) should be updated and filled
+in.
 
 
 0xD80, Kernel tasks
@@ -258,8 +209,9 @@ devices better on reloading a saved state. See "Hotplug support" in
 "inputdev.rst" for details.
 
 
-0xED0, Mixer DMA
+0xEC0, DMA operations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-An emulator should execute a Mixer operation as one uninterruptible block, and
-prepare the state accordingly.
+An emulator should execute a DMA operation (CPU RAM Copy & Fill DMA, Mixer
+DMA, CPU <=> VRAM DMA) as one uninterruptible block, and prepare the state
+accordingly.

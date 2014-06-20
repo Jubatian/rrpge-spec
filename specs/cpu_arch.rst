@@ -347,6 +347,9 @@ Interrupts
 ------------------------------------------------------------------------------
 
 
+The RRPGE system does not provide user mode interrupts, so the followings are
+optional design guidelines only.
+
 Interrupts always enter into supervisor mode; where necessary, the supervisor
 mode may pass control back to user mode for running an user level handler.
 
@@ -359,20 +362,13 @@ The entry-return logic automatically pushes (entry) and pops (return) the
 necessary minimal state on the supervisor stack.
 
 If the supervisor mode program will be executing an user mode handler, it
-appropriately saves the user mode state of the main line of the user mode
-program before entry, and restores that state after return.
+should save the user mode state of the main line of the user mode program
+before entry, and restores that state after return.
 
-To support the RRPGE system at least two interrupt priority levels have to be
-implemented, the lower priority servicing Video Display & Accelerator
-interrupts, the higher priority servicing Audio half-buffer empty interrupts.
-
-Before entering an user mode interrupt handler, the kernel sets up the stack
-bottom to the current top of the stack (BP + SP) in the mainline (or lower
-level interrupt), so the user mode handler may properly return with a return
-from function operation.
-
-For more information on interrupts, see the appropriate section in the
-documentation of the kernel ("kernel.rst").
+Before entering an user mode interrupt handler, the stack bottom should be set
+up to the current (user mode) top of the stack (BP + SP) in the mainline (or
+lower level interrupt), so the user mode handler may properly return with a
+return from function operation.
 
 
 

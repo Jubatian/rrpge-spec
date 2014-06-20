@@ -1,3 +1,27 @@
+Version 00.006.000 (2014.06.20)
+ - Large changes!
+ - Graphics FIFO introduced, the Graphics registers are no longer accessible
+   directly by the CPU.
+ - Graphics display now is only capable to produce 2 distinct layers instead
+   of 4, simplifying Video bus access schemes.
+ - Relative addressing in display lists are removed.
+ - All peripheral register areas are reorganized.
+ - Memory on the CPU bus is increased from 1 MWords to 2 MWords.
+ - The Accelerator got a line drawing mode (original "Line" mode renamed to
+   "Fill" mode).
+ - The Accelerator is capable to omit destination reads accelerating certain
+   types of blits.
+ - Separation of partition selects from address both in the Mixer and the
+   Accelerator simplifying address calculations.
+ - User accessible interrupt (event) system is removed.
+ - Audio output reworked to be useful without interrupts.
+ - DMA peripherals introduced for fast memory fills and copies.
+ - The specification got an Overview document describing the overall hardware
+   architecture.
+ - Many minor changes to keep the system coherent with the listed
+   modifications.
+
+
 Version 00.005.000 (2014.05.11)
  - Introduced proper hotplug support for input devices.
  - Input device kernel call layout rearranged to be more consistent.
