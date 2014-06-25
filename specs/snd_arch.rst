@@ -55,6 +55,11 @@ the DMA sample counter.
 
 Mono output may be used by making the left & right channel DMA offsets equal.
 
+Note that the audio output DMA uses a left and a right sample (8 bits) every
+audio base clock tick. This is half of a 16 bit word. The lowest bit of the
+Audio DMA sample counter selects the high (0) or low (1) byte of the sample
+source word to use.
+
 
 
 
@@ -78,7 +83,7 @@ the 0xE00 - 0xFFF range within this page.
 |        | Audio DMA buffer size mask bits, specifying mask for offset bits  |
 | 0xE0A  | 4 - 19. Bits set in this mask come from the DMA start offset,     |
 |        | bits cleared from the DMA sample counter. Note that since the DMA |
-|        | sample counter only provides data for bits 0 - 15, bits 16 - 19   |
+|        | sample counter only provides data for bits 0 - 14, bits 15 - 19   |
 |        | will be zero if the corresponding mask bits are cleared.          |
 +--------+-------------------------------------------------------------------+
 |        | Audio clock divider. Writing it zero produces a sample counter    |
@@ -86,9 +91,9 @@ the 0xE00 - 0xFFF range within this page.
 |        | counter increment rate, the Audio DMA base clock always reading   |
 |        | zero. Writing it resets the Audio DMA base clock to zero.         |
 +--------+-------------------------------------------------------------------+
-|        | Audio DMA sample counter / next read offset. Derived from the     |
-| 0xE0C  | base clock after applying the divider. Writes to this field are   |
-|        | ignored.                                                          |
+|        | Audio DMA sample counter / next sample read offset. Derived from  |
+| 0xE0C  | the base clock after applying the divider. Writes to this field   |
+|        | are ignored.                                                      |
 +--------+-------------------------------------------------------------------+
 |        | Audio DMA base clock. Increments starting with zero at a fixed    |
 | 0xE0D  | 48 KHz rate until reaching the divider, resetting to zero when.   |

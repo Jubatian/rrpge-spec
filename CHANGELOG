@@ -1,3 +1,8 @@
+Version 00.006.001 (2014.06.25)
+ - Fixed initial ROPD state in boot.rst, according to starting in 8 bit mode.
+ - Fixed snd_arch.rst so the sample counter points to samples, not words.
+
+
 Version 00.006.000 (2014.06.20)
  - Large changes!
  - Graphics FIFO introduced, the Graphics registers are no longer accessible
