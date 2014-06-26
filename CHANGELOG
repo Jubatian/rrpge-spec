@@ -1,3 +1,10 @@
+Version 00.006.002 (2014.06.26)
+ - Added some flexibility in handling an unfulfillable Graphics FIFO beam wait
+   command (in ropddump.rst).
+ - Clarifications in the emulation of Graphics FIFO processing cycles.
+ - Graphics FIFO state storage fixes (in ropddump.rst).
+
+
 Version 00.006.001 (2014.06.25)
  - Fixed initial ROPD state in boot.rst, according to starting in 8 bit mode.
  - Fixed snd_arch.rst so the sample counter points to samples, not words.

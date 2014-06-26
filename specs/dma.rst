@@ -52,6 +52,11 @@ Needs 272 cycles (uses the CPU bus and the Video bus in parallel). It is
 stalled by Accelerator operations if any is performing, and produces a kernel
 trap if the Graphics FIFO is not empty.
 
+(Note: An accelerator operation may only be allowed without falling under an
+undefined behavior if it is the last operation from the Graphics FIFO, so the
+Graphics FIFO is already empty. Implementations are allowed to report Graphics
+FIFO non-empty this case inhibiting this situation)
+
 
 
 

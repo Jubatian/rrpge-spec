@@ -74,9 +74,9 @@ is not visible to the application, and is only meant to be used by emulators.
 +--------+-------------------------------------------------------------------+
 | 0xD53  | Cycles until next audio base clock tick.                          |
 +--------+-------------------------------------------------------------------+
-| 0xD54  | Unused, must be 0x0000.                                           |
+| 0xD54  | Cycles remaining from accelerator operation or FIFO fetch, high.  |
 +--------+-------------------------------------------------------------------+
-| 0xD55  | Cycles remaining from accelerator operation or FIFO fetch.        |
+| 0xD55  | Cycles remaining from accelerator operation or FIFO fetch, low.   |
 +--------+-------------------------------------------------------------------+
 | 0xD56  | Unused, must be 0x0000.                                           |
 +--------+-------------------------------------------------------------------+
@@ -90,7 +90,7 @@ is not visible to the application, and is only meant to be used by emulators.
 +--------+-------------------------------------------------------------------+
 | 0xD5D  | Graphics FIFO read pointer.                                       |
 +--------+-------------------------------------------------------------------+
-| 0xD5E  | Graphics FIFO command word for next store.                        |
+| 0xD5E  | Unused, must be 0x0000.                                           |
 +--------+-------------------------------------------------------------------+
 | 0xD5F  | Graphics FIFO started flag (on bit 0, bits 1-15 are zero).        |
 +--------+-------------------------------------------------------------------+
@@ -154,7 +154,7 @@ lines may differ. Up to 250 remaining Vertical blank lines should be
 tolerated.
 
 
-0xD55, Accelerator
+0xD54, Accelerator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 After starting an accelerator operation, when exporting state before it's
@@ -166,16 +166,26 @@ operations falling under implementation defined rules (such as performing an
 accelerator operation over a display list which is the same time read for
 display).
 
+The high part may be used by implementations if they wish to pre-calculate the
+number of cycles after which a FIFO beam wait's condition will be fulfilled.
+If the beam wait condition can not ever be fulfilled, such implementations are
+allowed to either terminate the application or set the maximal possible cycle
+count here.
+
 
 0xD5C, Graphics FIFO
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Graphics FIFO operations should be executed before modifying the ROPD data
 accordingly. The cycle requirements should be calculated as necessary (also
-including the operation of the Accelerator if triggered), and filled in 0xD55.
-Then in the same "atomic" operation the Graphics FIFO's state (read pointer
-and if needed, the clearing of the started flag) should be updated and filled
-in.
+including the operation of the Accelerator if triggered), and filled in 0xD54
+and 0xD55. Then in the same "atomic" operation the Graphics FIFO's state (read
+pointer and if needed, the clearing of the started flag) should be updated and
+filled in.
+
+Note that the command & data words to store next in the FIFO must be
+maintained on the 0xEC6 and 0xEC7 areas respectively. In any loaded state
+however the contents of 0xEC7 (the data word) is irrelevant.
 
 
 0xD80, Kernel tasks

@@ -46,6 +46,11 @@ undefined results (may normally cause a kernel trap on a capable system). This
 covers accesses by the CPU <=> VRAM DMA and the 16 <=> 32 VRAM interface. The
 empty state of the FIFO can be queried.
 
+The non-empty state may be broader (such as not only indicating FIFO not empty
+but also being set as long as anything started by the FIFO is processing), but
+the non-empty flag must always be consistent with the internal state (the
+allowance of accessing graphics).
+
 Overflowing the FIFO produces undefined results (may normally cause a kernel
 trap on a capable system).
 
@@ -89,9 +94,13 @@ the FIFO is capable to perform one operation every 4 cycles.
 Emulation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The FIFO processing cycles are not necessary to be emulated. Their effect may
-be simulated by increasing the stall cycle count of store trigger hits from 4
-to 5 cycles.
+The FIFO processing cycles are not necessary to be emulated on the CPU bus.
+Their effect may be simulated by increasing the stall cycle count of store
+trigger hits from 4 to 5 cycles. The processing cycles must however be present
+on the Video bus.
+
+Time taken by the FIFO once started may not be emulated in a cycle exact
+manner. A line based emulation is sufficient.
 
 
 
@@ -112,8 +121,8 @@ words in the 0xE00 - 0xFFF range.
 |        | Graphics FIFO non-empty flag & start trigger                      |
 | 0xE05  |                                                                   |
 |        | bit  1-15: 0 (always reads zero)                                  |
-|        | bit     0: If set, the copper is non-empty, Video should not be   |
-|        |            accessed.                                              |
+|        | bit     0: If set, the Graphics FIFO is non-empty, Video should   |
+|        |            not be accessed.                                       |
 |        |                                                                   |
 |        | When writing this register, the written value is ignored, while   |
 |        | it starts the Graphics FIFO. If the FIFO is empty, it has no      |
