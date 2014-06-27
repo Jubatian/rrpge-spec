@@ -1,3 +1,8 @@
+Version 00.006.003 (2014.06.27)
+ - Video kernel calls are allowed to termiate the application on Graphics FIFO
+   non-empty condition.
+
+
 Version 00.006.002 (2014.06.26)
  - Added some flexibility in handling an unfulfillable Graphics FIFO beam wait
    command (in ropddump.rst).

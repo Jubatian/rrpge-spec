@@ -88,10 +88,12 @@ Video peripheral use
 
 
 The kernel does not use the video peripheral for any of it's internal tasks,
-so it does not stall on user initiated video operations.
+so it does not stall on user initiated Graphics FIFO operations.
 
 Some video related kernel calls are exceptions, these are mentioned at the
-appropriate calls in the "kcall.rst" documentation.
+appropriate calls in the "kcall.rst" documentation. These are allowed to
+terminate the user application if they are called while the Graphics FIFO
+blocks.
 
 
 

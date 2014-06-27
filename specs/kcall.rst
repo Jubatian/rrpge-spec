@@ -403,11 +403,15 @@ Kernel functions, Video (0x0300 - 0x03FF)
 ------------------------------------------------------------------------------
 
 
+Video functions are allowed to terminate the user application if they are
+called while the Graphics FIFO is not empty.
+
+
 0x0300: Set palette entry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_vid_setpal
-- Cycles: 100 + Video stall
+- Cycles: 100
 - Host:   Required.
 - N/S:    This function must be supported if the host produces display.
 - Param1: Palette index (only low 8 bits used).
@@ -434,7 +438,7 @@ palette updates may delay by multiple frames.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_vid_getline
-- Cycles: 150 + Video stall
+- Cycles: 150
 - Host:   Not required.
 - Ret. A: Current display line (0 - 399) or lines until next frame (<0).
 
@@ -902,7 +906,7 @@ abbreviations used in the table are:
 - H:  Host requirement: 'M': Mandatory, 'O': Optional, empty: No host.
 - P:  Count of parameters.
 - R:  Return value registers used.
-- VS: Video Stall.
+- F:  Graphics FIFO non-empty when calling may terminate the application.
 - C:  Copy cycles (only for 0x0701: kc_net_recv).
 
 +--------+--------+---+---+----+-----+---------------------------------------+
@@ -926,11 +930,11 @@ abbreviations used in the table are:
 +--------+--------+---+---+----+-----+---------------------------------------+
 | 0x0113 |    800 | X | O |  4 |  A  | kc_sfi_move                           |
 +--------+--------+---+---+----+-----+---------------------------------------+
-| 0x0300 | VS+100 |   | M |  2 |     | kc_vid_setpal                         |
+| 0x0300 |  100/F |   | M |  2 |     | kc_vid_setpal                         |
 +--------+--------+---+---+----+-----+---------------------------------------+
-| 0x0320 | VS+150 |   |   |  0 |  A  | kc_vid_getline                        |
+| 0x0320 |  150/F |   |   |  0 |  A  | kc_vid_getline                        |
 +--------+--------+---+---+----+-----+---------------------------------------+
-| 0x0330 |      - |   | M |  1 |     | kc_vid_mode                           |
+| 0x0330 |    -/F |   | M |  1 |     | kc_vid_mode                           |
 +--------+--------+---+---+----+-----+---------------------------------------+
 | 0x0410 |    800 |   | O |  1 |  A  | kc_inp_getprops                       |
 +--------+--------+---+---+----+-----+---------------------------------------+
