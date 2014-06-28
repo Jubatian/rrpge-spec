@@ -125,195 +125,342 @@ Display generator architecture
 ------------------------------------------------------------------------------
 
 
-The display generator provides a background pattern and up to two
-independently scrollable display layers of which it composes the display in
-real time.
-
-The display layers' properties and pixel sources are controlled through
-display lists, a common one for most properties and a background pattern, and
-two layer specific ones for defining each layer's output. These all contain
-one 32 bit entry for each of the 400 displayed lines.
-
-Pixel data is rendered from left to right, and within the Video RAM it is laid
-out in Big Endian order (leftmost pixels on the higher bit positions of a
-Video RAM cell). This is consistent with the method the CPU implements
-sub-word addressing modes.
-
-The following block diagram depicts the workflow of the display generator as
-seen by the user, simplified: ::
-
-
-    +Peripheral-+       +----VRAM---+                        +---+
-    |           |       |           |                        |   |
-    | +-------+ |       | +-------+ |  +----Bg.pattern------>|   |
-    | |Backgrn| |       | | Backg | |  :                     |   |
-    | | list  |-----+---->| disp. |----+  +--------------+   |   |
-    | |pointer| |   ^   | | list  | |  :  | Layer, mask, |   |   |
-    | +-------+ |   :   | +-------+ |  +->| and colorkey |   |   |
-    |           |   :   |           |     | selector     |   |   |
-    |           |   :   |           |     +--------------+   | S |
-    | +-------+ |   :   | +-------+ |        :    :   :      | h |
-    | |Display| |   :   | | Disp. | |        V    :   :      | i |
-    | |list 0 |-----+---->| list  |----->+<--+    :   :      | f |
-    | |pointer| |   ^   | | 0     | |    :   :    :   :      | t |
-    | +-------+ |  |L|  | +-------+ |    :  |E|   :   :      |   |
-    |           |  |i|  |           |    :  |n|   :   :      | & |
-    |           |  |n|  | +-------+ |    :  |a|   :   :      |   |
-    |           |  |e|  | | Line  |<-----+  |b|   :   :      | C |
-    |           |  | |  | | pixel | |       |l|   V   V      | o |
-    |           |  |p|  | | data  |--------)|e|(--+===+=====>| m |
-    |           |  |t|  | +-------+ |       |d|   :   :      | b |  +---+
-    |           |  |r|  |           |        :   |M| |C|     | i |  | P |
-    | +-------+ |   :   | +-------+ |        :   |a| |o|     | n |  | a |
-    | |Display| |   V   | | Disp. | |        V   |s| |l|     | e |  | l |
-    | |list 1 |-----+---->| list  |----->+<--+   |k| |o|     |   |  | e |
-    | |pointer| |       | | 1     | |    :        :  |r|     |   |  | t |
-    | +-------+ |       | +-------+ |    :        :  |k|     |   |  | t |
-    |           |       |           |    :        :  |e|     |   |  | e |
-    |           |       | +-------+ |    :        :  |y|     |   |  +---+
-    |           |       | | Line  |<-----+        :   :      |   |    :
-    |           |       | | pixel | |             V   V      |   |    V
-    |           |       | | data  |---------------+===+=====>|   |----+--->
-    |           |       | +-------+ |                        |   |
-    |           |       |           |                        |   |
-    +-----------+       +-----------+                        +---+
-
-
-Within every displayed line (that is lines 0-399), in the horizontal blanking
-period before the line, the data at the offset specified by the line pointer
-is read from all five display lists (background and two layer display lists).
-
-For the display cycles of the line (this is 320 main clock cycles) each of
-the enabled layer's display data is read, combined, and output to the display.
-
-The display list reads and the graphics output in the display cycles require
-several memory accesses which cause stalls. Read the "Addressing stalls"
-section for further information on the layout and effects of these. The
-Display component has the highest priority in accessing the Video RAM.
-
-The background pattern and the two display layers have fixed priority order.
-From lowest to highest this is as follows:
-
-- Background pattern
-- Display layer 0
-- Display layer 1
-
-A higher priority layer may hide parts of the image composed from the lower
-priority layers in two ways:
-
-- Mask. The higher priority layer defines bit planes within the pixel data
-  which bit planes will be taken from it's data, hiding the respective bits
-  from the composition underneath. With a suitable palette this mode may be
-  utilized for transparent blending.
-
-- Colorkey. The higher priority layer defines a color index. Every pixel not
-  having this index from it's data will hide the respective pixels of the
-  composition underneath. If the pixel in it's data matches this index, then
-  the pixel from the composition underneath will be shown. For the colorkey
-  matching only those bit planes are taken in account which will not be taken
-  away by higher priority layers in Mask mode or a global mask.
-
-
-Background display list
+Overview
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The background display list defines the background pattern and the common
-properties for the individual display layers. It has 400 entries, one for each
-line, one entry is 32 bits. According to the Big Endian scheme, the CPU sees
-it's high 16 bits as it's first word, and the low 16 bits as it's second word.
+The display generator produces the video signal as required by the targeted
+display standard from the appropriate data in the Video RAM, line by line.
 
-+-------+--------------------------------------------------------------------+
-| Bits  | Description                                                        |
-+=======+====================================================================+
-|    31 | Layer 0 Disabled (0) / Enabled (1)                                 |
-+-------+--------------------------------------------------------------------+
-|    30 | Layer 1 Mask (0) / Colorkey (1) mode                               |
-+-------+--------------------------------------------------------------------+
-| 24-29 | Unused                                                             |
-+-------+--------------------------------------------------------------------+
-| 16-23 | Global mask. Only low 4 bits used in 4 bit mode.                   |
-+-------+--------------------------------------------------------------------+
-|  0-15 | Background pattern. In 4bit mode this is 4 colors in the usual     |
-|       | high (leftmost) to low (rightmost) order, in 8 bit mode 2 colors.  |
-|       | The global mask does not affect this field.                        |
-+-------+--------------------------------------------------------------------+
-
-Layer 0 is always in Colorkey mode. Layer 1 is always enabled.
-
-The Global mask limits the effective color bits of all display layers except
-the background. It may be used to force such limitation if the application
-uses less colors: this can be useful for freeing up bit planes for further
-data storage (such as sprites or tiles; which may be exploited using the
-Accelerator).
-
-Note that the background is always fully covered by pixels not matching the
-colorkey of a colorkeyed layer even if it uses bit planes disabled for the
-layers by the global mask.
-
-The effective bits of Layer 0 are determined by the Global mask, and
-optionally Layer 1's mask if it is in mask mode.
-
-If Layer 1 is in Colorkey mode, it's effective bits are determined by the
-Global mask.
+A line renderer generates the display line from a display list providing
+parameters for loading chunks of source data into an internal line double
+buffer's render side. The buffers are flipped on advancing a line, so next
+line the previous render side becomes a display side, and is used to generate
+the video signal producing pixel data. ::
 
 
-Layer display lists
+    +-------------------------+
+    | Video RAM               |
+    +-------------------------+
+                 |
+                 | Video bus access every second cycle
+                 V
+    +-------------------------+
+    | Line renderer           |
+    +-------------------------+
+                 |
+                 |
+    +------------|------------ Line double buffer ---------------------------+
+    |            V                                                           |
+    |  +------------- Render side -------------+--------------------------+  |
+    |  |                                       |                          |  |
+    |  +- 80 x 32 bit cells display data ------+- 48 x 32 bit cells void -+  |
+    |  |                                       |                          |  |
+    |  +------------- Display side ------------+--------------------------+  |
+    |            |                                                           |
+    +------------|-----------------------------------------------------------+
+                 |
+                 |     +--------------+
+                 |<----| Palette data |
+                 |     +--------------+
+                 V
+           Video signal
+
+
+A display line is 640 x 4 bit pixels or 320 x 8 bit pixels depending on the
+display mode, taking 80 x 32 bit Video RAM cells. One buffer in the Line
+double buffer accordingly is capable to hold 80 x 32 bits of data, while it's
+cells may have a 7 bit address. The cells addressable with these address bits
+(cells 80 - 127) do not contribute to the Video signal, and so they may not
+be implemented.
+
+The buffers are typically flipped when advancing a line, that is every 400
+main clock cycles. The display generator supports a doubly scanned mode when
+the buffers are only flipped after every second line.
+
+The Render side also contains a reset circuity which can reset the state of
+all cells to a given initial value in a single clock.
+
+Due to this architecture the Line renderer is free to build up the following
+display line in any order as long as it fits in the line's cycle budget.
+
+To give time slots for other components accessing the Video RAM (on the Video
+bus) the Display generator is capable to access the bus on every second main
+clock cycle, so allowing 200 Video bus accesses per line.
+
+
+Display list
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The layer display lists provide the properties for each of the layers
-individually. Like the background display list, these have 400 entries with
-each entry being 32 bits in size.
+The Line renderer operates based on a display list concept, which list
+provides a sequence of rendering commands to be performed on the line. The
+Line renderer fetches and performs these commands as far as the line's (or
+the pair of lines' in doubly scanned mode) cycle budget permits or the list is
+drained.
 
-+-------+--------------------------------------------------------------------+
-| Bits  | Description                                                        |
-+=======+====================================================================+
-| 16-31 | Source pixel data pointer, whole (32bit VRAM cell unit) part       |
-+-------+--------------------------------------------------------------------+
-| 13-15 | Source pixel data pointer, fractional part                         |
-+-------+--------------------------------------------------------------------+
-|    12 | Unused                                                             |
-+-------+--------------------------------------------------------------------+
-|  8-11 | Partition size                                                     |
-|       |                                                                    |
-|       | - 0:  4 Words (2 * 32 bit cells)                                   |
-|       | - 1:  8 Words (4 * 32 bit cells)                                   |
-|       | - 2:  16 Words (8 * 32 bit cells)                                  |
-|       | - 3:  32 Words (16 * 32 bit cells)                                 |
-|       | - 4:  64 Words (32 * 32 bit cells)                                 |
-|       | - 5:  128 Words (64 * 32 bit cells)                                |
-|       | - 6:  256 Words (128 * 32 bit cells)                               |
-|       | - 7:  512 Words (256 * 32 bit cells)                               |
-|       | - 8:  1 KWords (512 * 32 bit cells)                                |
-|       | - 9:  2 KWords (1K * 32 bit cells)                                 |
-|       | - 10: 4 KWords (2K * 32 bit cells)                                 |
-|       | - 11: 8 KWords (4K * 32 bit cells)                                 |
-|       | - 12: 16 KWords (8K * 32 bit cells)                                |
-|       | - 13: 32 KWords (16K * 32 bit cells)                               |
-|       | - 14: 64 KWords (32K * 32 bit cells)                               |
-|       | - 15: 128 KWords (64K * 32 bit cells)                              |
-+-------+--------------------------------------------------------------------+
-|  0- 7 | Mask or colorkey data. Only the bits not masked by the Global mask |
-|       | or a higher priority layer mask are effective. In mask mode set    |
-|       | bits indicate that the appropriate bit plane from this layer's     |
-|       | pixel data is effective.                                           |
-+-------+--------------------------------------------------------------------+
+If the cycle budget is exhausted, the rendering of the line is simply
+terminated, and the following line is started normally.
 
-The Video RAM bank selection part of the source pixel data pointer is provided
-for each layer as peripheral registers accessible by the Graphics FIFO, easing
-the implementation of double buffering.
+The first command of a line or line pair's command set is a 32 bit background
+pattern which is used to reset the Render side of the Line double buffer.
+Subsequent commands are rendering commands which combine a line of data from
+the Video RAM onto the Render side of the Line double buffer.
 
-The fractional part of the address determines the pixel precise start offset
-of the layer line, which is effectively a left shift of the 32 bit source
-data. In 4 bit mode the high 3 bits of the fraction give distinct visible
-shifts (as 8 pixels fill a 32 bit Video RAM cell), in 8 bit mode, the high 2
-bits.
+The processing is adequately pipelined so no Video bus access cycles are spent
+idle as long as there is data to render for the line. From the user's point of
+view the Line renderer may be seen as fetching a display list command, then
+processing it. Up to 8 bus access cycles per line or line pair is however lost
+for overhead, so up to 192 bus access cycles remain available for processing
+by this scheme (392 in double scanned mode).
 
-The partition size is used to wrap the offset during drawing the line to the
-beginning of the partition. This is useful for implementing horizontal
-scrolling.
+(Implementations are allowed to deviate from the strictly sequential scheme in
+favor of meeting the bus access cycle requirement by pipelining, such as by
+pre-fetching some cells of the display list)
 
-Note that for each display list line in total 81 Video RAM cells of pixel
-data are read in.
+
+
+
+Graphics Display Generator memory map and command layouts
+------------------------------------------------------------------------------
+
+
+The following table describes those elements of the graphics registers which
+are related to the Display Generator component. Note that these registers are
+only accessible through the Graphics FIFO (see "grapfifo.rst" for details).
+
+The graphics registers in the 0x000 - 0x0FF range repeat every 32 words, so
+for example the address 0x020 also refers to the register at 0x000.
+
++--------+-------------------------------------------------------------------+
+| Range  | Description                                                       |
++========+===================================================================+
+| 0x000  |                                                                   |
+| \-     | Accelerator registers. See "acc_arch.rst".                        |
+| 0x001  |                                                                   |
++--------+-------------------------------------------------------------------+
+|        | Shift mode region                                                 |
+| 0x002  |                                                                   |
+|        | - bit    15: Double scanned mode if set                           |
+|        | - bit  8-14: Output width in cells (0: No output)                 |
+|        | - bit     7: Unused                                               |
+|        | - bit  0- 6: Begin position in cells                              |
+|        |                                                                   |
+|        | Specifies the region of output for Shift mode sources. The bus    |
+|        | access cycles required are one more than the output width.        |
++--------+-------------------------------------------------------------------+
+|        | Display list definition                                           |
+| 0x003  |                                                                   |
+|        | - bit  9-15: Unused                                               |
+|        | - bit  2- 8: Display list start offset in 2048 VRAM cell units    |
+|        | - bit  0- 1: Display list entry / line size                       |
+|        |                                                                   |
+|        | Display list entry / line sizes:                                  |
+|        |                                                                   |
+|        | - 0: 4 / 8 (double scan) entries                                  |
+|        | - 1: 8 / 16 (double scan) entries, bit 3 is unused                |
+|        | - 2: 16 / 32 (double scan) entries, bits 3-4 are unused           |
+|        | - 3: 32 / 64 (double scan) entries, bits 3-5 are unused           |
+|        |                                                                   |
+|        | Note that in double scanned mode there are only 200 lines, so the |
+|        | total size of the display list is identical to that of the single |
+|        | scanned mode.                                                     |
++--------+-------------------------------------------------------------------+
+|        | Source definition 0                                               |
+| 0x004  |                                                                   |
+|        | - bit  8-15: Base offset bits 8-15                                |
+|        | - bit  6- 7: VRAM bank select                                     |
+|        | - bit     5: If set, shift source. If clear, positioned source.   |
+|        | - bit  3- 4: Width multiplier for positioned source               |
+|        | - bit  0- 2: Width in cells                                       |
+|        |                                                                   |
+|        | Width multipliers:                                                |
+|        |                                                                   |
+|        | - 0: x1                                                           |
+|        | - 1: x3                                                           |
+|        | - 2: x5                                                           |
+|        | - 3: x7                                                           |
+|        |                                                                   |
+|        | Width in cells:                                                   |
+|        |                                                                   |
+|        | - 0: 1 cell (8 pixels in 4 bit mode, 4 pixels in 8 bit)           |
+|        | - 1: 2 cells                                                      |
+|        | - 2: 4 cells                                                      |
+|        | - 3: 8 cells                                                      |
+|        | - 4: 16 cells                                                     |
+|        | - 5: 32 cells                                                     |
+|        | - 6: 64 cells                                                     |
+|        | - 7: 128 cells                                                    |
+|        |                                                                   |
+|        | The width multiplier only has effect for positioned sources. It   |
+|        | multiplies the width for the render, however only the width is    |
+|        | used to calculate offsets in the source.                          |
+|        |                                                                   |
+|        | Shift sources wrap around on their end when rendering, always     |
+|        | producing the output width defined in the Shift mode region       |
+|        | register.                                                         |
++--------+-------------------------------------------------------------------+
+| 0x005  | Source definition 1                                               |
++--------+-------------------------------------------------------------------+
+| 0x006  | Source definition 2                                               |
++--------+-------------------------------------------------------------------+
+| 0x007  | Source definition 3                                               |
++--------+-------------------------------------------------------------------+
+| 0x008  |                                                                   |
+| \-     | Accelerator registers. See "acc_arch.rst".                        |
+| 0x1FF  |                                                                   |
++--------+-------------------------------------------------------------------+
+
+Display lists hold commands, each command defining one chunk of data to be
+rendered on the Render side of the Line double buffer. The first entry of a
+line of a display list is a background pattern which is used to reset the
+Render side of the Line double buffer before starting the render. Subsequent
+entries (up to 3, 7, 15, 31 or 63 depending on entry size and double scanning)
+are render commands.
+
+The layout of a render command is as follows:
+
++--------+-------------------------------------------------------------------+
+| Bits   | Description                                                       |
++========+===================================================================+
+|        | If set, bit 3 (4 bit mode) or bit 5 (8 bit mode) of destination   |
+| 31     | pixel values become a priority selector. If bit 3 / 5 of the      |
+|        | destination pixel is set, it won't be overriden by the source     |
+|        | pixel.                                                            |
++--------+-------------------------------------------------------------------+
+| 30     | Combine with colorkey if clear (!)                                |
++--------+-------------------------------------------------------------------+
+| 28-29  | Source definition select                                          |
++--------+-------------------------------------------------------------------+
+|        | Source line select. This is multiplied with the width of the      |
+| 16-27  | source (not including the multiplier) to produce a VRAM offset,   |
+|        | and is OR combined with the source's base offset. Video RAM bank  |
+|        | boundaries can not be crossed.                                    |
++--------+-------------------------------------------------------------------+
+| 15     | Combine with mask if clear (!)                                    |
++--------+-------------------------------------------------------------------+
+|        | Mask / Colorkey extend mode for pixel bits 4-7                    |
+| 14     |                                                                   |
+|        | - 0: bits 4-7 are zero                                            |
+|        | - 1: bits 0-3 are zero, and bits 4-7 get the Mask / Colorkey      |
+|        |   value with some exceptions.                                     |
+|        |                                                                   |
+|        | Exceptions are based on the Mask / Colorkey value as follows:     |
+|        |                                                                   |
+|        | - 0101 (binary): Mask / Colorkey is 00011111 (binary).            |
+|        | - 1010 (binary): Mask / Colorkey is 00111111 (binary).            |
+|        | - 1011 (binary): Mask / Colorkey is 01111111 (binary).            |
+|        | - 1101 (binary): Mask / Colorkey is 11111111 (binary).            |
++--------+-------------------------------------------------------------------+
+| 10-13  | Mask / Colorkey value for pixel bits 0-3 (unless in extend mode)  |
++--------+-------------------------------------------------------------------+
+|        | Shift / Position amount in 4 bit pixel units. If the source is in |
+| 0-9    | shift mode, this value shifts it to the left by the given number  |
+|        | of pixel units. If the source is in position mode, this value     |
+|        | determines it's start position on the Render side of the Line     |
+|        | double buffer. In 8 bit mode the lowest bit is ignored.           |
++--------+-------------------------------------------------------------------+
+
+A render command is inactive if it's bits 15 and 10-13 are set zero. Such a
+render command does not contribute to the line's contents, and only takes one
+bus access cycle (the cycle in which it was fetched).
+
+
+
+
+Rendering process
+------------------------------------------------------------------------------
+
+
+The rendering process for cells are identical for Shift and Position modes,
+and is carried out according to the following guide: ::
+
+
+    +----+----+----+----+
+    |    Source data    | As read from the Video RAM
+    +----+----+----+----+
+              |
+              +------------+ Shift to align with destination
+                           V
+    +----+----+----+----+----+----+----+----+
+    | Prev. src. |   Current source  |      | Shift register
+    +----+----+----+----+----+----+----+----+
+              |
+              |                                        Mask / C.key value
+              V                                              | |
+    +----+----+----+----+ If c.key  +----+----+----+----+    | |
+    |    Data to blit   |---------->|   Colorkey mask   |<---+ |
+    +----+----+----+----+           +----+----+----+----+      | If mask
+              |                               |                V
+              |    +----+----+----+----+      |      +----+----+----+----+
+              |    |   Priority mask   |----+ | +----|      Bit mask     |
+              |    +----+----+----+----+    | | |    +----+----+----+----+
+              |              A              | | |
+              |              | If priority  | | |    +----+----+----+----+
+              |              |              | | | +--|  Beg/Mid/End mask |
+              |              |              | | | |  +----+----+----+----+
+              |              |             _V_V_V_V_
+              |              |            |   AND   |
+             _V_             |             ~~~~|~~~~
+            |AND|<----------)|(----------------+
+             ~|~             |                 |
+             _V_     ___     |                _V_
+            | OR|<--|AND|<--)|(--------------|NEG|
+             ~|~     ~A~     |                ~~~
+              |       |      |
+              |       +------+
+              |       |
+              V       |
+     ---+----+----+----+----+---
+        | Target r.buf cell |
+     ---+----+----+----+----+---
+
+
+The Beg/Mid/End mask is used in Position mode to mask the partially filled
+cells on the beginning and the end of the rendered streak of data.
+
+In Shift mode the fractional part (low 3 bits) of the Shift / Position amount
+is 2's complement negated to produce the alignment shift. In Shift mode
+typically a source cell has to be fetched in advance (without producing
+destination for it), so the shift register may be properly filled for the
+first output data.
+
+
+
+
+Renderer cycle budget
+------------------------------------------------------------------------------
+
+
+As defined in the "Display List" chapter, in single scanned mode from the
+user's point of view there are at least 192 useful Video bus access cycles,
+and in doubly scanned mode, there are 392.
+
+The rendering from the user's point of view may be interpreted as being
+sequential: the renderer fetches a display list command, then processes it,
+then goes on to the next command as long as there are commands for the line
+and there are bus access cycles remaining for the render.
+
+Bus access cycles are taken by the following rules:
+
+- 1 cycle for reading a display list command.
+- The Shift mode region's Output width count of cycles plus one for sources in
+  Shift mode.
+- The multiplied width count of cycles for sources in Position mode.
+
+Note that the renderer is not capable to optimize out access cycles which
+would be used to render into off-screen area, neither it has a limit on how
+many cycles may it consume for a command in Position mode (that is defining a
+source of width 128 x 7 would cause 896 bus access cycles to be taken for it's
+render unless the line's end terminated it).
+
+(Pipelining notes: if a source is in Position mode, to render it on the Line
+double buffer, one more cycle is necessary than it's width. This extra cycle
+should be performed in parallel with a display list command fetch)
+
+
+
+
+Other components of the Display Generator
+------------------------------------------------------------------------------
 
 
 The line counter & pointer
@@ -370,6 +517,15 @@ application programmer are declared "Implementation defined" to allow for
 simpler emulation or to restrict probable hardware implementations less. These
 are as follows:
 
+- The exact number of bus access cycles available for render beyond the
+  required 192 / 392 cycles, and how the pipeline behaves regarding the
+  termination of a render because of exhausting the cycle budget. Note that if
+  by the specification the effective render finishes within the cycle budget
+  leaving only disabled display list commands which may be terminated, the
+  behavior must be defined (the terminated display list must not affect the
+  contents of the line). The next line or line pair's render must always start
+  proper regardless of the termination of the line or line pair before.
+
 - The timing of any display related Video RAM access within the rendered line.
   No Video RAM accesses for a line must happen before incrementing the Line
   counter & pointer to the given line, and no Video RAM accesses must happen
@@ -397,57 +553,6 @@ tasks.
 The effect of these accesses from the point of minimal limits to support is
 described in the "Memory access stalls" section of the CPU instruction set
 ("cpu_inst.rst").
-
-Below the hardware level assumptions are described leading to constraining the
-Graphics Display Generator to this bus access scheme.
-
-Both in 4 bit and 8 bit mode one layer of pixel data takes 80 + 1 32 bit Video
-RAM cells to read in. To read both layers so 162 memory accesses are required,
-which take 324 cycles. In addition to these the display lists have to be read,
-adding another 3 memory accesses, incrementing the cycle requirements to 330
-cycles. This fits in the 400 cycle budget allowed for a line.
-
-
-
-
-Graphics Display Generator memory map
-------------------------------------------------------------------------------
-
-
-The following table describes those elements of the graphics registers which
-are related to the Display Generator component. Note that these registers are
-only accessible through the Graphics FIFO (see "grapfifo.rst" for details).
-
-The graphics registers in the 0x000 - 0x0FF range repeat every 32 words, so
-for example the address 0x020 also refers to the register at 0x000.
-
-+--------+-------------------------------------------------------------------+
-| Range  | Description                                                       |
-+========+===================================================================+
-| 0x000  |                                                                   |
-| \-     | Accelerator registers. See "acc_arch.rst".                        |
-| 0x001  |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0x002  | Unused.                                                           |
-+--------+-------------------------------------------------------------------+
-| 0x003  | Background display list offset in 512 * 32 bit VRAM cell units.   |
-|        | The display list occupies the first 400 cells of the area. High   |
-|        | bits which would address outside the Video RAM are ignored.       |
-+--------+-------------------------------------------------------------------+
-| 0x004  | Layer 0 display list offset in 512 * 32 bit VRAM cell units.      |
-|        | Works the same way like the Background display list offset.       |
-+--------+-------------------------------------------------------------------+
-| 0x005  | Layer 1 display list offset in 512 * 32 bit VRAM cell units.      |
-|        | Works the same way like the Background display list offset.       |
-+--------+-------------------------------------------------------------------+
-| 0x006  | Layer 0 bank select. Only the low 2 bits are used.                |
-+--------+-------------------------------------------------------------------+
-| 0x007  | Layer 1 bank select. Only the low 2 bits are used.                |
-+--------+-------------------------------------------------------------------+
-| 0x008  |                                                                   |
-| \-     | Accelerator registers. See "acc_arch.rst".                        |
-| 0x1FF  |                                                                   |
-+--------+-------------------------------------------------------------------+
 
 
 

@@ -1,3 +1,8 @@
+Version 00.007.000 (2014.06.28)
+ - New Graphics Display Generator supporting more flexible means for
+   generating the pixel data for the video signal.
+
+
 Version 00.006.003 (2014.06.27)
  - Video kernel calls are allowed to termiate the application on Graphics FIFO
    non-empty condition.

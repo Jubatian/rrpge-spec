@@ -105,46 +105,41 @@ Video reset state
 Display layout
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Display lists are set up to be found on the following locations:
+The display list is up as follows:
 
-- Background list: Video RAM page 127; Offset 0x800.
-- Layer 0 list: Video RAM page 127; Offset 0x400.
-- Layer 1 list: Video RAM page 127; Offset 0x000.
+- Double scanned mode.
+- 8 entries / line.
+- Video RAM page 127; Offset 0x000 (as seen by the CPU).
 
-The offsets are word (16 bit) offsets (as seen by the CPU).
+The display list is populated the following way:
 
-The background display list is populated the following way:
+- Entry 0 gets the value zero (reset pattern).
+- Entry 1 defines a display surface.
+- Entries 2-7 are set zero so they are unused.
 
-- Each line gets the 32 bit value 0x40FF0000.
+Source definitions are set up as follows:
 
-The meaning of the value is as follows:
+- Source 0: 0x0014
+- Source 1: 0x4042
+- Source 2: 0x8042
+- Source 2: 0xC042
 
-- Global mask is 0xFF (all bit planes enabled in both 4 bit and 8 bit modes).
-- Layer 0 is disabled.
-- Layer 1 is in Colorkey mode.
-- Background pattern is color index zero.
+Source 0 sets up positioned source on Video RAM bank 0 of 80 cells width. This
+is useful for non-scrolling display.
 
-Each of the display lists are populated as follows:
+Sources 1-3 set up 4 cell wide (16 pixels in 8 bit mode, 32 pixels in 4 bit
+mode) positioned source on Video RAM bank 1, in a manner they may be
+continuously accessed through display list entries, useful for small sprites.
 
-- Line zero gets the 32 bit value 0x00000F00.
-- Odd lines repeat the value of the previous line.
-- Even lines (except line zero) increment the previous line by 0x00500000.
+Entry 1 of the display list is populated as follows:
 
-The first line points to the beginning of the layer's Video RAM bank. Further
-lines set up double scanning, with a relative increment of 80 Video RAM cells
-every second line. The colorkey is zero (which with the zero background
-pattern makes this effect invisible).
+Line 0 gets the value 0x40008000. Line 1 is 0x40058000. Subsequent lines get
+their entry values in a similar manner, adding 0x50000 to the previous line.
+This layout produces a simple 320x200 surface in the beginning of the Video
+RAM (which is banked in the CPU's address space initially).
 
-Note that for all three display lists only the 400 visible lines are populated
-by the above scheme. All the remaining areas of the Video RAM are left zero.
-
-Layer 1 is pointed to Video RAM bank 0. Layer 0 is pointed to Video RAM bank
-1.
-
-This initial setup (coupled with that the first 8 Video RAM pages are banked
-in the processor's address space) allows for composing simple graphics
-directly after boot, without the need of altering the state of the Graphics
-Display unit.
+Note that only the valid lines of the display list are populated (so 200
+lines), the rest of the area of the display list remains zero.
 
 
 Palette
@@ -253,7 +248,7 @@ dump replicates the application header.
 
 0xEE0 - 0xEFF: ::
 
-    0xFFFFU, 0xFFFFU, 0x0000U, 0x01FEU, 0x01FDU, 0x01FCU, 0x0001U, 0x0000U,
+    0xFFFFU, 0xFFFFU, 0xD000U, 0x01FCU, 0x0014U, 0x4042U, 0x8042U, 0xC042U,
     0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U,
     0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U,
     0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U,

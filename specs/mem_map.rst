@@ -245,21 +245,21 @@ detailed descriptions of the registers, see the appropriate peripheral.
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0x000  | VRAM write mask high (see "vid_arch.rst")                         |
+| 0x000  | VRAM write mask high (see "acc_arch.rst")                         |
 +--------+-------------------------------------------------------------------+
-| 0x001  | VRAM write mask low (see "vid_arch.rst")                          |
+| 0x001  | VRAM write mask low (see "acc_arch.rst")                          |
 +--------+-------------------------------------------------------------------+
-| 0x002  | Unused                                                            |
+| 0x002  | Shift mode region (see "vid_arch.rst")                            |
 +--------+-------------------------------------------------------------------+
-| 0x003  | Background display list offset (see "vid_arch.rst")               |
+| 0x003  | Display list definition (see "vid_arch.rst")                      |
 +--------+-------------------------------------------------------------------+
-| 0x004  | Layer 0 display list offset (see "vid_arch.rst")                  |
+| 0x004  | Source definition 0 (see "vid_arch.rst")                          |
 +--------+-------------------------------------------------------------------+
-| 0x005  | Layer 1 display list offset (see "vid_arch.rst")                  |
+| 0x005  | Source definition 1 (see "vid_arch.rst")                          |
 +--------+-------------------------------------------------------------------+
-| 0x006  | Layer 0 bank select (see "vid_arch.rst")                          |
+| 0x006  | Source definition 2 (see "vid_arch.rst")                          |
 +--------+-------------------------------------------------------------------+
-| 0x007  | Layer 1 bank select (see "vid_arch.rst")                          |
+| 0x007  | Source definition 3 (see "vid_arch.rst")                          |
 +--------+-------------------------------------------------------------------+
 | 0x008  | Accelerator source bank & partition select (see "acc_arch.rst")   |
 +--------+-------------------------------------------------------------------+
