@@ -1,3 +1,10 @@
+Version 00.007.001 (2014.06.29)
+ - Undefined behavior noted for the Graphics Display Generator registers.
+ - Probable Video RAM bank crossing in the Graphics Display Generator
+   clarified.
+ - Fix in the initialization data: the page of the ROPD was incorrect.
+
+
 Version 00.007.000 (2014.06.28)
  - New Graphics Display Generator supporting more flexible means for
    generating the pixel data for the video signal.

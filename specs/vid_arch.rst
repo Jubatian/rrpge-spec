@@ -363,6 +363,11 @@ A render command is inactive if it's bits 15 and 10-13 are set zero. Such a
 render command does not contribute to the line's contents, and only takes one
 bus access cycle (the cycle in which it was fetched).
 
+Note that Video RAM bank boundaries can not even be crossed in position mode
+with an appropriate source line select and a larger than one multiplier. The
+reading of the source wraps around fetching the remaining cells from the
+beginning of the same VRAM bank.
+
 
 
 
@@ -525,6 +530,11 @@ are as follows:
   behavior must be defined (the terminated display list must not affect the
   contents of the line). The next line or line pair's render must always start
   proper regardless of the termination of the line or line pair before.
+
+- Fetching of the six Graphics Display Generator register relative to the
+  render of lines or the frame. If they changed in the Vertical Blank, earlier
+  than the last line of it, the next display frame must render according to
+  the new contents.
 
 - The timing of any display related Video RAM access within the rendered line.
   No Video RAM accesses for a line must happen before incrementing the Line
