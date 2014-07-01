@@ -674,9 +674,7 @@ for example the address 0x020 also refers to the register at 0x000.
 | \-     | mask writes to the respective positions both for the 16 <=> 32    |
 | 0x001  | VRAM interface and the Accelerator.                               |
 +--------+-------------------------------------------------------------------+
-| 0x002  | Unused.                                                           |
-+--------+-------------------------------------------------------------------+
-| 0x003  |                                                                   |
+| 0x002  |                                                                   |
 | \-     | Graphics Display Generator registers. See "vid_arch.rst".         |
 | 0x007  |                                                                   |
 +--------+-------------------------------------------------------------------+

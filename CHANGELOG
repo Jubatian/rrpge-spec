@@ -1,3 +1,7 @@
+Version 00.007.002 (2014.07.01)
+ - Fix in the accelerator's memory map (0x002 is not unused).
+
+
 Version 00.007.001 (2014.06.29)
  - Undefined behavior noted for the Graphics Display Generator registers.
  - Probable Video RAM bank crossing in the Graphics Display Generator
