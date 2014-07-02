@@ -1,3 +1,8 @@
+Version 00.007.003 (2014.07.01)
+ - Graphics FIFO: Command word latch does not increment on store if it
+   addresses the Accelerator's start trigger.
+
+
 Version 00.007.002 (2014.07.01)
  - Fix in the accelerator's memory map (0x002 is not unused).
 

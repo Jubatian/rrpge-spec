@@ -133,7 +133,9 @@ words in the 0xE00 - 0xFFF range.
 +--------+-------------------------------------------------------------------+
 |        | Graphics FIFO data word & store trigger. Always reads zero.       |
 | 0xE07  | Writing triggers a store into the FIFO area, and after the store, |
-|        | increments bits 0-8 of the latched command word.                  |
+|        | increments bits 0-8 of the latched command word. This increment   |
+|        | only happens if the command word is a Graphics register write,    |
+|        | and it does not address the Accelerator's start trigger.          |
 +--------+-------------------------------------------------------------------+
 
 
@@ -168,6 +170,11 @@ the register address in the command word automatically.
 If the register written is the Accelerator's start trigger (matched as binary
 0xxx01111, 'x' indicating don't care bits), the Graphics FIFO also autostarts,
 the same way like if the Start trigger (0xE05) register was written.
+
+The latched Command word's bit 0-8 auto-increments after a store if it was a
+Graphics register write. The increment neither happens if it addresses the
+Accelerator's start trigger (like above, matched as binary 0xxx01111, 'x'
+indicating don't care bits).
 
 
 Beam wait condition
