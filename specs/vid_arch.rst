@@ -223,22 +223,19 @@ Graphics Display Generator memory map and command layouts
 ------------------------------------------------------------------------------
 
 
-The following table describes those elements of the graphics registers which
-are related to the Display Generator component. Note that these registers are
-only accessible through the Graphics FIFO (see "grapfifo.rst" for details).
-
-The graphics registers in the 0x000 - 0x0FF range repeat every 32 words, so
-for example the address 0x020 also refers to the register at 0x000.
+The following table describes the Graphics Display Generator's registers. They
+are accessible in the 0xE00 - 0xEFF range in the User peripheral area,
+repeating every 16 words.
 
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0x000  |                                                                   |
-| \-     | Accelerator registers. See "acc_arch.rst".                        |
-| 0x001  |                                                                   |
+| 0xE00  |                                                                   |
+| \-     | Graphics FIFO registers. See "gfifo.rst".                         |
+| 0xE03  |                                                                   |
 +--------+-------------------------------------------------------------------+
 |        | Shift mode region                                                 |
-| 0x002  |                                                                   |
+| 0xE04  |                                                                   |
 |        | - bit    15: Double scanned mode if set                           |
 |        | - bit  8-14: Output width in cells (0: No output)                 |
 |        | - bit     7: Unused                                               |
@@ -248,7 +245,7 @@ for example the address 0x020 also refers to the register at 0x000.
 |        | access cycles required are one more than the output width.        |
 +--------+-------------------------------------------------------------------+
 |        | Display list definition                                           |
-| 0x003  |                                                                   |
+| 0xE05  |                                                                   |
 |        | - bit  9-15: Unused                                               |
 |        | - bit  2- 8: Display list start offset in 2048 VRAM cell units    |
 |        | - bit  0- 1: Display list entry / line size                       |
@@ -264,8 +261,24 @@ for example the address 0x020 also refers to the register at 0x000.
 |        | total size of the display list is identical to that of the single |
 |        | scanned mode.                                                     |
 +--------+-------------------------------------------------------------------+
+|        | Mask / Colorkey definition 0                                      |
+| 0xE06  |                                                                   |
+|        | - bit  8-15: Mask / Colorkey for 0xC                              |
+|        | - bit  0- 7: Mask / Colorkey for 0xD                              |
+|        |                                                                   |
+|        | Provides user-defineable Mask or Colorkey values for the given    |
+|        | values of the Mask / Colorkey selector in the render command.     |
++--------+-------------------------------------------------------------------+
+|        | Mask / Colorkey definition 1                                      |
+| 0xE07  |                                                                   |
+|        | - bit  8-15: Mask / Colorkey for 0xE                              |
+|        | - bit  0- 7: Mask / Colorkey for 0xF                              |
+|        |                                                                   |
+|        | Provides user-defineable Mask or Colorkey values for the given    |
+|        | values of the Mask / Colorkey selector in the render command.     |
++--------+-------------------------------------------------------------------+
 |        | Source definition 0                                               |
-| 0x004  |                                                                   |
+| 0xE08  |                                                                   |
 |        | - bit  8-15: Base offset bits 8-15                                |
 |        | - bit  6- 7: VRAM bank select                                     |
 |        | - bit     5: If set, shift source. If clear, positioned source.   |
@@ -298,15 +311,19 @@ for example the address 0x020 also refers to the register at 0x000.
 |        | producing the output width defined in the Shift mode region       |
 |        | register.                                                         |
 +--------+-------------------------------------------------------------------+
-| 0x005  | Source definition 1                                               |
+| 0xE09  | Source definition 1                                               |
 +--------+-------------------------------------------------------------------+
-| 0x006  | Source definition 2                                               |
+| 0xE0A  | Source definition 2                                               |
 +--------+-------------------------------------------------------------------+
-| 0x007  | Source definition 3                                               |
+| 0xE0B  | Source definition 3                                               |
 +--------+-------------------------------------------------------------------+
-| 0x008  |                                                                   |
-| \-     | Accelerator registers. See "acc_arch.rst".                        |
-| 0x1FF  |                                                                   |
+| 0xE0C  | Source definition 4                                               |
++--------+-------------------------------------------------------------------+
+| 0xE0D  | Source definition 5                                               |
++--------+-------------------------------------------------------------------+
+| 0xE0E  | Source definition 6                                               |
++--------+-------------------------------------------------------------------+
+| 0xE0F  | Source definition 7                                               |
 +--------+-------------------------------------------------------------------+
 
 Display lists hold commands, each command defining one chunk of data to be
@@ -326,9 +343,7 @@ The layout of a render command is as follows:
 |        | destination pixel is set, it won't be overriden by the source     |
 |        | pixel.                                                            |
 +--------+-------------------------------------------------------------------+
-| 30     | Combine with colorkey if clear (!)                                |
-+--------+-------------------------------------------------------------------+
-| 28-29  | Source definition select                                          |
+| 28-30  | Source definition select                                          |
 +--------+-------------------------------------------------------------------+
 |        | Source line select. This is multiplied with the width of the      |
 | 16-27  | source (not including the multiplier) to produce a VRAM offset,   |
@@ -337,20 +352,26 @@ The layout of a render command is as follows:
 +--------+-------------------------------------------------------------------+
 | 15     | Combine with mask if clear (!)                                    |
 +--------+-------------------------------------------------------------------+
-|        | Mask / Colorkey extend mode for pixel bits 4-7                    |
-| 14     |                                                                   |
-|        | - 0: bits 4-7 are zero                                            |
-|        | - 1: bits 0-3 are zero, and bits 4-7 get the Mask / Colorkey      |
-|        |   value with some exceptions.                                     |
-|        |                                                                   |
-|        | Exceptions are based on the Mask / Colorkey value as follows:     |
-|        |                                                                   |
-|        | - 0101 (binary): Mask / Colorkey is 00011111 (binary).            |
-|        | - 1010 (binary): Mask / Colorkey is 00111111 (binary).            |
-|        | - 1011 (binary): Mask / Colorkey is 01111111 (binary).            |
-|        | - 1101 (binary): Mask / Colorkey is 11111111 (binary).            |
+| 14     | Combine with colorkey if clear (!)                                |
 +--------+-------------------------------------------------------------------+
-| 10-13  | Mask / Colorkey value for pixel bits 0-3 (unless in extend mode)  |
+|        | Mask / Colorkey value                                             |
+| 10-13  |                                                                   |
+|        | - 0x0: Mask / Colorkey is 00000000 (binary).                      |
+|        | - 0x1: Mask / Colorkey is 11111111 (binary).                      |
+|        | - 0x2: Mask / Colorkey is 00001111 (binary).                      |
+|        | - 0x3: Mask / Colorkey is 00111111 (binary).                      |
+|        | - 0x4: Mask / Colorkey is 00000011 (binary).                      |
+|        | - 0x5: Mask / Colorkey is 00001100 (binary).                      |
+|        | - 0x6: Mask / Colorkey is 00110000 (binary).                      |
+|        | - 0x7: Mask / Colorkey is 11000000 (binary).                      |
+|        | - 0x8: Mask / Colorkey is 00000001 (binary).                      |
+|        | - 0x9: Mask / Colorkey is 00000010 (binary).                      |
+|        | - 0xA: Mask / Colorkey is 00000100 (binary).                      |
+|        | - 0xB: Mask / Colorkey is 00001000 (binary).                      |
+|        | - 0xC: Mask / Colorkey is taken from bits 8 - 15 of 0xE06.        |
+|        | - 0xD: Mask / Colorkey is taken from bits 0 - 7 of 0xE06.         |
+|        | - 0xE: Mask / Colorkey is taken from bits 8 - 15 of 0xE07.        |
+|        | - 0xF: Mask / Colorkey is taken from bits 0 - 7 of 0xE07.         |
 +--------+-------------------------------------------------------------------+
 |        | Shift / Position amount in 4 bit pixel units. If the source is in |
 | 0-9    | shift mode, this value shifts it to the left by the given number  |
@@ -362,6 +383,8 @@ The layout of a render command is as follows:
 A render command is inactive if it's bits 15 and 10-13 are set zero. Such a
 render command does not contribute to the line's contents, and only takes one
 bus access cycle (the cycle in which it was fetched).
+
+Note that it is possible to combine with both Mask and Colorkey.
 
 Note that Video RAM bank boundaries can not even be crossed in position mode
 with an appropriate source line select and a larger than one multiplier. The
@@ -531,10 +554,10 @@ are as follows:
   contents of the line). The next line or line pair's render must always start
   proper regardless of the termination of the line or line pair before.
 
-- Fetching of the six Graphics Display Generator register relative to the
-  render of lines or the frame. If they changed in the Vertical Blank, earlier
-  than the last line of it, the next display frame must render according to
-  the new contents.
+- Fetching of the Graphics Display Generator register relative to the render
+  of lines or the frame. If they changed in the Vertical Blank, earlier than
+  the last line of it, the next display frame must render according to the new
+  contents.
 
 - The timing of any display related Video RAM access within the rendered line.
   No Video RAM accesses for a line must happen before incrementing the Line

@@ -166,46 +166,46 @@ Mixer peripheral memory map
 
 
 The following table lists the memory addresses within the User peripheral page
-which relate the mixer. Note that these repeat every 32 words in the 0xE00 -
+which relate the mixer. Note that these repeat every 32 words in the 0xF00 -
 0xFFF range within this page.
 
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0xEC0  |                                                                   |
+| 0xF00  |                                                                   |
 | \-     | Other peripherals, not used by the Mixer DMA. See "mem_map.rst".  |
-| 0xECD  |                                                                   |
+| 0xF0D  |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xECE  | Frequency table whole pointer in 256 word units, only low 12 bits |
+| 0xF0E  | Frequency table whole pointer in 256 word units, only low 12 bits |
 |        | are used. The table contains 256 entries.                         |
 +--------+-------------------------------------------------------------------+
-| 0xECF  | Frequency table fractional pointer in 256 word units, only low 12 |
+| 0xF0F  | Frequency table fractional pointer in 256 word units, only low 12 |
 |        | bits are used. The table contains 256 entries.                    |
 +--------+-------------------------------------------------------------------+
-| 0xED0  | Frequency source start partition select bits. Used in FM mode for |
+| 0xF10  | Frequency source start partition select bits. Used in FM mode for |
 |        | reading the frequency source.                                     |
 +--------+-------------------------------------------------------------------+
 |        | Frequency source start pointer whole part (addresses 16 bit word  |
-| 0xED1  | units). Used in FM mode for reading the frequency source. Updated |
+| 0xF11  | units). Used in FM mode for reading the frequency source. Updated |
 |        | during a mixer operation in FM mode, otherwise ignored.           |
 +--------+-------------------------------------------------------------------+
 |        | Frequency source start pointer fractional part. Used in FM mode   |
-| 0xED2  | for reading the frequency source. Updated during a mixer          |
+| 0xF12  | for reading the frequency source. Updated during a mixer          |
 |        | operation in FM mode, otherwise ignored.                          |
 +--------+-------------------------------------------------------------------+
-| 0xED3  | Amplitude source start partition select bits. Used in AM mode for |
+| 0xF13  | Amplitude source start partition select bits. Used in AM mode for |
 |        | reading the frequency source.                                     |
 +--------+-------------------------------------------------------------------+
 |        | Amplitude source start pointer whole part (addresses 16 bit word  |
-| 0xED4  | units). Used in AM mode for reading the frequency source. Updated |
+| 0xF14  | units). Used in AM mode for reading the frequency source. Updated |
 |        | during a mixer operation in AM mode, otherwise ignored.           |
 +--------+-------------------------------------------------------------------+
 |        | Amplitude source start pointer fractional part. Used in AM mode   |
-| 0xED5  | for reading the frequency source. Updated during a mixer          |
+| 0xF15  | for reading the frequency source. Updated during a mixer          |
 |        | operation in AM mode, otherwise ignored.                          |
 +--------+-------------------------------------------------------------------+
 |        | Frequency index for AM / FM source reads.                         |
-| 0xED6  |                                                                   |
+| 0xF16  |                                                                   |
 |        | - bit  8-15: Frequency index of Frequency source reads.           |
 |        | - bit  0- 7: Frequency index of Amplitude source reads.           |
 |        |                                                                   |
@@ -213,7 +213,7 @@ which relate the mixer. Note that these repeat every 32 words in the 0xE00 -
 |        | "FM frq" when the respective modes are enabled.                   |
 +--------+-------------------------------------------------------------------+
 |        | Partitioning settings.                                            |
-| 0xED7  |                                                                   |
+| 0xF17  |                                                                   |
 |        | - bit 12-15: Frequency source partitioning.                       |
 |        | - bit  8-11: Amplitude source partitioning.                       |
 |        | - bit  4- 7: Sample source partitioning.                          |
@@ -238,18 +238,18 @@ which relate the mixer. Note that these repeat every 32 words in the 0xE00 -
 |        | - 0xE: 32 KWords (64K samples)                                    |
 |        | - 0xF: 64 KWords (128K samples)                                   |
 +--------+-------------------------------------------------------------------+
-| 0xED8  | Destination start pointer & partition select (addresses 16 bit    |
+| 0xF18  | Destination start pointer & partition select (addresses 16 bit    |
 |        | word units). Updated during a mixer operation.                    |
 +--------+-------------------------------------------------------------------+
 |        | 64KWord bank selection settings (start address high bits).        |
-| 0xED9  |                                                                   |
+| 0xF19  |                                                                   |
 |        | - bit 12-15: Frequency source bank select.                        |
 |        | - bit  8-11: Amplitude source bank select.                        |
 |        | - bit  4- 7: Sample source bank select.                           |
 |        | - bit  0- 3: Destination bank select.                             |
 +--------+-------------------------------------------------------------------+
 |        | Amplitude multiplier.                                             |
-| 0xEDA  |                                                                   |
+| 0xF1A  |                                                                   |
 |        | - bit  9-15: Unused, cleared during a mixer operation.            |
 |        | - bit     8: If set, the multiplier is not effective.             |
 |        | - bit  0- 7: Amplitude multiplier.                                |
@@ -259,16 +259,16 @@ which relate the mixer. Note that these repeat every 32 words in the 0xE00 -
 |        | higher than the greatest valid multiplier) to turn this           |
 |        | multiplication off.                                               |
 +--------+-------------------------------------------------------------------+
-| 0xEDB  | Sample source start partition select bits.                        |
+| 0xF1B  | Sample source start partition select bits.                        |
 +--------+-------------------------------------------------------------------+
-| 0xEDC  | Sample source start pointer whole part (addresses 16 bit word     |
+| 0xF1C  | Sample source start pointer whole part (addresses 16 bit word     |
 |        | units). Updated during a Mixer operation.                         |
 +--------+-------------------------------------------------------------------+
-| 0xEDD  | Sample source start pointer fractional part. Updated during a     |
+| 0xF1D  | Sample source start pointer fractional part. Updated during a     |
 |        | Mixer operation.                                                  |
 +--------+-------------------------------------------------------------------+
 |        | Frequency select.                                                 |
-| 0xEDE  |                                                                   |
+| 0xF1E  |                                                                   |
 |        | - bit  8-15: Unused, cleared during a mixer operation.            |
 |        | - bit  0- 7: Frequency of Sample source reads.                    |
 |        |                                                                   |
@@ -277,7 +277,7 @@ which relate the mixer. Note that these repeat every 32 words in the 0xE00 -
 |        | here.                                                             |
 +--------+-------------------------------------------------------------------+
 |        | Start on write & DMA mode.                                        |
-| 0xEDF  |                                                                   |
+| 0xF1F  |                                                                   |
 |        | - bit    15: FM mode enabled if set, the FM source is used.       |
 |        | - bit    14: AM mode enabled if set, the AM source is used.       |
 |        | - bit    13: Destination overwrite if set (otherwise sat. add).   |
@@ -286,7 +286,7 @@ which relate the mixer. Note that these repeat every 32 words in the 0xE00 -
 +--------+-------------------------------------------------------------------+
 
 The Frequency table contains 256 entries of 16.16 fixed point in two separate
-arrays indexed by 0xEDA and 0xEDB. The table is indexed by the "S. frq", "FM
+arrays indexed by 0xF0E and 0xF0F. The table is indexed by the "S. frq", "FM
 frq" or "AM frq" values producing the respective "S. add", "FM add" and "AM
 add" values.
 

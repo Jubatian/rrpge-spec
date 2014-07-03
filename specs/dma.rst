@@ -48,14 +48,10 @@ CPU <=> VRAM DMA
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Copies 256 words between the Video RAM and the CPU RAM in either direction.
-Needs 272 cycles (uses the CPU bus and the Video bus in parallel). It is
-stalled by Accelerator operations if any is performing, and produces a kernel
-trap if the Graphics FIFO is not empty.
+Needs 272 cycles (uses the CPU bus and the Video bus in parallel).
 
-(Note: An accelerator operation may only be allowed without falling under an
-undefined behavior if it is the last operation from the Graphics FIFO, so the
-Graphics FIFO is already empty. Implementations are allowed to report Graphics
-FIFO non-empty this case inhibiting this situation)
+If the Graphics FIFO is busy, this operation is allowed to produce a kernel
+trap (otherwise it would stall the CPU).
 
 
 
@@ -66,21 +62,21 @@ DMA peripheral memory map
 
 The following table lists the memory addresses within the User peripheral page
 which relate the DMA peripherals. Note that these repeat every 32 words in the
-0xE00 - 0xFFF range within this page.
+0xF00 - 0xFFF range within this page.
 
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0xE00  | DMA source 256 word area or fill value.                           |
+| 0xF00  | DMA source 256 word area or fill value.                           |
 +--------+-------------------------------------------------------------------+
-| 0xE01  | CPU fill DMA target 256 word area & trigger. Writing this         |
+| 0xF01  | CPU fill DMA target 256 word area & trigger. Writing this         |
 |        | register starts the CPU fill DMA.                                 |
 +--------+-------------------------------------------------------------------+
-| 0xE02  | CPU <=> CPU DMA target 256 word area & trigger. Writing this      |
+| 0xF02  | CPU <=> CPU DMA target 256 word area & trigger. Writing this      |
 |        | register starts the CPU <=> CPU DMA.                              |
 +--------+-------------------------------------------------------------------+
 |        | CPU <=> VRAM DMA target 128 cell VRAM area, direction & trigger.  |
-| 0xE03  |                                                                   |
+| 0xF03  |                                                                   |
 |        | bit    15: Direction: 0: CPU RAM => VRAM; 1: VRAM => CPU RAM      |
 |        | bit 11-14: Unused                                                 |
 |        | bit  0-10: 128 cell area within Video RAM                         |

@@ -133,9 +133,8 @@ Some more advanced examples of usages of the Accelerator are as follows:
   generate player-specific colored variants of objects without needing
   reindexing.
 
-- The same way if the Display unit is also set up to display a lower bit depth
-  layer from a Video memory area, this area may hold overlaid low bit depth
-  images not affecting the display.
+- The Filler may be used for polygon filling, especially by substituting the
+  destination and count of pixels per line from the source X and Y pointers.
 
 - The Scaled blitter may be utilized for simple texture blitting for three
   dimensional scenes.
@@ -384,21 +383,21 @@ This path is used if VRE is disabled (no reindexing). This case VDR is
 ignored. The data is blit as follows: ::
 
 
-    +----+----+----+----+  If VCK   +---------+
-    |    Data to blit   |---------->| Col.key |
-    +----+----+----+----+           +---------+
-              |                          |
-              |    +----+----+----+----+ | +----+----+----+----+
-              |    |  VRAM Write mask  | | |  Beg/Mid/End mask |
-              |    +----+----+----+----+ | +----+----+----+----+
-              |              |          _V_          |
-              |              +-------->|AND|<--------+
-             _V_                        ~|~
-            |AND|<-----------------------+
-             ~|~                         |
-             _V_       ___              _V_
-            | OR|<----|AND|<-----------|NEG|
-             ~|~       ~A~              ~~~
+    +----+----+----+----+  If VCK   +----+----+----+----+
+    |    Data to blit   |---------->|   Colorkey mask   |
+    +----+----+----+----+           +----+----+----+----+
+              |                               |
+              |         +----+----+----+----+ | +----+----+----+----+
+              |         |  VRAM Write mask  | | |  Beg/Mid/End mask |
+              |         +----+----+----+----+ | +----+----+----+----+
+              |                   |          _V_          |
+              |                   +-------->|AND|<--------+
+             _V_                             ~|~
+            |AND|<----------------------------+
+             ~|~                              |
+             _V_       ___                   _V_
+            | OR|<----|AND|<----------------|NEG|
+             ~|~       ~A~                   ~~~
               V         |
       ---+----+----+----+----+---
          | Target VRAM cell  |
@@ -414,27 +413,27 @@ is used for providing the high bits (up to 5) for selecting a new pixel value
 from the reindex table. ::
 
 
-    +----+----+----+----+  If VCK   +---------+
-    |    Data to blit   |---------->| Col.key |
-    +----+----+----+----+           +---------+
-              |                          |
-              |    +----+----+----+----+ | +----+----+----+----+
-              |    |  VRAM Write mask  | | |  Beg/Mid/End mask |
-              |    +----+----+----+----+ | +----+----+----+----+
-              |              |          _V_          |
-              |              +-------->|AND|<--------+
-              V                         ~|~
-    +-----------------------------+      |
-    |   Reindex (enabled by VRE)  |      |
-    +-----------------------------+      |
-              |     A                    |
-              |     | If VDR             |
-             _V_    |                    |
-            |AND|<-)|(-------------------+
-             ~|~    |                    |
-             _V_    |  ___              _V_
-            | OR|<--+-|AND|<-----------|NEG|
-             ~|~       ~A~              ~~~
+    +----+----+----+----+  If VCK   +----+----+----+----+
+    |    Data to blit   |---------->|   Colorkey mask   |
+    +----+----+----+----+           +----+----+----+----+
+              |                               |
+              |         +----+----+----+----+ | +----+----+----+----+
+              |         |  VRAM Write mask  | | |  Beg/Mid/End mask |
+              |         +----+----+----+----+ | +----+----+----+----+
+              |                   |          _V_          |
+              |                   +-------->|AND|<--------+
+              V                              ~|~
+    +-----------------------------+           |
+    |   Reindex (enabled by VRE)  |           |
+    +-----------------------------+           |
+              |     A                         |
+              |     | If VDR                  |
+             _V_    |                         |
+            |AND|<-)|(------------------------+
+             ~|~    |                         |
+             _V_    |  ___                   _V_
+            | OR|<--+-|AND|<----------------|NEG|
+             ~|~       ~A~                   ~~~
               V         |
       ---+----+----+----+----+---
          | Target VRAM cell  |
@@ -444,34 +443,25 @@ from the reindex table. ::
 Accelerated combine
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If certain conditions are met, the destination combine omits reading the
-target VRAM cell, thus reducing the cycle requirements of this stage by 2
-cycles. The conditions are as follows (all must be met):
-
-- Block Blitter (BB) or Filler (FL) mode
-- VDR (reindex by destination) is not used
-- VCK (colorkey) is not used
-- VRAM write mask has all bits set
-- Destination fraction high 3 bits are zero
-- Low 3 bits of count are zero
-
-These conditions fulfilled indicate that the destination data will not be
-used during the course of the blit. It is substituted with zeros.
+For every destination combine, the combined mask is checked. If the mask
+is all set (all bits are to be taken from the source), and VDR (reindex by
+destination) is unset, the destination data read is omitted, saving 2
+cycles if possible (reindexing might stall the pipeline negating this).
 
 
 
 
-Finalizing the blit
+Finalizing the row
 ------------------------------------------------------------------------------
 
 
-When the blit is complete, the original values of the source and destination
-pointers are normally incremented by the contents of the appropriate post-add
-registers, and are written back. This mechanism may be altered for the
-destination and the source X pointer so they increment with the pixel count to
-blit (appropriately shifted) instead.
+When the row is complete, the original values of the source and destination
+pointers are incremented by the contents of the appropriate post-add
+registers, and are used to start the next row. These increments happen in all
+modes.
 
-Note that intermediate increments performed during the blit are all discarded.
+Note that intermediate increments (described in "Source offset calculation")
+performed during the blit are all discarded.
 
 
 
@@ -502,8 +492,8 @@ display mode, as shown on the following charts: ::
     +--+--+--+--+--+--+--+--+         +-----+-----+-----+-----+
 
 
-Note that the other source transforms (Read AND mask and barrel rotate) also
-behave in a similar manner, on pixel level.
+Note that the other source transforms (Read AND & OR mask and barrel rotate)
+also behave in a similar manner, on pixel level.
 
 
 Reindex (VRE and VDR)
@@ -573,20 +563,19 @@ The following notable aspects of the operation of the accelerator are
 implementation defined:
 
 - The result of operations where the source overlaps the destination if
-sequentially a source read from a cell would happen after a destination write.
-This case due to the implementation defined length of the pipeline the source
-read may fetch not yet changed data.
+  sequentially a source read from a cell would happen after a destination
+  write. This case due to the implementation defined length of the pipeline
+  the source read may fetch not yet changed data.
 
 - If VMR is used with Scaled Blit and the count of pixels to blit is not a
-multiple of 4 (8 bit mode) or 8 (4 bit mode), for the last source cell pixels
-not filled may have an implementation defined content (typically either zero
-or data left over from a previous operation). Note that this data does not
-become visible unless VMR is set.
+  multiple of 4 (8 bit mode) or 8 (4 bit mode), for the last source cell
+  pixels not filled may have an implementation defined content (typically
+  either zero or data left over from a previous operation). Note that this
+  data does not become visible unless VMR is set.
 
-- The exact location and order of accesses during the operation. Note that
-this is not particularly important as the loose timing requirements and the
-implementation defined aspects of the display generator also prohibit relying
-on this property.
+- The exact location and order of accesses during the operation. Emulators are
+  allowed to perform the entire accelerator operation in one pass, without
+  considering the Graphics Display Generator's operation.
 
 Note that the timing once it meets the minimal requirements is also
 implementation defined.
@@ -608,50 +597,56 @@ destination has to be accessed for it (VDR enabled) or not.
 
 Following the performance (in main clock cycles) for each of the eight major
 stage combinations are provided. 'n' is the Video RAM cell count which has to
-be written during the operation, 'p' is the count of pixels to render.
+be written during the operation, 'p' is the count of pixels to render, 'r' is
+the number of rows to render. In the Accel. combine column only the 'n' member
+is shown where appropriate.
 
-+------+------+-----+--------------------------+-----------------------------+
-| Disp | Mode | VRE | Cycles                   | Accelerated combine         |
-+======+======+=====+==========================+=============================+
-| 4bit |  BB  | NO  | 20 + (n * 6)             | 20 + (n * 4)                |
-+------+------+-----+--------------------------+-----------------------------+
-| 4bit |  FL  | NO  | 20 + (n * 4)             | 20 + (n * 2)                |
-+------+------+-----+--------------------------+-----------------------------+
-| 4bit |  SC  | NO  | 20 + (n * 4) + (p * 2)   | -                           |
-+------+------+-----+--------------------------+-----------------------------+
-| 4bit |  LI  | NO  | 20 + (p * 4)             | -                           |
-+------+------+-----+--------------------------+-----------------------------+
-| 4bit |  BB  | YES | 28 + (n * 8) (*)         | 28 + (n * 8) (*)            |
-+------+------+-----+--------------------------+-----------------------------+
-| 4bit |  FL  | YES | 28 + (n * 8) (*)         | 28 + (n * 8) (*)            |
-+------+------+-----+--------------------------+-----------------------------+
-| 4bit |  SC  | YES | 28 + (n * 4) + (p * 2)   | -                           |
-+------+------+-----+--------------------------+-----------------------------+
-| 4bit |  LI  | YES | 28 + (p * 4)             | -                           |
-+------+------+-----+--------------------------+-----------------------------+
-| 8bit |  BB  | NO  | 20 + (n * 6)             | 20 + (n * 4)                |
-+------+------+-----+--------------------------+-----------------------------+
-| 8bit |  FL  | NO  | 20 + (n * 4)             | 20 + (n * 2)                |
-+------+------+-----+--------------------------+-----------------------------+
-| 8bit |  SC  | NO  | 20 + (n * 4) + (p * 2)   | -                           |
-+------+------+-----+--------------------------+-----------------------------+
-| 8bit |  LI  | NO  | 20 + (p * 4)             | -                           |
-+------+------+-----+--------------------------+-----------------------------+
-| 8bit |  BB  | YES | 28 + (n * 6)             | 28 + (n * 4)                |
-+------+------+-----+--------------------------+-----------------------------+
-| 8bit |  FL  | YES | 28 + (n * 4)             | 28 + (n * 4) (*)            |
-+------+------+-----+--------------------------+-----------------------------+
-| 8bit |  SC  | YES | 28 + (n * 4) + (p * 2)   | -                           |
-+------+------+-----+--------------------------+-----------------------------+
-| 8bit |  LI  | YES | 28 + (p * 4)             | -                           |
-+------+------+-----+--------------------------+-----------------------------+
++------+------+-----+------------------------------------+-------------------+
+| Disp | Mode | VRE | Cycles                             | Accel. combine    |
++======+======+=====+====================================+===================+
+| 4bit |  BB  | NO  | 20 + (r * 8) + (n * 6)             | n * 4             |
++------+------+-----+------------------------------------+-------------------+
+| 4bit |  FL  | NO  | 20 + (r * 8) + (n * 4)             | n * 2             |
++------+------+-----+------------------------------------+-------------------+
+| 4bit |  SC  | NO  | 20 + (r * 8) + (n * 4) + (p * 2)   | n * 2             |
++------+------+-----+------------------------------------+-------------------+
+| 4bit |  LI  | NO  | 20 + (r * 8)           + (p * 4)   | \-                |
++------+------+-----+------------------------------------+-------------------+
+| 4bit |  BB  | YES | 28 + (r * 8) + (n * 8) (*)         | n * 8 (*)         |
++------+------+-----+------------------------------------+-------------------+
+| 4bit |  FL  | YES | 28 + (r * 8) + (n * 8) (*)         | n * 8 (*)         |
++------+------+-----+------------------------------------+-------------------+
+| 4bit |  SC  | YES | 28 + (r * 8) + (n * 4) + (p * 2)   | n * 2             |
++------+------+-----+------------------------------------+-------------------+
+| 4bit |  LI  | YES | 28 + (r * 8)           + (p * 4)   | \-                |
++------+------+-----+------------------------------------+-------------------+
+| 8bit |  BB  | NO  | 20 + (r * 8) + (n * 6)             | n * 4             |
++------+------+-----+------------------------------------+-------------------+
+| 8bit |  FL  | NO  | 20 + (r * 8) + (n * 4)             | n * 2             |
++------+------+-----+------------------------------------+-------------------+
+| 8bit |  SC  | NO  | 20 + (r * 8) + (n * 4) + (p * 2)   | n * 2             |
++------+------+-----+------------------------------------+-------------------+
+| 8bit |  LI  | NO  | 20 + (r * 8)           + (p * 4)   | \-                |
++------+------+-----+------------------------------------+-------------------+
+| 8bit |  BB  | YES | 28 + (r * 8) + (n * 6)             | n * 4             |
++------+------+-----+------------------------------------+-------------------+
+| 8bit |  FL  | YES | 28 + (r * 8) + (n * 4)             | n * 4 (*)         |
++------+------+-----+------------------------------------+-------------------+
+| 8bit |  SC  | YES | 28 + (r * 8) + (n * 4) + (p * 2)   | n * 2             |
++------+------+-----+------------------------------------+-------------------+
+| 8bit |  LI  | YES | 28 + (r * 8)           + (p * 4)   | \-                |
++------+------+-----+------------------------------------+-------------------+
 
 Note that in 4 bit mode 8 reindexing accesses are necessary for processing
 each Video RAM cell while in 8 bit mode 4 such accesses are necessary. Modes
 where this determines the performance are marked with a '*'.
 
-The distribution of the "extra" 20 or 28 cycles is implementation defined
-(depending on the realization of the accelerator pipeline).
+Note that the Accelerated combine may be in effect for any processed cell if
+it's conditions are met. In Line mode the conditions of it can never be met.
+
+In some cases the Block Blitter may need one more source fetch in a row than
+destination combines. The cycles (two) taken for this fetch should be
+interpreted as part of the row transition cycles.
 
 
 
@@ -670,16 +665,16 @@ for example the address 0x020 also refers to the register at 0x000.
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0x000  | Video RAM write mask (0x000: High, 0x001: Low). Clear bits in it  |
-| \-     | mask writes to the respective positions both for the 16 <=> 32    |
-| 0x001  | VRAM interface and the Accelerator.                               |
+| 0x000  |                                                                   |
+| \-     | Unused.                                                           |
+| 0x003  |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0x002  |                                                                   |
-| \-     | Graphics Display Generator registers. See "vid_arch.rst".         |
-| 0x007  |                                                                   |
+| 0x004  | Video RAM write mask (0x000: High, 0x001: Low). Clear bits in it  |
+| \-     | mask writes to the respective positions both for the 16 <=> 32    |
+| 0x005  | VRAM interface and the Accelerator.                               |
 +--------+-------------------------------------------------------------------+
 |        | Source bank & partition select.                                   |
-| 0x008  |                                                                   |
+| 0x006  |                                                                   |
 |        | - bit  2-15: Partition select bits                                |
 |        | - bit  0- 1: Bank select (selects a 64K cell bank of the VRAM)    |
 |        |                                                                   |
@@ -690,7 +685,7 @@ for example the address 0x020 also refers to the register at 0x000.
 |        | VRAM cells.                                                       |
 +--------+-------------------------------------------------------------------+
 |        | Destination bank & partition select.                              |
-| 0x009  |                                                                   |
+| 0x007  |                                                                   |
 |        | - bit  2-15: Partition select bits                                |
 |        | - bit  0- 1: Bank select (selects a 64K cell bank of the VRAM)    |
 |        |                                                                   |
@@ -701,24 +696,12 @@ for example the address 0x020 also refers to the register at 0x000.
 |        | Note that bit 1 is also OR combined if the partition size is 2    |
 |        | VRAM cells.                                                       |
 +--------+-------------------------------------------------------------------+
-|        | Reindex bank select & destination increment.                      |
-| 0x00A  |                                                                   |
-|        | - bit  6-15: 2's complement destination increment (whole)         |
-|        | - bit     5: If zero, destination increment is 1                  |
-|        | - bit  0- 4: Reindex bank select                                  |
-|        |                                                                   |
-|        | The available destination increment range is -512 to 511.         |
-+--------+-------------------------------------------------------------------+
-|        | Source barrel rotate & partitioning settings.                     |
-| 0x00B  |                                                                   |
+|        | Partitioning settings.                                            |
+| 0x008  |                                                                   |
 |        | - bit 12-15: Source partition size                                |
 |        | - bit  8-11: X/Y split location (X size)                          |
 |        | - bit  4- 7: Destination partition size                           |
-|        | - bit     3: Unused                                               |
-|        | - bit  0- 2: Pixel barrel rotate right                            |
-|        |                                                                   |
-|        | In 4 bit mode only bits 0-1 are used of the Pixel barrel rotate   |
-|        | right.                                                            |
+|        | - bit  0- 3: Unused                                               |
 |        |                                                                   |
 |        | The Source & Destination partition sizes and the X/Y split        |
 |        | location may specify the following sizes:                         |
@@ -740,18 +723,44 @@ for example the address 0x020 also refers to the register at 0x000.
 |        | - 14: 64 KWords (32K * 32 bit cells)                              |
 |        | - 15: 128 KWords (64K * 32 bit cells)                             |
 +--------+-------------------------------------------------------------------+
+|        | Reindex bank select.                                              |
+| 0x009  |                                                                   |
+|        | - bit  5-15: Unused                                               |
+|        | - bit  0- 4: Reindex bank select                                  |
++--------+-------------------------------------------------------------------+
+|        | Substitution flags & Source barrel rotate.                        |
+| 0x00A  |                                                                   |
+|        | - bit    15: Load destination from Source X every row if set      |
+|        | - bit    14: Load destination from Source Y every row if set      |
+|        | - bit    13: Load count from Source Y every row if set            |
+|        | - bit  3-12: Unused                                               |
+|        | - bit  0- 2: Pixel barrel rotate right                            |
+|        |                                                                   |
+|        | In 4 bit mode only bits 0-1 are used of the Pixel barrel rotate   |
+|        | right.                                                            |
+|        |                                                                   |
+|        | The Load count (bit 13) flag does not change the limitations of   |
+|        | count. Bits 13 - 15 of Y fraction will be loaded into the low 3   |
+|        | bits of count, and bits 0 - 6 of Y whole will be loaded into bits |
+|        | 3 - 9 of count.                                                   |
+|        |                                                                   |
+|        | If both bit 15 and 14 is set, the destination is loaded from      |
+|        | Source Y.                                                         |
+|        |                                                                   |
+|        | The partition is not affected by bits 15 or 14, it is always      |
+|        | selected by the destination partition select register.            |
++--------+-------------------------------------------------------------------+
 |        | Source masks.                                                     |
-| 0x00C  |                                                                   |
+| 0x00B  |                                                                   |
 |        | - bit  8-15: Pixel OR mask                                        |
 |        | - bit  0- 7: Pixel AND mask                                       |
 |        |                                                                   |
 |        | The OR mask is stronger than the AND mask. In 4 bit mode, only    |
-|        | the low 4 bits of each is used.                                   |
+|        | the low 4 bits of each are used.                                  |
 +--------+-------------------------------------------------------------------+
 |        | Colorkey and Control flags.                                       |
-| 0x00D  |                                                                   |
-|        | - bit    15: Use count (0x00E) for post-adding to destination     |
-|        | - bit    14: Use count (0x00E) for post-adding to source X        |
+| 0x00C  |                                                                   |
+|        | - bit 14-15: Unused                                               |
 |        | - bit    13: (VDR) If bit 12 is set, Reindex using dest. if set   |
 |        | - bit    12: (VRE) Reindexing enabled if set                      |
 |        | - bit 10-11: (VMD) Selects blit mode                              |
@@ -765,19 +774,19 @@ for example the address 0x020 also refers to the register at 0x000.
 |        | - 1: Filler (FL)                                                  |
 |        | - 2: Scaled Blitter (SC)                                          |
 |        | - 3: Line (LI)                                                    |
-|        |                                                                   |
-|        | Bits 14 and 15 are used to select the count register to be added  |
-|        | to the original values of destination and source X offsets        |
-|        | respectively instead of the appropriate post-add register         |
-|        | contents at the end of the blit.                                  |
++--------+-------------------------------------------------------------------+
+| 0x00D  | Count of rows to blit. Only bits 0 - 8 are used. If all these     |
+|        | bits are set zero, 512 rows are produced.                         |
 +--------+-------------------------------------------------------------------+
 |        | Count of 4 bit pixels to blit. Only bits 0 - 9 are used in 4 bit  |
 | 0x00E  | mode and only bits 1 - 9 are used in 8 bit mode. Setting all the  |
 |        | used bits zero results in 1024 (4 bit) or 512 (8 bit) pixels.     |
 +--------+-------------------------------------------------------------------+
 |        | Start on write, Pattern for Filler (FL) & Line (LI). A write to   |
-| 0x00F  | this location starts the accelerator operation using the current  |
-|        | values in the other registers.                                    |
+| 0x00F  | this location starts the accelerator operation.                   |
+|        |                                                                   |
+|        | The pattern is rotated by 1 pixel to the right after every row,   |
+|        | useful for producing dithered fills.                              |
 +--------+-------------------------------------------------------------------+
 | 0x010  | Source Y whole part                                               |
 +--------+-------------------------------------------------------------------+
@@ -789,7 +798,7 @@ for example the address 0x020 also refers to the register at 0x000.
 +--------+-------------------------------------------------------------------+
 | 0x014  | Source Y post-add whole part                                      |
 +--------+-------------------------------------------------------------------+
-| 0x015  | Source Y post-add fraction part                                   |
+| 0x015  | Source Y post-add fractional part                                 |
 +--------+-------------------------------------------------------------------+
 | 0x016  | Source X whole part                                               |
 +--------+-------------------------------------------------------------------+
@@ -801,27 +810,27 @@ for example the address 0x020 also refers to the register at 0x000.
 +--------+-------------------------------------------------------------------+
 | 0x01A  | Source X post-add whole part                                      |
 +--------+-------------------------------------------------------------------+
-| 0x01B  | Source X post-add fraction part                                   |
+| 0x01B  | Source X post-add fractional part                                 |
 +--------+-------------------------------------------------------------------+
 | 0x01C  | Destination whole part                                            |
 +--------+-------------------------------------------------------------------+
-| 0x01D  | Destination fractional part                                       |
+| 0x01D  | Destination fractional part (only high 3 bits are used)           |
 +--------+-------------------------------------------------------------------+
-| 0x01E  | Destination post-add whole part                                   |
+| 0x01E  | Destination increment whole part                                  |
 +--------+-------------------------------------------------------------------+
-| 0x01F  | Destination post-add fractional part                              |
+| 0x01F  | Destination post-add whole part                                   |
 +--------+-------------------------------------------------------------------+
 
-The Destination increment (part of 0x00A) normally should be set to one (1).
-Otherwise the Accelerator still performs the same way (also in calculating
-masks for begin, middle, and end cells), just the result goes in a different
-layout. Setting this to something else than one may be useful for example when
-blitting small tiles to cell boundaries (such as emulating a character mode),
-so a blit can be performed with less operations.
+The Destination increment normally should be set to one (1). Otherwise the
+Accelerator still performs the same way (also in calculating masks for begin,
+middle, and end cells), just the result goes in a different layout. Setting
+this to something else than one may be useful for example when blitting small
+tiles to cell boundaries (such as emulating a character mode), so a blit can
+be performed with less operations.
 
-The pointers at 0x010, 0x011, 0x016, 0x017, 0x01C and 0x01D update according
-to the finalization of the blit, normally by adding (with carry from fraction
-to whole part) the contents of the post-add registers.
+Note that no interface register changes it's value during the course of an
+accelerator operation, so retriggering the accelerator performs the exact same
+blit.
 
 The Accelerator also has a Reindex table in the 0x100 - 0x1FF range. This
 reindex table contains 8 bit values, two in each register. The layout of this

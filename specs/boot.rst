@@ -122,24 +122,38 @@ Source definitions are set up as follows:
 - Source 0: 0x0014
 - Source 1: 0x4042
 - Source 2: 0x8042
-- Source 2: 0xC042
+- Source 3: 0xC042
+- Source 4: 0x0083
+- Source 5: 0x8083
+- Source 6: 0x00C3
+- Source 7: 0x80C3
 
 Source 0 sets up positioned source on Video RAM bank 0 of 80 cells width. This
 is useful for non-scrolling display.
 
-Sources 1-3 set up 4 cell wide (16 pixels in 8 bit mode, 32 pixels in 4 bit
-mode) positioned source on Video RAM bank 1, in a manner they may be
+Sources 1-3 are set up 4 cell wide (16 pixels in 8 bit mode, 32 pixels in 4
+bit mode) positioned source on Video RAM bank 1, in a manner they may be
 continuously accessed through display list entries, useful for small sprites.
+
+Sources 4-7 are set up 8 cell wide (32 pixels in 8 bit mode, 64 pixels in 4
+bit mode) positioned source on Video RAM banks 2 and 3, in a manner they may
+be continuously accessed through display list entries, useful for larger
+sprites.
 
 Entry 1 of the display list is populated as follows:
 
-Line 0 gets the value 0x40008000. Line 1 is 0x40058000. Subsequent lines get
+Line 0 gets the value 0x0000C000. Line 1 is 0x0005C000. Subsequent lines get
 their entry values in a similar manner, adding 0x50000 to the previous line.
 This layout produces a simple 320x200 surface in the beginning of the Video
 RAM (which is banked in the CPU's address space initially).
 
 Note that only the valid lines of the display list are populated (so 200
 lines), the rest of the area of the display list remains zero.
+
+The mask / colorkey definitions are set up as follows:
+
+- Definition 0: 0x1020
+- Definition 1: 0x4080
 
 
 Palette
@@ -160,7 +174,7 @@ Accelerator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 All registers of the Graphics Accelerator are set zero including the whole
-reindex map.
+reindex map except the VRAM write masks, which are all set (both 0xFFFF).
 
 
 Graphics FIFO
@@ -237,7 +251,14 @@ dump replicates the application header.
 
     0x0001U
 
-0xD58 - 0xECF: 0
+0xD58 - 0xD6F: 0
+
+0xD70 - 0xD7F: ::
+
+    0x0000U, 0x0000U, 0x0000U, 0x0000U, 0xD000U, 0x01FCU, 0x1020U, 0x4080U,
+    0x0014U, 0x4042U, 0x8042U, 0xC042U, 0x0083U, 0x8083U, 0x00C3U, 0x80C3U,
+
+0xD80 - 0xECF: 0
 
 0xEC0 - 0xEDF: ::
 
@@ -248,7 +269,7 @@ dump replicates the application header.
 
 0xEE0 - 0xEFF: ::
 
-    0xFFFFU, 0xFFFFU, 0xD000U, 0x01FCU, 0x0014U, 0x4042U, 0x8042U, 0xC042U,
+    0x0000U, 0x0000U, 0x0000U, 0x0000U, 0xFFFFU, 0xFFFFU, 0x0000U, 0x0000U,
     0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U,
     0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U,
     0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U,

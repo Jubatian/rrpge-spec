@@ -98,8 +98,8 @@ is not visible to the application, and is only meant to be used by emulators.
 | \-     | properties" and the 0x0411 "Drop device" kernel calls manage      |
 | 0xD6F  | these fields.                                                     |
 +--------+-------------------------------------------------------------------+
-| 0xD70  |                                                                   |
-| \-     | Unused, must be 0x0000.                                           |
+| 0xD70  | User peripheral area contents: Graphics FIFO & Graphics Display   |
+| \-     | Generator (range: 0xE00 - 0xEFF). See "mem_map.rst" for details.  |
 | 0xD7F  |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xD80  |                                                                   |
@@ -122,16 +122,16 @@ is not visible to the application, and is only meant to be used by emulators.
 | \-     | for digital input bit 0. Allowed range is so combined with Y it   |
 | 0xEBF  | fits within the display height of 400 units.                      |
 +--------+-------------------------------------------------------------------+
-| 0xEC0  |                                                                   |
-| \-     | User peripheral area contents. See "mem_map.rst" for details.     |
+| 0xEC0  | User peripheral area contents: Audio & DMA peripherals (range:    |
+| \-     | 0xF00 - 0xFFF). See "mem_map.rst" for details.                    |
 | 0xEDF  |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xEE0  | Graphics registers in the 0x000 - 0x0FF range (repeating). See    |
-| \-     | "mem_map.rst" for details.                                        |
+| 0xEE0  | Graphics registers on the FIFO bus in the 0x000 - 0x0FF range     |
+| \-     | (repeating). See "mem_map.rst" for details.                       |
 | 0xEFF  |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xF00  | Graphics registers in the 0x100 - 0x1FF range (reindex table).    |
-| \-     | See "mem_map.rst" for details.                                    |
+| 0xF00  | Graphics registers on the FIFO bus in the 0x100 - 0x1FF range     |
+| \-     | (reindex table). See "mem_map.rst" for details.                   |
 | 0xFFF  |                                                                   |
 +--------+-------------------------------------------------------------------+
 

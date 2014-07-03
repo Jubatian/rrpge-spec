@@ -134,82 +134,122 @@ On the low part the first Data memory page is accessible.
 | \-     | audio buffers are located. This area is also populated with       |
 | 0xDFF  | important initial data, see "data.rst" for details.               |
 +--------+-------------------------------------------------------------------+
-| 0xE00  | User peripheral registers. They repeat every 32 words in this     |
-| \-     | range.                                                            |
+| 0xE00  | User peripheral registers, Graphics. They repeat every 16 words   |
+| \-     | in this range.                                                    |
+| 0xEFF  |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0xF00  | User peripheral registers, Audio & DMA. They repeat every 32      |
+| \-     | words in this range.                                              |
 | 0xFFF  |                                                                   |
 +--------+-------------------------------------------------------------------+
 
 Summary of the user peripheral registers. For more detailed descriptions of
 the registers, see the appropriate peripheral.
 
+Graphics registers:
+
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0xE00  | DMA source 256 word area or fill value (see "dma.rst")            |
+| 0xE00  | Unused, always reads zero                                         |
 +--------+-------------------------------------------------------------------+
-| 0xE01  | CPU fill DMA target 256 word area & trigger (see "dma.rst")       |
+| 0xE01  | Graphics FIFO busy flag & start trigger (see "gfifo.rst")         |
 +--------+-------------------------------------------------------------------+
-| 0xE02  | CPU <=> CPU DMA target 256 word area & trigger (see "dma.rst")    |
+| 0xE02  | Graphics FIFO command word (see "gfifo.rst")                      |
 +--------+-------------------------------------------------------------------+
-| 0xE03  | CPU <=> VRAM DMA target 128 cell VRAM area, direction and trigger |
+| 0xE03  | Graphics FIFO data word & store trigger (see "gfifo.rst")         |
++--------+-------------------------------------------------------------------+
+| 0xE04  | Shift mode region (see "vid_arch.rst")                            |
++--------+-------------------------------------------------------------------+
+| 0xE05  | Display list definition (see "vid_arch.rst")                      |
++--------+-------------------------------------------------------------------+
+| 0xE06  | Mask / Colorkey definition 0 (see "vid_arch.rst")                 |
++--------+-------------------------------------------------------------------+
+| 0xE07  | Mask / Colorkey definition 1 (see "vid_arch.rst")                 |
++--------+-------------------------------------------------------------------+
+| 0xE08  | Source definition 0 (see "vid_arch.rst")                          |
++--------+-------------------------------------------------------------------+
+| 0xE09  | Source definition 1 (see "vid_arch.rst")                          |
++--------+-------------------------------------------------------------------+
+| 0xE0A  | Source definition 2 (see "vid_arch.rst")                          |
++--------+-------------------------------------------------------------------+
+| 0xE0B  | Source definition 3 (see "vid_arch.rst")                          |
++--------+-------------------------------------------------------------------+
+| 0xE0C  | Source definition 4 (see "vid_arch.rst")                          |
++--------+-------------------------------------------------------------------+
+| 0xE0D  | Source definition 5 (see "vid_arch.rst")                          |
++--------+-------------------------------------------------------------------+
+| 0xE0E  | Source definition 6 (see "vid_arch.rst")                          |
++--------+-------------------------------------------------------------------+
+| 0xE0F  | Source definition 7 (see "vid_arch.rst")                          |
++--------+-------------------------------------------------------------------+
+
+Audio & DMA registers:
+
++--------+-------------------------------------------------------------------+
+| Range  | Description                                                       |
++========+===================================================================+
+| 0xF00  | DMA source 256 word area or fill value (see "dma.rst")            |
++--------+-------------------------------------------------------------------+
+| 0xF01  | CPU fill DMA target 256 word area & trigger (see "dma.rst")       |
++--------+-------------------------------------------------------------------+
+| 0xF02  | CPU <=> CPU DMA target 256 word area & trigger (see "dma.rst")    |
++--------+-------------------------------------------------------------------+
+| 0xF03  | CPU <=> VRAM DMA target 128 cell VRAM area, direction and trigger |
 |        | (see "dma.rst")                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xE04  | Unused, always reads zero                                         |
+| 0xF04  |                                                                   |
+| \-     | Unused, written values preserved                                  |
+| 0xF07  |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xE05  | Graphics FIFO non-empty flag & start trigger (see "gfifo.rst")    |
+| 0xF08  | Audio left channel DMA start offset bits (see "snd_arch.rst")     |
 +--------+-------------------------------------------------------------------+
-| 0xE06  | Graphics FIFO command word (see "gfifo.rst")                      |
+| 0xF09  | Audio right channel DMA start offset bits (see "snd_arch.rst")    |
 +--------+-------------------------------------------------------------------+
-| 0xE07  | Graphics FIFO data word & store trigger (see "gfifo.rst")         |
+| 0xF0A  | Audio DMA buffer size mask bits (see "snd_arch.rst")              |
 +--------+-------------------------------------------------------------------+
-| 0xE08  | Audio left channel DMA start offset bits (see "snd_arch.rst")     |
+| 0xF0B  | Audio clock divider (see "snd_arch.rst")                          |
 +--------+-------------------------------------------------------------------+
-| 0xE09  | Audio right channel DMA start offset bits (see "snd_arch.rst")    |
+| 0xF0C  | Audio DMA sample counter / next read offset (see "snd_arch.rst")  |
 +--------+-------------------------------------------------------------------+
-| 0xE0A  | Audio DMA buffer size mask bits (see "snd_arch.rst")              |
+| 0xF0D  | Audio DMA base clock (see "snd_arch.rst")                         |
 +--------+-------------------------------------------------------------------+
-| 0xE0B  | Audio clock divider (see "snd_arch.rst")                          |
+| 0xF0E  | Mixer DMA frequency table whole pointer (see "mix_arch.rst")      |
 +--------+-------------------------------------------------------------------+
-| 0xE0C  | Audio DMA sample counter / next read offset (see "snd_arch.rst")  |
+| 0xF0F  | Mixer DMA frequency table fractional pointer (see "mix_arch.rst") |
 +--------+-------------------------------------------------------------------+
-| 0xE0D  | Audio DMA base clock (see "snd_arch.rst")                         |
+| 0xF10  | Mixer DMA frequency source partition select (see "mix_arch.rst")  |
 +--------+-------------------------------------------------------------------+
-| 0xE0E  | Mixer DMA frequency table whole pointer (see "mix_arch.rst")      |
+| 0xF11  | Mixer DMA frequency source start, whole (see "mix_arch.rst")      |
 +--------+-------------------------------------------------------------------+
-| 0xE0F  | Mixer DMA frequency table fractional pointer (see "mix_arch.rst") |
+| 0xF12  | Mixer DMA frequency source start, fraction (see "mix_arch.rst")   |
 +--------+-------------------------------------------------------------------+
-| 0xE10  | Mixer DMA frequency source partition select (see "mix_arch.rst")  |
+| 0xF13  | Mixer DMA amplitude source partition select (see "mix_arch.rst")  |
 +--------+-------------------------------------------------------------------+
-| 0xE11  | Mixer DMA frequency source start, whole (see "mix_arch.rst")      |
+| 0xF14  | Mixer DMA amplitude source start, whole (see "mix_arch.rst")      |
 +--------+-------------------------------------------------------------------+
-| 0xE12  | Mixer DMA frequency source start, fraction (see "mix_arch.rst")   |
+| 0xF15  | Mixer DMA amplitude source start, fraction (see "mix_arch.rst")   |
 +--------+-------------------------------------------------------------------+
-| 0xE13  | Mixer DMA amplitude source partition select (see "mix_arch.rst")  |
+| 0xF16  | Mixer DMA frequency indices for AM / FM (see "mix_arch.rst")      |
 +--------+-------------------------------------------------------------------+
-| 0xE14  | Mixer DMA amplitude source start, whole (see "mix_arch.rst")      |
+| 0xF17  | Mixer DMA partitioning settings (see "mix_arch.rst")              |
 +--------+-------------------------------------------------------------------+
-| 0xE15  | Mixer DMA amplitude source start, fraction (see "mix_arch.rst")   |
-+--------+-------------------------------------------------------------------+
-| 0xE16  | Mixer DMA frequency indices for AM / FM (see "mix_arch.rst")      |
-+--------+-------------------------------------------------------------------+
-| 0xE17  | Mixer DMA partitioning settings (see "mix_arch.rst")              |
-+--------+-------------------------------------------------------------------+
-| 0xE18  | Mixer DMA destination start and partition select (see             |
+| 0xF18  | Mixer DMA destination start and partition select (see             |
 |        | "mix_arch.rst")                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xE19  | Mixer DMA 64KWord bank selection settings (see "mix_arch.rst")    |
+| 0xF19  | Mixer DMA 64KWord bank selection settings (see "mix_arch.rst")    |
 +--------+-------------------------------------------------------------------+
-| 0xE1A  | Mixer DMA amplitude multiplier (see "mix_arch.rst")               |
+| 0xF1A  | Mixer DMA amplitude multiplier (see "mix_arch.rst")               |
 +--------+-------------------------------------------------------------------+
-| 0xE1B  | Mixer DMA sample source partition select (see "mix_arch.rst")     |
+| 0xF1B  | Mixer DMA sample source partition select (see "mix_arch.rst")     |
 +--------+-------------------------------------------------------------------+
-| 0xE1C  | Mixer DMA sample source start, whole (see "mix_arch.rst")         |
+| 0xF1C  | Mixer DMA sample source start, whole (see "mix_arch.rst")         |
 +--------+-------------------------------------------------------------------+
-| 0xE1D  | Mixer DMA sample source start, fraction (see "mix_arch.rst")      |
+| 0xF1D  | Mixer DMA sample source start, fraction (see "mix_arch.rst")      |
 +--------+-------------------------------------------------------------------+
-| 0xE1E  | Mixer DMA frequency select (see "mix_arch.rst")                   |
+| 0xF1E  | Mixer DMA frequency select (see "mix_arch.rst")                   |
 +--------+-------------------------------------------------------------------+
-| 0xE1F  | Mixer DMA mode & start trigger (see "mix_arch.rst")               |
+| 0xF1F  | Mixer DMA mode & start trigger (see "mix_arch.rst")               |
 +--------+-------------------------------------------------------------------+
 
 
@@ -230,85 +270,79 @@ follows:
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0x000  | Graphics display generator & Accelerator registers. They repeat   |
-| \-     | every 32 words in this range. See the memory maps in              |
-| 0x0FF  | "vid_arch.rst" and "acc_arch.rst" for details.                    |
+| 0x000  | Accelerator registers. They repeat every 32 words in this range.  |
+| \-     | See the memory maps in "acc_arch.rst" for details.                |
+| 0x0FF  |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0x100  |                                                                   |
 | \-     | Reindex table. See memory map in "acc_arch.rst" for details.      |
 | 0x1FF  |                                                                   |
 +--------+-------------------------------------------------------------------+
 
-Summary of the Graphics display generator & Accelerator registers. For more
-detailed descriptions of the registers, see the appropriate peripheral.
+Summary of the Accelerator registers. For more detailed descriptions of the
+registers, see the memory maps in the Accelerator's documentation
+("acc_arch.rst").
 
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0x000  | VRAM write mask high (see "acc_arch.rst")                         |
+| 0x000  |                                                                   |
+| \-     | Unused                                                            |
+| 0x003  |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0x001  | VRAM write mask low (see "acc_arch.rst")                          |
+| 0x004  | VRAM write mask high                                              |
 +--------+-------------------------------------------------------------------+
-| 0x002  | Shift mode region (see "vid_arch.rst")                            |
+| 0x005  | VRAM write mask low                                               |
 +--------+-------------------------------------------------------------------+
-| 0x003  | Display list definition (see "vid_arch.rst")                      |
+| 0x006  | Source bank & partition select                                    |
 +--------+-------------------------------------------------------------------+
-| 0x004  | Source definition 0 (see "vid_arch.rst")                          |
+| 0x007  | Destination bank & partition select                               |
 +--------+-------------------------------------------------------------------+
-| 0x005  | Source definition 1 (see "vid_arch.rst")                          |
+| 0x008  | Partitioning settings                                             |
 +--------+-------------------------------------------------------------------+
-| 0x006  | Source definition 2 (see "vid_arch.rst")                          |
+| 0x009  | Reindex bank select                                               |
 +--------+-------------------------------------------------------------------+
-| 0x007  | Source definition 3 (see "vid_arch.rst")                          |
+| 0x00A  | Substitution flags & source barrel rotate                         |
 +--------+-------------------------------------------------------------------+
-| 0x008  | Accelerator source bank & partition select (see "acc_arch.rst")   |
+| 0x00B  | Source masks                                                      |
 +--------+-------------------------------------------------------------------+
-| 0x009  | Accelerator destination bank & partition select (see              |
-|        | "acc_arch.rst")                                                   |
+| 0x00C  | Colorkey & control flags                                          |
 +--------+-------------------------------------------------------------------+
-| 0x00A  | Accelerator reindex bank select & destination increment (see      |
-|        | "acc_arch.rst")                                                   |
+| 0x00D  | Count of rows to process                                          |
 +--------+-------------------------------------------------------------------+
-| 0x00B  | Accelerator source barrel rotate & partitioning settings (see     |
-|        | "acc_arch.rst")                                                   |
+| 0x00E  | Count of 4 bit pixels to process per row                          |
 +--------+-------------------------------------------------------------------+
-| 0x00C  | Accelerator source masks (see "acc_arch.rst")                     |
+| 0x00F  | Pattern for Line & Filler mode & start trigger                    |
 +--------+-------------------------------------------------------------------+
-| 0x00D  | Accelerator colorkey & control flags (see "acc_arch.rst")         |
+| 0x010  | Source Y whole                                                    |
 +--------+-------------------------------------------------------------------+
-| 0x00E  | Accelerator count of pixels to process (see "acc_arch.rst")       |
+| 0x011  | Source Y fraction                                                 |
 +--------+-------------------------------------------------------------------+
-| 0x00F  | Accelerator pattern for fill mode & trigger (see "acc_arch.rst")  |
+| 0x012  | Source Y increment whole                                          |
 +--------+-------------------------------------------------------------------+
-| 0x010  | Accelerator source Y whole (see "acc_arch.rst")                   |
+| 0x013  | Source Y increment fraction                                       |
 +--------+-------------------------------------------------------------------+
-| 0x011  | Accelerator source Y fraction (see "acc_arch.rst")                |
+| 0x014  | Source Y post-add whole                                           |
 +--------+-------------------------------------------------------------------+
-| 0x012  | Accelerator source Y increment whole (see "acc_arch.rst")         |
+| 0x015  | Source Y post-add fraction                                        |
 +--------+-------------------------------------------------------------------+
-| 0x013  | Accelerator source Y increment fraction (see "acc_arch.rst")      |
+| 0x016  | Source X whole                                                    |
 +--------+-------------------------------------------------------------------+
-| 0x014  | Accelerator source Y post-add whole (see "acc_arch.rst")          |
+| 0x017  | Source X fraction                                                 |
 +--------+-------------------------------------------------------------------+
-| 0x015  | Accelerator source Y post-add fraction (see "acc_arch.rst")       |
+| 0x018  | Source X increment whole                                          |
 +--------+-------------------------------------------------------------------+
-| 0x016  | Accelerator source X whole (see "acc_arch.rst")                   |
+| 0x019  | Source X increment fraction                                       |
 +--------+-------------------------------------------------------------------+
-| 0x017  | Accelerator source X fraction (see "acc_arch.rst")                |
+| 0x01A  | Source X post-add whole                                           |
 +--------+-------------------------------------------------------------------+
-| 0x018  | Accelerator source X increment whole (see "acc_arch.rst")         |
+| 0x01B  | Source X post-add fraction                                        |
 +--------+-------------------------------------------------------------------+
-| 0x019  | Accelerator source X increment fraction (see "acc_arch.rst")      |
+| 0x01C  | Destination whole                                                 |
 +--------+-------------------------------------------------------------------+
-| 0x01A  | Accelerator source X post-add whole (see "acc_arch.rst")          |
+| 0x01D  | Destination fraction                                              |
 +--------+-------------------------------------------------------------------+
-| 0x01B  | Accelerator source X post-add fraction (see "acc_arch.rst")       |
+| 0x01E  | Destination increment whole                                       |
 +--------+-------------------------------------------------------------------+
-| 0x01C  | Accelerator destination whole (see "acc_arch.rst")                |
-+--------+-------------------------------------------------------------------+
-| 0x01D  | Accelerator destination fraction (see "acc_arch.rst")             |
-+--------+-------------------------------------------------------------------+
-| 0x01E  | Accelerator destination post-add whole (see "acc_arch.rst")       |
-+--------+-------------------------------------------------------------------+
-| 0x01F  | Accelerator destination post-add fraction (see "acc_arch.rst")    |
+| 0x01F  | Destination post-add whole                                        |
 +--------+-------------------------------------------------------------------+

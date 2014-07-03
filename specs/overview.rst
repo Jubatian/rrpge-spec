@@ -56,34 +56,34 @@ block diagram: ::
     | P |    | Fill DMA  |
     | U |    +-----------+             +-----------+
     |   |                              | Audio     |
-    | b |=============================>| output    |============> Sound
+    | b |<============================>| output    |============> Sound
     | u |                              | DMA       |
     | s |    +-----------+             +-----------+
     |   |    |           |
     |   |<==>| Mixer DMA |
     |   |    |           |
     |   |    +-----------+
-    |   |
-    |   |    +-----------+    +---+    +-----------+
-    |   |    | CPU <=>   |    | 3 |    | 256K x    |
-    |   |<==>| VRAM      |<==>| 2 |<==>| 32 bit    |
-    |   |    | DMA       |    |   |    | VRAM      |
-    |   |    +-----------+    | b |    +-----------+
-    |   |                     | i |
-    |   |    +-----------+    | t |    +-----------+
-    |   |    | 16 <=> 32 |    |   |    | Graphics  |============> Video
-    |   |<==>| VRAM      |<==>| V |===>| Display   |    +---+
-    |   |    | interface |    | i |    | Generator |<===| 1 |
-    |   |    +-----------+    | d.|    +-----------+    | 6 |
-    |   |                     |   |                     |   |
-    |   |                     | b |    +-----------+    | b.|
-    |   |                     | u |    | Graphics  |    |   |
-    |   |                     | s |<==>| Accel.    |<===| F |
-    |   |                     |   |    |           |    | i |
-    |   |    +-----------+    +---+    +-----------+    | f |
-    |   |    | Graphics  |                              | o |
-    |   |<==>| FIFO DMA  |=============================>|   |
-    |   |    |           |                              | b.|
+    |   |                              +-----------+
+    |   |<============================>| Graphics  |
+    |   |                     +---+    | Display   |============> Video
+    |   |    +-----------+    | 3 |===>| Generator |
+    |   |    | CPU <=>   |    | 2 |    +-----------+
+    |   |<==>| VRAM      |<==>|   |
+    |   |    | DMA       |    | b |    +-----------+
+    |   |    +-----------+    | i |    | 256K x    |
+    |   |                     | t |<==>| 32 bit    |
+    |   |    +-----------+    |   |    | VRAM      |
+    |   |    | 16 <=> 32 |    | V |    +-----------+
+    |   |<==>| VRAM      |<==>| i |
+    |   |    | interface |    | d.|    +-----------+    +---+
+    |   |    +-----------+    |   |    | Graphics  |    | F |
+    |   |                     | b |<==>| Accel.    |<===| i |
+    |   |                     | u |    |           |    | f |
+    |   |                     | s |    +-----------+    | o |
+    |   |    +-----------+    +---+                     |   |
+    |   |    | Graphics  |                              | b |
+    |   |<==>| FIFO DMA  |=============================>| u |
+    |   |    |           |                              | s |
     +---+    +-----------+                              +---+
 
 
@@ -132,10 +132,9 @@ bus get every other cycle.
 The 16 bit FIFO bus
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The Graphics FIFO uses this bus to feed data into the graphics hardware's
-registers. This bus is unidirectional: the Graphics FIFO is the source,
-targeting the appropriate registers of the Graphics Accelerator or the
-Graphics Display Generator.
+The Graphics FIFO uses this bus to feed data into the Accelerator's registers.
+This bus is unidirectional: the Graphics FIFO is the source, targeting the
+appropriate registers of the Graphics Accelerator.
 
 Note that the registers accessed by the Graphics FIFO are not directly
 accessible to the RRPGE CPU.

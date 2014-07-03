@@ -1,3 +1,16 @@
+Version 00.008.000 (2014.07.03)
+ - Reorganizing and cleaning up the changes introduced in 00.006.000 and
+   00.007.000.
+ - The Graphics FIFO no longer has a beam wait condition.
+ - The Accelerator got a row counter so it is capable to blit rectangular
+   areas in one go.
+ - The Accelerator registers no longer change after a blit (the row counter
+   obsoleted this feature), this rolls back the FIFO change of 00.007.003 as
+   well.
+ - Graphics Display Generator registers were removed from the Graphics FIFO,
+   moved into the User Peripheral Area.
+
+
 Version 00.007.003 (2014.07.01)
  - Graphics FIFO: Command word latch does not increment on store if it
    addresses the Accelerator's start trigger.

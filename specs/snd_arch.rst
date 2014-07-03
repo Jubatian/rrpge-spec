@@ -69,33 +69,33 @@ Audio output memory map
 
 The following table lists the memory addresses within the User peripheral page
 which relate the audio output DMA. Note that these repeat every 32 words in
-the 0xE00 - 0xFFF range within this page.
+the 0xF00 - 0xFFF range within this page.
 
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0xE08  | Audio left channel DMA start offset bits, specifying offset bits  |
+| 0xF08  | Audio left channel DMA start offset bits, specifying offset bits  |
 |        | 4 - 19. Low 4 start offset bits are always zero.                  |
 +--------+-------------------------------------------------------------------+
-| 0xE09  | Audio right channel DMA start offset bits, specifying offset bits |
+| 0xF09  | Audio right channel DMA start offset bits, specifying offset bits |
 |        | 4 - 19. Low 4 start offset bits are always zero.                  |
 +--------+-------------------------------------------------------------------+
 |        | Audio DMA buffer size mask bits, specifying mask for offset bits  |
-| 0xE0A  | 4 - 19. Bits set in this mask come from the DMA start offset,     |
+| 0xF0A  | 4 - 19. Bits set in this mask come from the DMA start offset,     |
 |        | bits cleared from the DMA sample counter. Note that since the DMA |
 |        | sample counter only provides data for bits 0 - 14, bits 15 - 19   |
 |        | will be zero if the corresponding mask bits are cleared.          |
 +--------+-------------------------------------------------------------------+
 |        | Audio clock divider. Writing it zero produces a sample counter    |
-| 0xE0B  | increment every 65536 base clocks. 1 produces a 48KHz sample      |
+| 0xF0B  | increment every 65536 base clocks. 1 produces a 48KHz sample      |
 |        | counter increment rate, the Audio DMA base clock always reading   |
 |        | zero. Writing it resets the Audio DMA base clock to zero.         |
 +--------+-------------------------------------------------------------------+
 |        | Audio DMA sample counter / next sample read offset. Derived from  |
-| 0xE0C  | the base clock after applying the divider. Writes to this field   |
+| 0xF0C  | the base clock after applying the divider. Writes to this field   |
 |        | are ignored.                                                      |
 +--------+-------------------------------------------------------------------+
 |        | Audio DMA base clock. Increments starting with zero at a fixed    |
-| 0xE0D  | 48 KHz rate until reaching the divider, resetting to zero when.   |
+| 0xF0D  | 48 KHz rate until reaching the divider, resetting to zero when.   |
 |        | it matches. Writes to this field are ignored.                     |
 +--------+-------------------------------------------------------------------+
