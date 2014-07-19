@@ -22,34 +22,47 @@ RRPGE originally stood for Retro Role Playing Game Engine, later reformed into
 Retro Revolution Project Game Engine. The abbreviation should be pronounced as
 "Rerpige", with the ending "ge" as in "gear".
 
-The system roughly is a complete 16bit console with specialized CPU and
+The system roughly is a complete 16bit microcomputer with specialized CPU and
 peripherals aiming for running all genres of retro-style games and other types
 of software-art.
 
-It's design goals are as follows:
+
+Design goals
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In summary meeting the following goals are aimed for when designing this
+system:
 
 - Overall system efficiency achieved by specialized hardware.
-- Ease of use from assembler.
+- Relative ease of use from assembler.
 - Ease and efficiency of emulation.
 - Good integration in the host when emulated.
-- Possibility of realization in hardware.
+- Possibility of (preferably not too complex) realization in hardware.
 - Completely open specification.
 
-The main components of the system are as follows:
+As always, there are necessary compromises. For example the design of the CPU
+is heavily constrained by three of the goals: be easy to program in assembler,
+be efficient when emulated, and be possible to be realized as real hardware.
+The first two of these goals determined it to be CISC processor.
+
+
+Main components
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - 16bit CISC CPU with user / supervisor mode separation, memory protection,
   with a highly orthogonal instruction set. Notable features are small chunk
   (even bit) level memory accesses, no flags logic, and complex function call
-  instructions. The CPU is provided with 1 MWords of data memory (half of
-  which is also used for audio) of which 896 KWords are available to the user.
+  instructions. The CPU is provided with 2 MWords of data memory (half of
+  which is also used for audio) of which 1792 KWords are available to the
+  user.
 
-- 32bit Graphic Display & Accelerator unit capable of outputting 50-70Hz
-  640x400 4bit or 320x400 8bit graphics. Notable features are up to four
-  independent graphic layers and accelerators for various fast blit
-  operations. The graphics hardware is accompanied with 512 KWords of Video
-  memory.
+- 32bit Graphic Display Generator & Accelerator unit capable of outputting
+  50-70Hz 640x400 4bit or 320x400 8bit graphics. Notable features are display
+  list based line composing, and a FIFO assisted Accelerator capable to
+  perform many types of fast blit operations. The graphics hardware is
+  accompanied with 512 KWords of Video memory.
 
-- 8bit Stereo digital audio output with 24KHz or 48KHz sampling frequency.
+- 8bit Stereo digital audio output with up to 48KHz sampling frequency.
 
 - Mixer DMA peripheral capable to assist audio mixing algorithms.
 
@@ -57,6 +70,33 @@ The main components of the system are as follows:
   pointing devices, touch devices, and joysticks.
 
 - Additional features provided by a kernel, including network support.
+
+
+Comparison with computers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The RRPGE system aims to reproduce something which might have been possible in
+the early 90s. In this era already the IBM PC dominated, still running mostly
+DOS in 16 bits, gradually pushing Commodore's Amiga behind. By design RRPGE is
+closer to an Amiga than an IBM PC with it's extensive graphics system (the IBM
+PC mostly only had VGA with very little acceleration used), however it has a
+16 bit CPU with a necessity of memory banking. The latter is somewhat similar
+to the concepts used in the Enterprise 128K (8 bit, Z80 based computer), which
+is more efficient and provides larger address space than the system used by
+the IBM PC.
+
+By CPU power and the main clock frequency of 12.5MHz RRPGE mostly falls behind
+the microcomputers of the era, however it provides a graphics subsystem and
+audio acceleration features usually not available on those.
+
+
+Comparison with consoles
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+By design RRPGE may be considered a 4th generation game console. The system
+design is simpler than most consoles, and a notable difference is a rather
+large RAM memory compared to those, while no fast direct access is provided
+for application binary data (unlike cartridges).
 
 
 
