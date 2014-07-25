@@ -121,8 +121,12 @@ words in the 0xE00 - 0xEFF range.
 |        | it starts the Graphics FIFO. If the FIFO is empty, it has no      |
 |        | effect.                                                           |
 +--------+-------------------------------------------------------------------+
-| 0xE02  | Graphics FIFO command word latch. Always reads zero. Writing      |
-|        | updates the command word to the value written.                    |
+|        | Graphics FIFO command word latch. Always reads zero.              |
+| 0xE02  |                                                                   |
+|        | - bit 12-15: Unused                                               |
+|        | - bit    11: If set, increments latch, ignoring bits 0-10.        |
+|        | - bit  9-10: Unused                                               |
+|        | - bit  0- 8: FIFO bus address.                                    |
 +--------+-------------------------------------------------------------------+
 |        | Graphics FIFO data word & store trigger. Always reads zero.       |
 | 0xE03  | Writing triggers a store into the FIFO area, and after the store, |
@@ -136,15 +140,19 @@ Graphics FIFO command word format
 ------------------------------------------------------------------------------
 
 
-The Graphics FIFO command word is simply a FIFO bus (Accelerator) address at
-which the data should be written when processing the FIFO operation.
+The Graphics FIFO command word is basically a FIFO bus (Accelerator) address
+at which the data should be written when processing the FIFO operation.
 
 The graphics registers are described in the appropriate sections of the
 Accelerator's specification (acc_arch.rst) and the Graphics Display
 Generator's specification (vid_arch.rst).
 
-Bits 9-15 of the Command word are unused. Bits 0-8 specify the graphics
-register to fill in.
+Bit 11 of the Command word may be used to request incrementing the latched
+command word, to skip generating data for an address. Note that if either FIFO
+register's address is loaded in a CPU register, it has bit 11 set, so may be
+used for this increment trigger.
+
+Unless bit 11 was set, bits 0-8 specify the Accelerator register to fill in.
 
 The Data word provides the data to be written into the specified graphics
 register.

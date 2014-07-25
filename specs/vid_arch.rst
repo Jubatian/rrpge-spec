@@ -279,20 +279,13 @@ repeating every 16 words.
 +--------+-------------------------------------------------------------------+
 |        | Source definition 0                                               |
 | 0xE08  |                                                                   |
-|        | - bit  8-15: Base offset bits 8-15                                |
-|        | - bit  6- 7: VRAM bank select                                     |
-|        | - bit     5: If set, shift source. If clear, positioned source.   |
-|        | - bit  3- 4: Width multiplier for positioned source               |
-|        | - bit  0- 2: Width in cells                                       |
+|        | - bit 13-15: Base offset bits 13-15                               |
+|        | - bit 11-12: VRAM bank select                                     |
+|        | - bit  8-10: Source line size (line select shift)                 |
+|        | - bit     7: If set, shift source. If clear, positioned source.   |
+|        | - bit  0- 6: Positioned source width in cell units                |
 |        |                                                                   |
-|        | Width multipliers:                                                |
-|        |                                                                   |
-|        | - 0: x1                                                           |
-|        | - 1: x3                                                           |
-|        | - 2: x5                                                           |
-|        | - 3: x7                                                           |
-|        |                                                                   |
-|        | Width in cells:                                                   |
+|        | Source line sizes:                                                |
 |        |                                                                   |
 |        | - 0: 1 cell (8 pixels in 4 bit mode, 4 pixels in 8 bit)           |
 |        | - 1: 2 cells                                                      |
@@ -303,9 +296,9 @@ repeating every 16 words.
 |        | - 6: 64 cells                                                     |
 |        | - 7: 128 cells                                                    |
 |        |                                                                   |
-|        | The width multiplier only has effect for positioned sources. It   |
-|        | multiplies the width for the render, however only the width is    |
-|        | used to calculate offsets in the source.                          |
+|        | The positioned source width can specify a width of 0 to 127       |
+|        | cells. The source line size and the positioned source width have  |
+|        | no relation to each other.                                        |
 |        |                                                                   |
 |        | Shift sources wrap around on their end when rendering, always     |
 |        | producing the output width defined in the Shift mode region       |
@@ -472,13 +465,12 @@ Bus access cycles are taken by the following rules:
 - 1 cycle for reading a display list command.
 - The Shift mode region's Output width count of cycles plus one for sources in
   Shift mode.
-- The multiplied width count of cycles for sources in Position mode.
+- The positioned source width count of cycles for sources in Position mode (0
+  to 127 cycles).
 
 Note that the renderer is not capable to optimize out access cycles which
 would be used to render into off-screen area, neither it has a limit on how
-many cycles may it consume for a command in Position mode (that is defining a
-source of width 128 x 7 would cause 896 bus access cycles to be taken for it's
-render unless the line's end terminated it).
+many cycles may it consume for a command in Position mode.
 
 (Pipelining notes: if a source is in Position mode, to render it on the Line
 double buffer, one more cycle is necessary than it's width. This extra cycle

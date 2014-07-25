@@ -1,3 +1,11 @@
+Version 00.009.000 (2014.07.25)
+ - Graphics FIFO command word got a skip feature.
+ - Accelerator's register layout changed to fit better to a source definition
+   versus blit style principle.
+ - Graphics Display Generator's source definition format rewritten:
+   simplified, and more flexible.
+
+
 Version 00.008.001 (2014.07.19)
  - Updated the main README of the project (contained references to obsolete
    and removed features).

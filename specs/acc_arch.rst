@@ -723,17 +723,13 @@ for example the address 0x020 also refers to the register at 0x000.
 |        | - 14: 64 KWords (32K * 32 bit cells)                              |
 |        | - 15: 128 KWords (64K * 32 bit cells)                             |
 +--------+-------------------------------------------------------------------+
-|        | Reindex bank select.                                              |
-| 0x009  |                                                                   |
-|        | - bit  5-15: Unused                                               |
-|        | - bit  0- 4: Reindex bank select                                  |
-+--------+-------------------------------------------------------------------+
 |        | Substitution flags & Source barrel rotate.                        |
-| 0x00A  |                                                                   |
+| 0x009  |                                                                   |
 |        | - bit    15: Load destination from Source X every row if set      |
 |        | - bit    14: Load destination from Source Y every row if set      |
 |        | - bit    13: Load count from Source Y every row if set            |
-|        | - bit  3-12: Unused                                               |
+|        | - bit  4-12: Unused                                               |
+|        | - bit     3: (VCK) Colorkey enabled if set                        |
 |        | - bit  0- 2: Pixel barrel rotate right                            |
 |        |                                                                   |
 |        | In 4 bit mode only bits 0-1 are used of the Pixel barrel rotate   |
@@ -750,23 +746,25 @@ for example the address 0x020 also refers to the register at 0x000.
 |        | The partition is not affected by bits 15 or 14, it is always      |
 |        | selected by the destination partition select register.            |
 +--------+-------------------------------------------------------------------+
-|        | Source masks.                                                     |
-| 0x00B  |                                                                   |
-|        | - bit  8-15: Pixel OR mask                                        |
-|        | - bit  0- 7: Pixel AND mask                                       |
-|        |                                                                   |
-|        | The OR mask is stronger than the AND mask. In 4 bit mode, only    |
-|        | the low 4 bits of each are used.                                  |
+|        | Source AND mask and Colorkey.                                     |
+| 0x00A  |                                                                   |
+|        | - bit  8-15: Pixel AND mask (only low 4 bits used in 4 bit mode)  |
+|        | - bit  0- 7: Colorkey (only low 4 bits used in 4 bit mode)        |
 +--------+-------------------------------------------------------------------+
-|        | Colorkey and Control flags.                                       |
+|        | Reindex bank select.                                              |
+| 0x00B  |                                                                   |
+|        | - bit  5-15: Unused                                               |
+|        | - bit  0- 4: Reindex bank select                                  |
++--------+-------------------------------------------------------------------+
+|        | Blit control flags.                                               |
 | 0x00C  |                                                                   |
-|        | - bit 14-15: Unused                                               |
+|        | - bit    15: Unused                                               |
+|        | - bit    14: (VMR) Pixel order swap enabled if set (Mirroring)    |
 |        | - bit    13: (VDR) If bit 12 is set, Reindex using dest. if set   |
 |        | - bit    12: (VRE) Reindexing enabled if set                      |
 |        | - bit 10-11: (VMD) Selects blit mode                              |
-|        | - bit     9: (VCK) Colorkey enabled if set                        |
-|        | - bit     8: (VMR) Pixel order swap enabled if set (Mirroring)    |
-|        | - bit  0- 7: Colorkey (only low 4 bits used in 4 bit mode)        |
+|        | - bit  8- 9: Unused                                               |
+|        | - bit  0- 7: Pixel OR mask (only low 4 bits used in 4 bit mode)   |
 |        |                                                                   |
 |        | The blit modes:                                                   |
 |        |                                                                   |
@@ -774,6 +772,8 @@ for example the address 0x020 also refers to the register at 0x000.
 |        | - 1: Filler (FL)                                                  |
 |        | - 2: Scaled Blitter (SC)                                          |
 |        | - 3: Line (LI)                                                    |
+|        |                                                                   |
+|        | The Pixel OR mask is stronger than the AND mask (in 0x00A).       |
 +--------+-------------------------------------------------------------------+
 | 0x00D  | Count of rows to blit. Only bits 0 - 8 are used. If all these     |
 |        | bits are set zero, 512 rows are produced.                         |

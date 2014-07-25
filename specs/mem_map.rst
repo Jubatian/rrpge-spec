@@ -300,13 +300,13 @@ registers, see the memory maps in the Accelerator's documentation
 +--------+-------------------------------------------------------------------+
 | 0x008  | Partitioning settings                                             |
 +--------+-------------------------------------------------------------------+
-| 0x009  | Reindex bank select                                               |
+| 0x009  | Substitution flags & Source barrel rotate                         |
 +--------+-------------------------------------------------------------------+
-| 0x00A  | Substitution flags & source barrel rotate                         |
+| 0x00A  | Source AND mask and Colorkey                                      |
 +--------+-------------------------------------------------------------------+
-| 0x00B  | Source masks                                                      |
+| 0x00B  | Reindex bank select                                               |
 +--------+-------------------------------------------------------------------+
-| 0x00C  | Colorkey & control flags                                          |
+| 0x00C  | Blit control flags                                                |
 +--------+-------------------------------------------------------------------+
 | 0x00D  | Count of rows to process                                          |
 +--------+-------------------------------------------------------------------+

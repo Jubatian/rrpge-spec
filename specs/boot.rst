@@ -119,14 +119,14 @@ The display list is populated the following way:
 
 Source definitions are set up as follows:
 
-- Source 0: 0x0014
-- Source 1: 0x4042
-- Source 2: 0x8042
-- Source 3: 0xC042
-- Source 4: 0x0083
-- Source 5: 0x8083
-- Source 6: 0x00C3
-- Source 7: 0x80C3
+- Source 0: 0x0450
+- Source 1: 0x4A04
+- Source 2: 0x8A04
+- Source 3: 0xCA04
+- Source 4: 0x1308
+- Source 5: 0x9308
+- Source 6: 0x1B08
+- Source 7: 0x9B08
 
 Source 0 sets up positioned source on Video RAM bank 0 of 80 cells width. This
 is useful for non-scrolling display.
@@ -256,7 +256,7 @@ dump replicates the application header.
 0xD70 - 0xD7F: ::
 
     0x0000U, 0x0000U, 0x0000U, 0x0000U, 0xD000U, 0x01FCU, 0x1020U, 0x4080U,
-    0x0014U, 0x4042U, 0x8042U, 0xC042U, 0x0083U, 0x8083U, 0x00C3U, 0x80C3U,
+    0x0450U, 0x4A04U, 0x8A04U, 0xCA04U, 0x1308U, 0x9308U, 0x1B08U, 0x9B08U,
 
 0xD80 - 0xECF: 0
 
