@@ -1,3 +1,8 @@
+Version 00.009.001 (2014.07.27)
+ - Accelerator's Pixel OR mask was moved down into the destination combine
+   stage (to have it's effect after determining the colorkey).
+
+
 Version 00.009.000 (2014.07.25)
  - Graphics FIFO command word got a skip feature.
  - Accelerator's register layout changed to fit better to a source definition

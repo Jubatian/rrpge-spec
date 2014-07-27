@@ -264,7 +264,7 @@ out). The data from each source cell is prepared as follows: ::
               |
               V
     +-------------------+
-    |  Read AND/OR mask | Applies the Read AND & OR masks on each pixel
+    |   Pixel AND mask  | Applies the Pixel AND mask on each pixel
     +-------------------+
               |
               V
@@ -390,9 +390,12 @@ ignored. The data is blit as follows: ::
               |         +----+----+----+----+ | +----+----+----+----+
               |         |  VRAM Write mask  | | |  Beg/Mid/End mask |
               |         +----+----+----+----+ | +----+----+----+----+
-              |                   |          _V_          |
-              |                   +-------->|AND|<--------+
-             _V_                             ~|~
+              V                   |          _V_          |
+    +-------------------+         +-------->|AND|<--------+
+    |   Pixel OR mask   |                    ~|~
+    +-------------------+                     |
+              |                               |
+             _V_                              |
             |AND|<----------------------------+
              ~|~                              |
              _V_       ___                   _V_
@@ -420,9 +423,12 @@ from the reindex table. ::
               |         +----+----+----+----+ | +----+----+----+----+
               |         |  VRAM Write mask  | | |  Beg/Mid/End mask |
               |         +----+----+----+----+ | +----+----+----+----+
-              |                   |          _V_          |
-              |                   +-------->|AND|<--------+
-              V                              ~|~
+              V                   |          _V_          |
+    +-------------------+         +-------->|AND|<--------+
+    |   Pixel OR mask   |                    ~|~
+    +-------------------+                     |
+              |                               |
+              V                               |
     +-----------------------------+           |
     |   Reindex (enabled by VRE)  |           |
     +-----------------------------+           |
@@ -772,8 +778,6 @@ for example the address 0x020 also refers to the register at 0x000.
 |        | - 1: Filler (FL)                                                  |
 |        | - 2: Scaled Blitter (SC)                                          |
 |        | - 3: Line (LI)                                                    |
-|        |                                                                   |
-|        | The Pixel OR mask is stronger than the AND mask (in 0x00A).       |
 +--------+-------------------------------------------------------------------+
 | 0x00D  | Count of rows to blit. Only bits 0 - 8 are used. If all these     |
 |        | bits are set zero, 512 rows are produced.                         |
