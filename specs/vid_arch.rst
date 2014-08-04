@@ -528,6 +528,10 @@ Colors are expressed as 16 bit RGB values in the following layout:
 |  0- 3 | Blue component (0 - 15)                                            |
 +-------+--------------------------------------------------------------------+
 
+The scale must be according to a gamma of 2.2, such as an interlacing pattern
+of colors 0xFFF (white) and 0x000 (black) should produce approximately the
+same luminance as color 0xBBB (grey).
+
 
 Implementation defined
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

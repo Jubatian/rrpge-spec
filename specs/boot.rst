@@ -29,7 +29,8 @@ RRPGE CPU reset state
 ------------------------------------------------------------------------------
 
 
-- The user register set (a, b, c, d, x0, x1, x2, x3, xm, xh) is zeroed.
+- Most of the user register set (a, b, c, d, x0, x1, x2, x3, xh) is zeroed.
+- The pointer mode register (xm) is set 0x6666 (16 bit pre-incrementing).
 - The stack is empty (sp and bp is zeroed, the entire stack memory is zero).
 - The program counter (pc) points at offset 0x0000.
 
@@ -245,7 +246,13 @@ dump replicates the application header.
     0x7FFFU, 0x7FFFU, 0x807FU, 0x4001U, 0x4002U, 0x4003U, 0x4004U, 0x4005U,
     0x8000U, 0x8001U, 0x8002U, 0x8003U, 0x8004U, 0x8005U, 0x8006U, 0x8007U,
 
-0xD20 - 0xD56: 0
+0xD20 - 0xD47: 0
+
+0xD48: ::
+
+    0x6666U
+
+0xD49 - 0xD56: 0
 
 0xD57: ::
 
