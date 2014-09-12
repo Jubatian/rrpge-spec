@@ -21,9 +21,11 @@ The RRPGE CPU is a 16bit CISC design with the following fundamental features:
   modes.
 
 - Built-in memory management unit and separate address space for code, data
-  read, data write and stack accesses enabling a large address space despite
-  the 16 bit pointer size and allowing for fine-grained access control by the
-  supervisor.
+  and stack accesses enabling a large address space despite the 16 bit pointer
+  size and allowing for fine-grained access control in supervisor mode. The
+  memory management unit is only accessible in supervisor mode, and so is not
+  covered in this specification (only the interface to be provided by the
+  kernel running in supervisor mode is defined).
 
 - No flags in user mode. Carry mechanism is provided through a carry register
   and instruction variants affecting it, other common flags on other
@@ -53,8 +55,9 @@ left implementation defined.
 For hardware implementations requiring the supervisor mode implemented the
 documents in the "impl_hw" directory may be consulted.
 
-The interfacing areas are supervisor calls and returns and interrupt handlers.
-These are covered in the respective sections.
+A kernel runs in supervisor mode providing interfaces for certain functions.
+The definition of these interfaces are found in the kernel's documents
+("kernel.rst" and "kcall.rst").
 
 
 
@@ -154,36 +157,33 @@ Address spaces and Memory management unit
 ------------------------------------------------------------------------------
 
 
-The RRPGE CPU core accesses memory as 16bit words by 16 address lines in four
-distinct address spaces:
+From the user's point of view the RRPGE Application has access to the
+following address spaces:
 
 - Code space. Opcode fetches happen from this address space.
 
-- Stack space. Stack addressing modes access in this address space for both
-  reads and writes.
+- Stack space. Stack addressing modes access in this address space.
 
-- Data read space. Data read accesses happen from this address space.
+- Data space. Data reads and writes access this address space.
 
-- Data write space. Data write accesses happen into this address space.
+The kernel sets up and manages the Memory Management Unit so the followings
+hold true:
 
-Each of the address spaces are divided into 16 pages of 4096 words each.
+- The Code space is 64 KWords, the RRPGE Application code beginning at address
+  zero.
 
-The memory management unit maps pages into the address spaces of the CPU core
-from a common pool of 64K pages (giving a total of 256MWords of address space
-or 28 address lines).
+- The Stack space is 32 KWords. When kernel calls are executed, a kernel trap,
+  or an interrupt happens, a stack page switch is performed (automatically by
+  the CPU), so stack accesses related to these populate a supervisor stack
+  invisible to the user.
 
-Note that the memory management unit itself is only accessible to the
-supervisor mode, so the possible paging configurations are limited by the
-kernel to the pages which are supposed to be available for the user mode.
+- The Data space is 64 KWords. The first 64 words of this show memory mapped
+  peripherals, the rest is Data memory usable by the application.
 
-For the user mode the kernel only exposes a possibility to page in and out
-from or to the Data read and Data write spaces. However on a real hardware
-implementation the Stack and Code spaces are also paged which is exploited by
-supervisor - user mode switches.
-
-The CPU core can not use the address spaces simultaneously (like a Harvard
-architecture would be able) as these are supposed to map from a common address
-space with a single set of address lines at hardware level.
+The hardware behind may be a 256 KWords RAM unit of which these areas are
+designated by appropriately programming the Memory management unit (the
+process of this is irrelevant for RRPGE Applications, and so is not covered by
+this specification).
 
 
 
@@ -192,19 +192,10 @@ Addressing stalls
 ------------------------------------------------------------------------------
 
 
-The processor has at least two distinct stall lines referring to the low and
-high halves of the common page pool (low half are pages 0x0000 - 0x7FFF; high
-half are pages 0x8000 - 0xFFFF). These stall lines are activated by the Mixer
-DMA and the audio output DMA on the lower half, and by the Graphics Display &
-Accelerator unit on the higher half.
-
-If a stall line is active and the CPU addresses into the respective half, it
-must wait until the peripherals holding the stall lines release them.
-
-The stalls incurred by the audio output DMA are minimal and left unspecified
-in this system specification. They should be calculated in the limitations
-imposed on the cycles consumed by internal kernel tasks (see "kernel.rst" for
-further details).
+There are no stalls regarding the access of Code, Data or Stack space.
+Accessing the peripherals (through the peripheral registers mapped to the
+first 64 words of the Data space) may incur stalls which are defined in the
+appropriate peripheral documents.
 
 
 
@@ -224,17 +215,18 @@ The processor is capable to access memory in two ways:
   address.
 
 Note that any writes so are accompanied with a read from the same 16 bit
-address.
+address, which some peripherals rely upon.
+
+Moreover for Read-Modify-Write the processor has an additional line indicating
+whether the Read access is stand-alone, or is part of a Read-Modify-Write
+sequence. Peripherals may monitor this line when carrying out access related
+operations (so they can skip such operations for Read accesses which are part
+of a Read-Modify-Write sequence).
 
 Stack push operations are also affected, but the read data is always
 discarded. Implementations are allowed to omit these reads as by the
 specification these reads can never have side effects (the stack is always
 located in ordinary data memory).
-
-In the case of accessing data the read access always happens from the read
-page, and the write access always happens to the write page. If the two does
-not match, the result may be unexpected but defined. The implementation must
-behave accordingly this case.
 
 
 
@@ -289,15 +281,15 @@ variable storage for subroutines supporting reentrancy.
 
 Two additional supervisor mode registers are provided specifying user mode
 stack top and stack bottom. When stack accesses are generated outside these
-bounds, it is trapped (through an identical mechanism to interrupts) by the
-kernel which terminates the offending application.
+bounds, it is trapped (through an identical mechanism to interrupts), so the
+kernel may act upon it. A different method should be realized if the offending
+instruction is a Return, with the BP being equal the stack bottom, which
+should identify a return to supervisor mode.
 
-The only exception is executing a subroutine return with having BP equal the
-stack bottom. This operation passes control back to the supervisor mode.
-
-In the RRPGE system the stack top is fixed at 0x8000 (32768). The stack bottom
-is zero for the main program, for user mode program execution in interrupts,
-see the Interrupts section.
+In the RRPGE system the kernel on stack addressing traps will terminate the
+application. A return to supervisor mode results in a normal ("clean")
+application exit. The stack top is fixed at 0x8000 (32768), and the stack
+bottom is fixed at 0, corresponding with the stack size of 32 KWords.
 
 
 
@@ -306,39 +298,33 @@ User - Supervisor mode switches
 ------------------------------------------------------------------------------
 
 
-When switching from supervisor to user mode and vice-versa, certain hardware
-supported page flips and register replacements necessarily happen. The minimal
-set of resources necessary to be automatically handled:
+When switching from supervisor to user mode and vice-versa, certain automated
+memory mappings and register replacements necessarily need to happen. A rough
+outline of these follows:
 
-- One defined supervisor mode Code space page which is banked in as Code page
-  0 when returning to supervisor mode through a subroutine return at stack
-  bottom, or entering a supervisor call or interrupt (these may be different
-  offsets within this page, the first fetching a PC from the supervisor stack,
-  the second and third a fixed address).
+- For supporting returns to supervisor mode (Return executed in User mode with
+  BP = Stack bottom) a supervisor code and stack area is necessarily mapped
+  in, and the PC should be fetched from the supervisor stack (so to continue
+  executing the supervisor code after the instruction by which it entered User
+  mode).
 
-- One defined supervisor mode Stack space page which is banked in as Stack
-  page 0 when returning to supervisor mode through a subroutine return at
-  stack bottom, or entering a supervisor call (this receives supervisor call
-  parameters then) or interrupt.
+- Similarly for traps and interrupts an automatic supervisor code and stack
+  area switch necessarily has to be performed, however the trap or interrupt
+  may begin at a fixed address in the code space.
 
-- One defined user mode Code space page to bank into Code page 0 when entering
-  or returning to user mode (the rest may be handled by kernel code as
-  necessary).
+- Returning from interrupts an automated user mode back-switch has to be
+  performed to an appropriate code and stack area.
 
-- One defined user mode Stack space page to bank into Stack page 0 when
-  entering or returning to user mode (the rest may be handled by kernel code
-  as necessary).
+- The stack area switch implies that the BP and SP registers also have to be
+  switched.
 
-- Similar to the above shadow user and supervisor mode SP and BP registers
-  have to be provided.
+- Shadow general purpose registers or automatic register saves are not
+  necessary as the stack may be used for this purpose.
 
-- To allow the supervisor mode reasonably saving the state of the user mode
-  register set, a similarly shadowed general purpose register (preferably A)
-  has to be provided.
+- Data space switches are not necessary.
 
 These requirements are guidelines only, a software emulator not necessarily
-needs these information for realizing a conforming RRPGE system
-implementation.
+needs these for realizing a conforming RRPGE system implementation.
 
 
 

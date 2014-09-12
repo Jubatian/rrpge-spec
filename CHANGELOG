@@ -1,3 +1,30 @@
+Version 00.010.000 ()
+ - Large changes!
+ - Paging concept removed entirely. This affects file structures, kernel
+   calls, RAM layout, and in general just about everything. Nothing remains at
+   the user's point of view from the previous 4 KWord paging system. Paging
+   implemented for the purposes of the kernel does not affect the user end
+   RRPGE functionality, so does not belong to this specification.
+ - File formats (RRPGE Application and State save) are redesigned entirely.
+ - The ROPD (Read Only Process Descriptor) concept is removed.
+ - New peripheral concept, roughly the Video RAM turning into a 2 MWords
+   Peripheral RAM accessible on a 32 bit Peripheral bus. The peripherals
+   (including the Mixer DMA) operate in parallel with the RRPGE CPU.
+ - The CPU's address space is fixed from the user's point of view, giving
+   access to about 64 KWords of CPU RAM.
+ - DMA functions introduced in 00.006.000 are removed.
+ - CPU: The ASL (Low bit extending shift to left) instruction is dropped for a
+   NOT and a NEG instruction.
+ - Graphics Display Generator received a Display list clear feature which it
+   can exploit in the VBlank after a Display list definition change.
+ - Minor graphics double buffering assistance features introduced.
+ - Frequency source option from the Mixer removed, frequency index space
+   increased from 8 bits to up to 16 bits.
+ - Touch sensitive areas and touch awareness feature removed, changed over for
+   a pointing device specific area query.
+ - RRPGE logo trademark state changed (registered European trademark).
+
+
 Version 00.009.002 (2014.08.04)
  - Color output (Graphics Display Generator) specification made more accurate
    by mandating a gamma of 2.2.

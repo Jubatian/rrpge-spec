@@ -23,7 +23,7 @@ Most instructions take an addressing mode specified parameter. This is formed
 identically for all opcodes on the low 6 bits of the opcode.
 
 Timing of instructions are determined by the opcode, the addressing mode, and
-when accessing the memory, the activity of stall lines. The CPU also may
+when accessing the memory, the activity of any stall. The CPU also may
 implement a simple pipeline, however it's behavior is deterministic as far as
 it is relied upon for the design.
 
@@ -78,27 +78,17 @@ first, that is for example "ADD A, B" is equivalent to "A = A + B".
 Memory access stalls
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-When reading and writing through the 16 <=> 32 VRAM interface the accesses are
-stalled by the Graphics Display Generator, and may be stalled by the
-Accelerator unit. These stall cycles are defined as follows:
+When reading through the PRAM interface, since only every second cycle of it
+is available to the CPU, a cycle of stall may happen. Writing however is
+performed through a latch if necessary, so no stall happens for these accesses
+in normal circumstances. Extra stalls may be incurred by the Audio system if
+an audio output DMA read clashes with the access, however these accesses are
+infrequent.
 
-- Until the end of the accelerator operation if any is running.
-- 1 cycle for a Read access.
-- 2 cycles for a R-M-W access.
-
-Note that the processor always performs an R-M-W access when doing a write.
-
-Real hardware implementations may operate faster depending on how their
-accesses align with the Graphics Display Generator unit's accesses. These
-minimal requirements release the need for designing slow cycle-exact emulators
-in order to reproduce the minimal requirements.
-
-Accesses to the lower half of the address space (Data, Stack and Code
-memories) are assumed to perform without stalls. A real hardware
-implementation however would have to incur some stalls such as for realizing
-Audio DMA and maybe other asynchronous peripherals: those cycles are assumed
-to fall under the kernel's internal background process allowance (see
-"kernel.rst" for further details).
+For the purposes of acceptable emulation, implementing the PRAM read stall is
+sufficient. The simplest implementation may unconditionally add a stall cycle
+to any instruction accessing the PRAM (irrespective of whether it accesses the
+PRAM for Read only or R-M-W).
 
 
 
@@ -220,43 +210,6 @@ the result in the destination: ::
     dst = dst & src;
 
 Timing (cycles): 4 + ai
-
-
-ASL
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-+---------------------+--------------------+
-| Binary              | Mnemonic           |
-+=====================+====================+
-| 0010 011r rraa aaaa | ASL rx, adr        |
-+---------------------+--------------------+
-| 0010 010r rraa aaaa | ASL adr, rx        |
-+---------------------+--------------------+
-| 0110 011r rraa aaaa | ASL C:rx, adr      |
-+---------------------+--------------------+
-| 0110 010r rraa aaaa | ASL C:adr, rx      |
-+---------------------+--------------------+
-
-Performs lowest bit replicating left shift (a complementing operation to ASR)
-on the destination operand using the lower 4 bits of the source as shift
-count: ::
-
-    ASL dst, src
-    dst = dst ASL (src & 0xF);
-
-If Carry was specified, it is set zero, then receives the shifted out bits
-from it's low end. ::
-
-                             +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-      dst (before the shift) |1|0|0|1|1|1|0|0|1|1|1|1|0|0|0|1| ASL 4
-                             +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
-    Carry (after the shift)           dst (after the shift)
-    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    |0|0|0|0|0|0|0|0|0|0|0|0|1|0|0|1| |1|1|0|0|1|1|1|1|0|0|0|1|1|1|1|1|
-    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
-Timing (cycles): 4 + ai + wc
 
 
 ASR
@@ -616,6 +569,26 @@ If Carry was specified, it receives the high 16 bits of the result.
 Timing (cycles): 11 + ai + wc
 
 
+NEG
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
++---------------------+--------------------+
+| Binary              | Mnemonic           |
++=====================+====================+
+| 0110 011r rraa aaaa | NEG rx, adr        |
++---------------------+--------------------+
+| 0110 010r rraa aaaa | NEG adr, rx        |
++---------------------+--------------------+
+
+2's complement negates the source operand, and stores the result in the
+destination: ::
+
+    NEG dst, src
+    dst = 0 - src;
+
+Timing (cycles): 4 + ai
+
+
 NOP
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -628,6 +601,26 @@ NOP
 No operation.
 
 Timing (cycles): 1
+
+
+NOT
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
++---------------------+--------------------+
+| Binary              | Mnemonic           |
++=====================+====================+
+| 0010 011r rraa aaaa | NOT rx, adr        |
++---------------------+--------------------+
+| 0010 010r rraa aaaa | NOT adr, rx        |
++---------------------+--------------------+
+
+Performs a binary NOT on the source operand, and stores the result in the
+destination: ::
+
+    NOT dst, src
+    dst = src ^ 0xFFFF;
+
+Timing (cycles): 3 + ai
 
 
 OR
@@ -1075,8 +1068,8 @@ layout. The columns group by the highest two bits (bit 15 and bit 14) and bit
 |    || MUL    || MUL    || MUL     || MUL     |                   |         |
 |1000|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|   BTC adr, imm4   |         |
 +----+---------+---------+----------+----------+-------------------+         |
-|    || ASL    || ASL    || ASL     || ASL     |                   |         |
-|1001|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|   XBC adr, imm4   |         |
+|    || NOT    || NOT    || NEG     || NEG     |                   |         |
+|1001|| adr, rx|| rx, adr|| adr, rx || rx, adr |   XBC adr, imm4   |         |
 +----+---------+---------+----------+----------+-------------------+         |
 |    || SHL    || SHL    || SHL     || SHL     |                   |         |
 |1010|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|   BTS adr, imm4   |         |
