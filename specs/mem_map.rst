@@ -169,35 +169,35 @@ The register's descriptions may be found in the Mixer's documentation
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0x8000 | Unused                                                            |
+| 0x8000 | Amplitude source partition select                                 |
 +--------+-------------------------------------------------------------------+
-| 0x8001 | Frequency table offset                                            |
+| 0x8001 | Amplitude source start, whole                                     |
 +--------+-------------------------------------------------------------------+
-| 0x8002 | Amplitude source partition select                                 |
+| 0x8002 | Amplitude source start, fraction                                  |
 +--------+-------------------------------------------------------------------+
-| 0x8003 | Amplitude source start, whole                                     |
+| 0x8003 | Frequency for AM source read, whole                               |
 +--------+-------------------------------------------------------------------+
-| 0x8004 | Amplitude source start, fraction                                  |
+| 0x8004 | Frequency for AM source read, fraction                            |
 +--------+-------------------------------------------------------------------+
-| 0x8005 | Frequency select for AM source read                               |
+| 0x8005 | Partitioning settings                                             |
 +--------+-------------------------------------------------------------------+
-| 0x8006 | Partitioning settings                                             |
+| 0x8006 | 64 KCell bank selection settings                                  |
 +--------+-------------------------------------------------------------------+
-| 0x8007 | 64KCell bank selection settings                                   |
+| 0x8007 | Destination partition select                                      |
 +--------+-------------------------------------------------------------------+
-| 0x8008 | Destination partition select                                      |
+| 0x8008 | Destination start                                                 |
 +--------+-------------------------------------------------------------------+
-| 0x8009 | Destination start                                                 |
+| 0x8009 | Amplitude multiplier                                              |
 +--------+-------------------------------------------------------------------+
-| 0x800A | Amplitude multiplier                                              |
+| 0x800A | Sample source partition select                                    |
 +--------+-------------------------------------------------------------------+
-| 0x800B | Sample source partition select                                    |
+| 0x800B | Sample source start, whole                                        |
 +--------+-------------------------------------------------------------------+
-| 0x800C | Sample source start, whole                                        |
+| 0x800C | Sample source start, fraction                                     |
 +--------+-------------------------------------------------------------------+
-| 0x800D | Sample source start, fraction                                     |
+| 0x800D | Frequency, whole                                                  |
 +--------+-------------------------------------------------------------------+
-| 0x800E | Frequency select                                                  |
+| 0x800E | Frequency, fraction                                               |
 +--------+-------------------------------------------------------------------+
 | 0x800F | Mode & start trigger                                              |
 +--------+-------------------------------------------------------------------+
@@ -239,9 +239,9 @@ The Accelerator registers:
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0x8000 | PRAM cell write mask high                                         |
+| 0x8000 | PRAM write mask high                                              |
 +--------+-------------------------------------------------------------------+
-| 0x8001 | PRAM cell write mask low                                          |
+| 0x8001 | PRAM write mask low                                               |
 +--------+-------------------------------------------------------------------+
 | 0x8002 | Unused                                                            |
 +--------+-------------------------------------------------------------------+

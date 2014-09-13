@@ -35,36 +35,21 @@ The limits of the RRPGE system's display generator are set as follows:
 - At least 49 vertical blank lines (for a total of at least 449 lines)
 - At least 400 main clock cycles per display line
 - Interlaced display generation is supported for standards requiring it
-- 32 bit Video bus width
-
-The minimal number of main clock cycles required to be present under a
-vertical blanking period or a display frame can be derived from these
-requirements (at least 400 cycles per display line: at least 19600 cycles for
-a vertical blanking period and at least 179600 cycles for a frame). Note that
-the kernel is allowed to take a certain maximal amount of cycles for internal
-tasks which reduces the amount of cycles available for user mode programs
-within these periods. See "Kernel timing constraints" in "kernel.rst" for
-further details. Note that with the proper use of the Graphics FIFO (see
-"grapfifo.rst"), which is normally not affected by the kernel, these timings
-should not be of too much concern.
+- Accesses the 32 bit Peripheral bus
 
 To support the 4bit mode (640px width) the graphic display normally has to be
-clocked by twice the frequency of the main clock.
+clocked by twice the frequency of the main clock (except if it only supports
+interlaced modes).
 
 Interlaced modes are implemented in a transparent way: they require the same
 programming from the user like non-interlaced modes. The only exception is
 that the user needs to be aware of that it might need two frames to produce a
 complete image. See the "Interlaced rendering" chapter for more information.
 
-The Video bus width is 32 bits. Several aspects of the graphics subsystems are
-specified with this in mind, and the minimal memory access characteristics
-normally also require the 32 bit bus. Other implementations might be possible
-as long as they meet the minimal requirements of this specification.
-
 Note that faster rates than 70Hz may be provided by an implementation if it
-meets the minimal processing power requirements for a display frame outlined
-above. To provide this the implementation has to be faster than the minimal
-requirements in all aspects.
+meets the at least 449 line, and at least 400 main clock cycles per line
+constraints. This implies that such an implementation uses a faster clock than
+required by this specification.
 
 
 
@@ -129,7 +114,8 @@ Overview
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The display generator produces the video signal as required by the targeted
-display standard from the appropriate data in the Video RAM, line by line.
+display standard from the appropriate data in the Peripheral RAM, line by
+line.
 
 A line renderer generates the display line from a display list providing
 parameters for loading chunks of source data into an internal line double
@@ -139,10 +125,10 @@ the video signal producing pixel data. ::
 
 
     +-------------------------+
-    | Video RAM               |
+    | Peripheral RAM          |
     +-------------------------+
                  |
-                 | Video bus access every second cycle
+                 | Peripheral bus access every second cycle
                  V
     +-------------------------+
     | Line renderer           |
@@ -183,9 +169,9 @@ all cells to a given initial value in a single clock.
 Due to this architecture the Line renderer is free to build up the following
 display line in any order as long as it fits in the line's cycle budget.
 
-To give time slots for other components accessing the Video RAM (on the Video
-bus) the Display generator is capable to access the bus on every second main
-clock cycle, so allowing 200 Video bus accesses per line.
+To give time slots for other components accessing the Peripheral RAM (on the
+Peripheral bus) the Display generator is capable to access the bus on every
+second main clock cycle, so allowing 200 Peripheral bus accesses per line.
 
 
 Display list
@@ -203,18 +189,61 @@ terminated, and the following line is started normally.
 The first command of a line or line pair's command set is a 32 bit background
 pattern which is used to reset the Render side of the Line double buffer.
 Subsequent commands are rendering commands which combine a line of data from
-the Video RAM onto the Render side of the Line double buffer.
+the Peripheral RAM onto the Render side of the Line double buffer.
 
-The processing is adequately pipelined so no Video bus access cycles are spent
-idle as long as there is data to render for the line. From the user's point of
-view the Line renderer may be seen as fetching a display list command, then
-processing it. Up to 8 bus access cycles per line or line pair is however lost
-for overhead, so up to 192 bus access cycles remain available for processing
-by this scheme (392 in double scanned mode).
+The processing is adequately pipelined so no Peripheral bus access cycles are
+spent idle as long as there is data to render for the line. From the user's
+point of view the Line renderer may be seen as fetching a display list
+command, then processing it. Up to 8 bus access cycles per line or line pair
+is however lost for overhead, so up to 192 bus access cycles remain available
+for processing by this scheme (392 in double scanned mode).
 
 (Implementations are allowed to deviate from the strictly sequential scheme in
 favor of meeting the bus access cycle requirement by pipelining, such as by
 pre-fetching some cells of the display list)
+
+
+Double buffering assistance
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The Graphics Display Generator provides some assistance for implementing
+double (or triple) buffering.
+
+This is primarily realized through the Display List Definition register.
+Writing this register latches the previous value, and puts the Graphics FIFO
+in suspend mode until the end of the current display frame (the rendering
+passes the last display line of the frame).
+
+The write also initiates a Display list clear described below, which can be
+used to clean the work buffer for the next render.
+
+
+Display list clear function
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Within vertical blanking the Graphics Display Generator is capable to clear
+(by writing zeros) Peripheral RAM cells in the previously rendered Display
+List.
+
+This clearing only takes place in a VBlank after a Display List Definition
+change, using the previous Display List Definition. For the clear the Graphics
+Display Generator only uses the Peripheral bus cycles allocated to it, which
+would otherwise be left unused, so it is free from the point of other
+peripherals on the bus.
+
+The range to clear is defined by the previous Display List Definition to
+either 1600, 3200, 6400 or 12800 cells (depending on the Display List entry
+/ line size). The Clear controls register defines which cells may be cleared,
+and which may be preserved in this range.
+
+Up to 9600 cells may be written in the clearing process (that is using 48
+lines, 200 cycles each line). If by the Clear controls register more cells
+would be necessary to be cleared, the clearing process terminates when 9600
+cells are cleared (this means on the largest display list in 400 line graphics
+modes up to 24 cells may be cleared each line).
+
+Using the Clear controls it is possible to preserve parts of a Display list,
+such as a constant background pattern.
 
 
 
@@ -224,30 +253,81 @@ Graphics Display Generator memory map and command layouts
 
 
 The following table describes the Graphics Display Generator's registers. They
-are accessible in the 0xE00 - 0xEFF range in the User peripheral area,
-repeating every 16 words.
+are accessible in the 0x0010 - 0x001F area in the User peripheral area.
 
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0xE00  |                                                                   |
-| \-     | Graphics FIFO registers. See "gfifo.rst".                         |
-| 0xE03  |                                                                   |
+|        | Mask / Colorkey definition 0                                      |
+| 0x0010 |                                                                   |
+|        | - bit  8-15: Mask / Colorkey for 0x8                              |
+|        | - bit  0- 7: Mask / Colorkey for 0x9                              |
+|        |                                                                   |
+|        | Provides user-defineable Mask or Colorkey values for the given    |
+|        | values of the Mask / Colorkey selector in the render command.     |
 +--------+-------------------------------------------------------------------+
-|        | Shift mode region                                                 |
-| 0xE04  |                                                                   |
-|        | - bit    15: Double scanned mode if set                           |
+|        | Mask / Colorkey definition 1                                      |
+| 0x0011 |                                                                   |
+|        | - bit  8-15: Mask / Colorkey for 0xA                              |
+|        | - bit  0- 7: Mask / Colorkey for 0xB                              |
+|        |                                                                   |
+|        | Provides user-defineable Mask or Colorkey values for the given    |
+|        | values of the Mask / Colorkey selector in the render command.     |
++--------+-------------------------------------------------------------------+
+|        | Mask / Colorkey definition 2                                      |
+| 0x0012 |                                                                   |
+|        | - bit  8-15: Mask / Colorkey for 0xC                              |
+|        | - bit  0- 7: Mask / Colorkey for 0xD                              |
+|        |                                                                   |
+|        | Provides user-defineable Mask or Colorkey values for the given    |
+|        | values of the Mask / Colorkey selector in the render command.     |
++--------+-------------------------------------------------------------------+
+|        | Mask / Colorkey definition 3                                      |
+| 0x0013 |                                                                   |
+|        | - bit  8-15: Mask / Colorkey for 0xE                              |
+|        | - bit  0- 7: Mask / Colorkey for 0xF                              |
+|        |                                                                   |
+|        | Provides user-defineable Mask or Colorkey values for the given    |
+|        | values of the Mask / Colorkey selector in the render command.     |
++--------+-------------------------------------------------------------------+
+|        | Shift mode region A                                               |
+| 0x0014 |                                                                   |
+|        | - bit    15: Unused, reads zero                                   |
 |        | - bit  8-14: Output width in cells (0: No output)                 |
-|        | - bit     7: Unused                                               |
+|        | - bit     7: Unused, reads zero                                   |
 |        | - bit  0- 6: Begin position in cells                              |
 |        |                                                                   |
-|        | Specifies the region of output for Shift mode sources. The bus    |
-|        | access cycles required are one more than the output width.        |
+|        | Specifies the region of output for Shift mode sources in Source   |
+|        | definitions A0 - A3. The bus access cycles required are one more  |
+|        | than the output width.                                            |
 +--------+-------------------------------------------------------------------+
-|        | Display list definition                                           |
-| 0xE05  |                                                                   |
-|        | - bit  9-15: Unused                                               |
-|        | - bit  2- 8: Display list start offset in 2048 VRAM cell units    |
+|        | Shift mode region B                                               |
+| 0x0015 |                                                                   |
+|        | - bit    15: Unused, reads zero                                   |
+|        | - bit  8-14: Output width in cells (0: No output)                 |
+|        | - bit     7: Unused, reads zero                                   |
+|        | - bit  0- 6: Begin position in cells                              |
+|        |                                                                   |
+|        | Specifies the region of output for Shift mode sources in Source   |
+|        | definitions B0 - B3. The bus access cycles required are one more  |
+|        | than the output width.                                            |
++--------+-------------------------------------------------------------------+
+|        | Display list clear controls                                       |
+| 0x0016 |                                                                   |
+|        | - bit 11-15: Initial cells to skip from clearing (0 - 31)         |
+|        | - bit  6-10: Cells to skip after a streak (0 - 31)                |
+|        | - bit  0- 5: Cells to clear in one streak (0 - 63)                |
+|        |                                                                   |
+|        | The display list clear begins at the Display list start offset    |
+|        | found in the previous display list definition, then advances by   |
+|        | the parameters provided in this register.                         |
++--------+-------------------------------------------------------------------+
+|        | Display list definition & process flags                           |
+| 0x0017 |                                                                   |
+|        | - bit    15: Frame rate limiter flag                              |
+|        | - bit    14: Display list clear is waiting or processing if set   |
+|        | - bit 11-13: Unused, reads zero                                   |
+|        | - bit  2-10: Display list start offset in 2048 PRAM cell units    |
 |        | - bit  0- 1: Display list entry / line size                       |
 |        |                                                                   |
 |        | Display list entry / line sizes:                                  |
@@ -260,30 +340,24 @@ repeating every 16 words.
 |        | Note that in double scanned mode there are only 200 lines, so the |
 |        | total size of the display list is identical to that of the single |
 |        | scanned mode.                                                     |
-+--------+-------------------------------------------------------------------+
-|        | Mask / Colorkey definition 0                                      |
-| 0xE06  |                                                                   |
-|        | - bit  8-15: Mask / Colorkey for 0xC                              |
-|        | - bit  0- 7: Mask / Colorkey for 0xD                              |
 |        |                                                                   |
-|        | Provides user-defineable Mask or Colorkey values for the given    |
-|        | values of the Mask / Colorkey selector in the render command.     |
-+--------+-------------------------------------------------------------------+
-|        | Mask / Colorkey definition 1                                      |
-| 0xE07  |                                                                   |
-|        | - bit  8-15: Mask / Colorkey for 0xE                              |
-|        | - bit  0- 7: Mask / Colorkey for 0xF                              |
+|        | The Frame rate limiter flag becomes set when writing this         |
+|        | register, and clears when the Graphics Display Generator fetches  |
+|        | the new Display List Definition for rendering the next frame. It  |
+|        | always clears after the Display list clear is waiting or          |
+|        | processing flag.                                                  |
 |        |                                                                   |
-|        | Provides user-defineable Mask or Colorkey values for the given    |
-|        | values of the Mask / Colorkey selector in the render command.     |
+|        | The Display list clear is waiting or processing flag becomes set  |
+|        | when writing this register, and clears as soon as the clearing    |
+|        | process is completed or terminated.                               |
 +--------+-------------------------------------------------------------------+
-|        | Source definition 0                                               |
-| 0xE08  |                                                                   |
-|        | - bit 13-15: Base offset bits 13-15                               |
-|        | - bit 11-12: VRAM bank select                                     |
-|        | - bit  8-10: Source line size (line select shift)                 |
-|        | - bit     7: If set, shift source. If clear, positioned source.   |
-|        | - bit  0- 6: Positioned source width in cell units                |
+|        | Source definition A0                                              |
+| 0x0018 |                                                                   |
+|        | - bit 12-15: Base offset bits 13-15                               |
+|        | - bit  8-11: PRAM bank select                                     |
+|        | - bit  5- 7: Source line size (line select shift)                 |
+|        | - bit     4: If set, shift source. If clear, positioned source.   |
+|        | - bit  0- 3: Positioned source width multiplier                   |
 |        |                                                                   |
 |        | Source line sizes:                                                |
 |        |                                                                   |
@@ -296,27 +370,28 @@ repeating every 16 words.
 |        | - 6: 64 cells                                                     |
 |        | - 7: 128 cells                                                    |
 |        |                                                                   |
-|        | The positioned source width can specify a width of 0 to 127       |
-|        | cells. The source line size and the positioned source width have  |
-|        | no relation to each other.                                        |
+|        | The positioned source width multiplier specifies odd values from  |
+|        | 1 to 31 (0 => 1; 15 => 31). It multiplies the Source line size,   |
+|        | but has no effect on the Source line select in the render         |
+|        | command.                                                          |
 |        |                                                                   |
 |        | Shift sources wrap around on their end when rendering, always     |
-|        | producing the output width defined in the Shift mode region       |
-|        | register.                                                         |
+|        | producing the output width defined in the appropriate Shift mode  |
+|        | region register.                                                  |
 +--------+-------------------------------------------------------------------+
-| 0xE09  | Source definition 1                                               |
+| 0x0019 | Source definition A1                                              |
 +--------+-------------------------------------------------------------------+
-| 0xE0A  | Source definition 2                                               |
+| 0x001A | Source definition A2                                              |
 +--------+-------------------------------------------------------------------+
-| 0xE0B  | Source definition 3                                               |
+| 0x001B | Source definition A3                                              |
 +--------+-------------------------------------------------------------------+
-| 0xE0C  | Source definition 4                                               |
+| 0x001C | Source definition B0                                              |
 +--------+-------------------------------------------------------------------+
-| 0xE0D  | Source definition 5                                               |
+| 0x001D | Source definition B1                                              |
 +--------+-------------------------------------------------------------------+
-| 0xE0E  | Source definition 6                                               |
+| 0x001E | Source definition B2                                              |
 +--------+-------------------------------------------------------------------+
-| 0xE0F  | Source definition 7                                               |
+| 0x001F | Source definition B3                                              |
 +--------+-------------------------------------------------------------------+
 
 Display lists hold commands, each command defining one chunk of data to be
@@ -339,8 +414,8 @@ The layout of a render command is as follows:
 | 28-30  | Source definition select                                          |
 +--------+-------------------------------------------------------------------+
 |        | Source line select. This is multiplied with the width of the      |
-| 16-27  | source (not including the multiplier) to produce a VRAM offset,   |
-|        | and is OR combined with the source's base offset. Video RAM bank  |
+| 16-27  | source (not including the multiplier) to produce a PRAM offset,   |
+|        | and is OR combined with the source's base offset. PRAM bank       |
 |        | boundaries can not be crossed.                                    |
 +--------+-------------------------------------------------------------------+
 | 15     | Combine with mask if clear (!)                                    |
@@ -357,14 +432,14 @@ The layout of a render command is as follows:
 |        | - 0x5: Mask / Colorkey is 00001100 (binary).                      |
 |        | - 0x6: Mask / Colorkey is 00110000 (binary).                      |
 |        | - 0x7: Mask / Colorkey is 11000000 (binary).                      |
-|        | - 0x8: Mask / Colorkey is 00000001 (binary).                      |
-|        | - 0x9: Mask / Colorkey is 00000010 (binary).                      |
-|        | - 0xA: Mask / Colorkey is 00000100 (binary).                      |
-|        | - 0xB: Mask / Colorkey is 00001000 (binary).                      |
-|        | - 0xC: Mask / Colorkey is taken from bits 8 - 15 of 0xE06.        |
-|        | - 0xD: Mask / Colorkey is taken from bits 0 - 7 of 0xE06.         |
-|        | - 0xE: Mask / Colorkey is taken from bits 8 - 15 of 0xE07.        |
-|        | - 0xF: Mask / Colorkey is taken from bits 0 - 7 of 0xE07.         |
+|        | - 0x8: Mask / Colorkey is taken from bits 8 - 15 of 0x0010.       |
+|        | - 0x9: Mask / Colorkey is taken from bits 0 - 7 of 0x0010.        |
+|        | - 0xA: Mask / Colorkey is taken from bits 8 - 15 of 0x0011.       |
+|        | - 0xB: Mask / Colorkey is taken from bits 0 - 7 of 0x0011.        |
+|        | - 0xC: Mask / Colorkey is taken from bits 8 - 15 of 0x0012.       |
+|        | - 0xD: Mask / Colorkey is taken from bits 0 - 7 of 0x0012.        |
+|        | - 0xE: Mask / Colorkey is taken from bits 8 - 15 of 0x0013.       |
+|        | - 0xF: Mask / Colorkey is taken from bits 0 - 7 of 0x0013.        |
 +--------+-------------------------------------------------------------------+
 |        | Shift / Position amount in 4 bit pixel units. If the source is in |
 | 0-9    | shift mode, this value shifts it to the left by the given number  |
@@ -379,10 +454,10 @@ bus access cycle (the cycle in which it was fetched).
 
 Note that it is possible to combine with both Mask and Colorkey.
 
-Note that Video RAM bank boundaries can not even be crossed in position mode
-with an appropriate source line select and a larger than one multiplier. The
-reading of the source wraps around fetching the remaining cells from the
-beginning of the same VRAM bank.
+Note that Peripheral RAM bank boundaries can not even be crossed in position
+mode with an appropriate source line select and a larger than one multiplier.
+The reading of the source wraps around fetching the remaining cells from the
+beginning of the same PRAM bank.
 
 
 
@@ -483,36 +558,20 @@ Other components of the Display Generator
 ------------------------------------------------------------------------------
 
 
-The line counter & pointer
+Mode and double scanning
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The line counter & pointer has three roles. First as pointer it addresses the
-display lists in visible lines (lines 0-399), second as counter it provides
-beam wait conditions for the Graphics FIFO (see "Beam wait condition" in
-"grapfifo.rst") and results for the "Query current display line" kernel call
-(see the appropriate section in "kcall.rst").
-
-Through these features it conveys information to the user application which
-may synchronize to it for various purposes implementing graphics engines.
-
-The line counter & pointer increments when entering the Horizontal Blanking
-period of the line it refers to. That is the Line counter & pointer will be
-zero within the first displayed line's Horizontal Blank, and it's 320 (main
-clock) Display cycles.
-
-When entering the Horizontal Blanking, the Graphics Display Generator also
-latches all it's registers (the three display list offsets and the two video
-RAM bank selections), so any Graphics FIFO operation on these is guaranteed to
-only have effect in the next line.
+The graphics mode (4 bit / 8 bit) and double scanning can be set using a
+kernel call. See "0x0330: Change video mode" in "kcall.rst" for details.
 
 
 Palette
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The palette can only be written through kernel calls. This component only
-affects the generated data, assigning the actual visible colors to each pixel
-of the output stream. In real hardware it might be a rather simple Digital
-Analog Converter (DAC).
+The palette can only be written through the "0x0300: Set palette entry" kernel
+call. This component only affects the generated data, assigning the actual
+visible colors to each pixel of the output stream. In real hardware it might
+be a rather simple Digital Analog Converter (DAC).
 
 Colors are expressed as 16 bit RGB values in the following layout:
 
@@ -550,15 +609,15 @@ are as follows:
   contents of the line). The next line or line pair's render must always start
   proper regardless of the termination of the line or line pair before.
 
-- Fetching of the Graphics Display Generator register relative to the render
-  of lines or the frame. If they changed in the Vertical Blank, earlier than
-  the last line of it, the next display frame must render according to the new
-  contents.
+- Fetching of the Graphics Display Generator registers relative to the render
+  of lines or the frame.
 
-- The timing of any display related Video RAM access within the rendered line.
-  No Video RAM accesses for a line must happen before incrementing the Line
-  counter & pointer to the given line, and no Video RAM accesses must happen
-  for a line after the Line counter & pointer is incremented beyond it.
+- The timing of any display related Peripheral RAM access within the rendered
+  line.
+
+- The time the Display List clear function takes, provided it finishes within
+  VBlank before starting the next display frame (including fetching the next
+  frame's Display List Definition, and clearing the Frame rate limiter flag).
 
 - After setting the palette data through the kernel call, it's effect may
   delay for up to "a few" frames, not even necessarily taking effect in
@@ -575,8 +634,8 @@ Graphics Display Generator timing
 ------------------------------------------------------------------------------
 
 
-The Graphics Display Generator uses a fixed scheme for accessing the Video
-bus, generating an access (read) every second cycle irrespective of it's
+The Graphics Display Generator uses a fixed scheme for accessing the
+Peripheral bus, generating an access every second cycle irrespective of it's
 tasks.
 
 The effect of these accesses from the point of minimal limits to support is
@@ -594,24 +653,8 @@ For interlaced standards an interlaced rendering mechanism has to be
 supported. The key concepts behind it is that it should be as transparent for
 the user as reasonably possible.
 
-To achieve this the graphic display unit's line fetching stage works in an
-identical way to the "normal" (non interlaced) targets, if meeting the minimal
-requirements, fetching a complete line in 400 cycles. The display however
-completes a line in 800 cycles, but after each line, it advances it's line
-pointer by two.
-
-The actual display stage is necessarily detached from the fetching stage,
-communicating through a buffer capable to hold at least one complete line.
-
-The contents of this buffer are implementation defined, to meet the
-requirements of this specification, it is sufficient to provide the combined
-binary data as seen before applying the palette data.
-
-This style of implementation is necessary to fully conform with this
-specification as it requires that reading the pixel data for a line begins
-after advancing the line pointer to the line in question, and completes
-before advancing it further, on which behavior applications may rely.
-
-Note that the requirements for applying palette data is less strict, so it is
-not necessary to provide line exact behavior for this aspect.
-
+Since no state is remembered across lines, it is sufficient to simply slow the
+line rendering process down to take 800 main clock cycles / line instead of
+400, and increment the line counter by 2 after each line. Note that the access
+cycles available for each line should still be constrained to the specified
+limits, however it is not critical to realize an acceptable implementation.

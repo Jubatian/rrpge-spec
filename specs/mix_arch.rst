@@ -1,5 +1,5 @@
 
-RRPGE Audio mixer peripheral architecture
+RRPGE Audio Mixer DMA peripheral architecture
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
@@ -14,12 +14,10 @@ Introduction
 ------------------------------------------------------------------------------
 
 
-The mixer peripheral assists audio generation by providing hardware
-accelerated sample mixing capabilities including amplitude and frequency
-modulation. It operates within the Data Memory space, on the first 256 banks
-(1 MWords) which includes the buffers used by the audio DMA.
-
-Mixer operations stall the CPU until their completion.
+The Mixer DMA peripheral assists audio generation by providing hardware
+accelerated sample mixing capabilities including amplitude modulation. It
+operates on the Peripheral bus accessing the Peripheral RAM, and is driven by
+the Mixer FIFO. By this it is capable to work in parallel with the RRPGE CPU.
 
 
 
@@ -28,10 +26,9 @@ Mixer architecture
 ------------------------------------------------------------------------------
 
 
-The mixer operates on up to three sources, a frequency table, and a
-destination all found in it's accessible Data Memory space (the first 128
-banks as seen from the CPU). The result of the operation depends on how these
-sources and related algorithms are connected together.
+The mixer operates on up to two 8 bit sources and one 8 bit destination within
+the Peripheral RAM. One of the sources is optional, used for amplitude
+modulation. The sources may have individual frequency settings.
 
 The following block diagram depicts the overall architecture of the mixer: ::
 
@@ -40,28 +37,19 @@ The following block diagram depicts the overall architecture of the mixer: ::
     |            |
     | +--------+ |
     | | Sample |-------------Data-----------------------------------------+
-    | | source | |  +------+   _  +--------+    +--------+    +--------+  |
-    | |        |<---| Ptr. |<-|+|-| S. add |<-+-| S. frq |<-+-| FM sel |  |
-    | +--------+ |  +------+   ~  +--------+  ^ +--------+  ^ +--------+  |
-    |            |                            |             |     O:      |
-    | +--------+ |                            |             |     f:      |
-    | |   FM   |-------------Data------------)|(------------+     f:      |
-    | | source | |  +------+   _  +--------+  | +--------+         :      |
-    | |        |<---| Ptr. |<-|+|-| FM add |<-+-| FM frq |.........:      |
-    | +--------+ |  +------+   ~  +--------+  ^ +--------+                |
-    |            |                            |                           |
-    | +--------+ |                            |                           |
-    | |   AM   |-------------Data------------)|(-----------+              |
-    | | source | |  +------+   _  +--------+  | +--------+ |              |
-    | |        |<---| Ptr. |<-|+|-| AM add |<-+-| AM frq | |              |
-    | +--------+ |  +------+   ~  +--------+  ^ +--------+ |              |
-    |            |                            |      :     |              |
-    | +--------+ |                            |     O:     |              |
-    | | Freq.  | |                            |     f:     |              |
-    | | table  |------------------------------+     f:     |              |
-    | |        | |           +-----------+      +--------+ V  +--------+  |
-    | +--------+ |           |Add enable |      | AM sel |-+->| AM mul |>|*|
-    |            |           +-----------+      +--------+    +--------+  |
+    | | source | |  +------+   _  +----------------------+                |
+    | |        |<---| Ptr. |<-|+|-|   Sample frequency   |                |
+    | +--------+ |  +------+   ~  +----------------------+                |
+    |            |                                                        |
+    | +--------+ |                                                        |
+    | |   AM   |-------------Data--------------------------+              |
+    | | source | |  +------+   _  +----------------------+ |              |
+    | |        |<---| Ptr. |<-|+|-|     AM frequency     | |              |
+    | +--------+ |  +------+   ~  +----------------------+ |              |
+    |            |                                 :       |              |
+    |            |          +-------------+  +-----------+ V  +--------+  |
+    |            |          | Add On/Off  |  | AM On/Off |-+->| A. mul |>|*|
+    |            |          +-------------+  +-----------+    +--------+  |
     | +--------+ |                 |   _                                  |
     | | Sample |-------------Data->+<-|0|                                 |
     | | dest.  | |                 V   ~                                  |
@@ -71,59 +59,37 @@ The following block diagram depicts the overall architecture of the mixer: ::
     +------------+
 
 
-For all reads the order of operations are first performing the access, then
-performing the pointer addition (by the appropriate frequency). The order of
-operations for processing a destination word are as follows:
+In one pass, 4 samples are processed to produce a 32 bit destination in one
+operation. The AM source however is read only once each pass. To negate the
+difference in processing rate, the AM frequency is multiplied by 4 (shifted
+left by 2). Step by step, the following actions are performed during a pass:
 
-- Fetch frequency index if FM mode is enabled.
-- Increment FM source pointer with FM add if FM mode is enabled.
-- Fetch frequency value from frequency table if FM mode is enabled.
 - Fetch first sample.
-- Temporarily increment sample pointer with half the frequency value.
-- Fetch amplitude if AM mode is enabled.
-- Increment amplitude source pointer with AM add if AM mode is enabled.
+- Increment sample pointer with Sample frequency.
 - Fetch second sample.
-- Increment (original) sample pointer with the frequency value.
-- Calculate the source data (multiply with amplitude).
-- Fetch destination (two samples).
-- Add source to destination (saturated, two samples).
-- Write back into destination.
-- Increment destination.
+- Increment sample pointer with Sample frequency.
+- Fetch third sample.
+- Increment sample pointer with Sample frequency.
+- Fetch fourth sample.
+- Increment sample pointer with Sample frequency.
+- Merge the fetched sample values in a 32 bit holding register.
+- Fetch AM source, update Amplitude multiplier with it (if AM is enabled).
+- Increment AM source pointer with AM frequency * 4 (if AM is enabled).
+- Packed multiply the 32 bit holding register with Amplitude multiplier.
+- Read sample destination (32 bits).
+- Packed add the read value to the 32 bit holding register (if it is enabled).
+- Write the 32 bit holding register in the sample destination.
+- Increment destination pointer.
 
-The AM and FM sources are read once every output word, that is, once for every
-two samples. The frequencies ("AM frq" and "FM frq") correspond to this rate.
-The sample source however is read twice per output. To keep it's frequency
-working in an identical manner to that of the AM and FM sources, it implements
-the following behavior:
+The actual order of memory accesses within a pass may be different, and may
+interleave with other passes in an implementation defined manner.
 
-- After fetching the first sample, a temporary pointer is created by adding
-  half of the sample frequency (as in logical shifting right by one) to the
-  sample pointer.
+For both sources and the destination a partition size setting is provided, one
+for each. This allows for selecting sample data sizes from 8 samples (2 cells)
+to 256K samples (64K cells) in power of 2 increments. The pointers
+automatically wrap to the beginning of the partition when passing it's end.
 
-- The second sample is fetched using this temporary pointer.
-
-- After fetching the second sample, the original pointer is incremented by the
-  sample frequency.
-
-The "AM sel" and "FM sel" settings control whether the AM or the FM sources
-are active respectively. When these sources are inactive, the last written
-value will persist in the "S. frq" and "AM mul" fields respectively, thus
-disabling these features. Moreover when these are disabled, the loading of the
-sources and the increment of the pointers are also disabled.
-
-For all three sources and the destination a partition size setting is
-provided, one for each. This allows for selecting sample data sizes from 4
-samples (2 words) to 128K samples (64K words) in power of 2 increments. The
-pointers automatically wrap to the beginning of the partition when passing
-it's end.
-
-Before starting a mixer operation either the frequency by the current sample
-frequency (S. frq) is fetched from the frequency table for "S. add", or the
-frequency by the FM mode (FM frq) for "FM add", depending on whether FM mode
-is enabled or not. Likewise the frequency used for "AM add" is also fetched if
-necessary.
-
-Amplitude is applied to the source data as follows:
+The Amplitude multiplier is applied to the 8 bit source data as follows:
 
 src_a = (((src - 128) * amp) / 256) + 128
 
@@ -132,8 +98,8 @@ Without relying on signed arithmetic this may be expressed as:
 src_a = (((src * amp) >> 7) + 256 - amp) >> 1
 
 Note that this algorithm implies that the maximal valid amplitude of 0xFF can
-not reproduce the original data. AM modulation has to be turned off to keep
-the data as-is.
+not reproduce the original data. The Amplitude multiplier has to be turned off
+to keep the data as-is.
 
 If adding to the destination is enabled, the result forms as follows:
 
@@ -148,15 +114,15 @@ Mixer operation timing
 ------------------------------------------------------------------------------
 
 
-The timing of the mixer operations depend only on whether FM mode is enabled
-or not. Otherwise the timing is consistent for all configurations, dominated
-by the necessary memory accesses.
+The timing of the mixer operations is consistent for all configurations,
+dominated by the necessary memory accesses (7 for each pass). A mixer
+operation takes the following amount of main clock cycles:
 
-FM disabled (cycles): 18 + (6 * n)
+16 + (14 * n)
 
-FM enabled (cycles): 20 + (10 * n)
-
-'n' is the number of words to process.
+'n' is the number of passes to process (so the operation takes 3.5 cycles /
+sample). Note that the two cycles necessary for reading the Amplitude source
+are present even when the AM source is turned off.
 
 
 
@@ -165,130 +131,106 @@ Mixer peripheral memory map
 ------------------------------------------------------------------------------
 
 
-The following table lists the memory addresses within the User peripheral page
-which relate the mixer. Note that these repeat every 32 words in the 0xF00 -
-0xFFF range within this page.
+The following table describes the registers of the Mixer DMA. These
+registers are only accessible through the Mixer FIFO (see "fifo.rst" for
+details).
+
+The Mixer is accessed by a 4 bit address. The addresses however are provided
+with bit 15 set as this is how they should be supplied to the FIFO.
 
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0xF00  |                                                                   |
-| \-     | Other peripherals, not used by the Mixer DMA. See "mem_map.rst".  |
-| 0xF0D  |                                                                   |
+| 0x8000 | Amplitude source partition select bits. Used in AM mode for       |
+|        | reading the amplitude source.                                     |
 +--------+-------------------------------------------------------------------+
-| 0xF0E  | Frequency table whole pointer in 256 word units, only low 12 bits |
-|        | are used. The table contains 256 entries.                         |
+| 0x8001 | Amplitude source start pointer whole part (addresses 32 bit cell  |
+|        | units). Used in AM mode for reading the amplitude source.         |
 +--------+-------------------------------------------------------------------+
-| 0xF0F  | Frequency table fractional pointer in 256 word units, only low 12 |
-|        | bits are used. The table contains 256 entries.                    |
+| 0x8002 | Amplitude source start pointer fractional part. Used in AM mode   |
+|        | for reading the amplitude source.gnored.                          |
 +--------+-------------------------------------------------------------------+
-| 0xF10  | Frequency source start partition select bits. Used in FM mode for |
-|        | reading the frequency source.                                     |
+| 0x8003 | Frequency for AM source read, whole part. Provides the increment  |
+|        | for the AM source pointer.                                        |
 +--------+-------------------------------------------------------------------+
-|        | Frequency source start pointer whole part (addresses 16 bit word  |
-| 0xF11  | units). Used in FM mode for reading the frequency source. Updated |
-|        | during a mixer operation in FM mode, otherwise ignored.           |
-+--------+-------------------------------------------------------------------+
-|        | Frequency source start pointer fractional part. Used in FM mode   |
-| 0xF12  | for reading the frequency source. Updated during a mixer          |
-|        | operation in FM mode, otherwise ignored.                          |
-+--------+-------------------------------------------------------------------+
-| 0xF13  | Amplitude source start partition select bits. Used in AM mode for |
-|        | reading the frequency source.                                     |
-+--------+-------------------------------------------------------------------+
-|        | Amplitude source start pointer whole part (addresses 16 bit word  |
-| 0xF14  | units). Used in AM mode for reading the frequency source. Updated |
-|        | during a mixer operation in AM mode, otherwise ignored.           |
-+--------+-------------------------------------------------------------------+
-|        | Amplitude source start pointer fractional part. Used in AM mode   |
-| 0xF15  | for reading the frequency source. Updated during a mixer          |
-|        | operation in AM mode, otherwise ignored.                          |
-+--------+-------------------------------------------------------------------+
-|        | Frequency index for AM / FM source reads.                         |
-| 0xF16  |                                                                   |
-|        | - bit  8-15: Frequency index of Frequency source reads.           |
-|        | - bit  0- 7: Frequency index of Amplitude source reads.           |
-|        |                                                                   |
-|        | These values index into the Frequency table, used as "AM frq" and |
-|        | "FM frq" when the respective modes are enabled.                   |
+| 0x8004 | Frequency for AM source read, fractional part. Provides the       |
+|        | increment for the AM source pointer.                              |
 +--------+-------------------------------------------------------------------+
 |        | Partitioning settings.                                            |
-| 0xF17  |                                                                   |
-|        | - bit 12-15: Frequency source partitioning.                       |
+| 0x8005 |                                                                   |
+|        | - bit 12-15: Unused                                               |
 |        | - bit  8-11: Amplitude source partitioning.                       |
 |        | - bit  4- 7: Sample source partitioning.                          |
 |        | - bit  0- 3: Destination partitioning.                            |
 |        |                                                                   |
 |        | Encoding of partition sizes:                                      |
 |        |                                                                   |
-|        | - 0x0: 2 Words (4 samples)                                        |
-|        | - 0x1: 4 Words (8 samples)                                        |
-|        | - 0x2: 8 Words (16 samples)                                       |
-|        | - 0x3: 16 Words (32 samples)                                      |
-|        | - 0x4: 32 Words (64 samples)                                      |
-|        | - 0x5: 64 Words (128 samples)                                     |
-|        | - 0x6: 128 Words (256 samples)                                    |
-|        | - 0x7: 256 Words (512 samples)                                    |
-|        | - 0x8: 512 Words (1K samples)                                     |
-|        | - 0x9: 1 KWords (2K samples)                                      |
-|        | - 0xA: 2 KWords (4K samples)                                      |
-|        | - 0xB: 4 KWords (8K samples)                                      |
-|        | - 0xC: 8 KWords (16K samples)                                     |
-|        | - 0xD: 16 KWords (32K samples)                                    |
-|        | - 0xE: 32 KWords (64K samples)                                    |
-|        | - 0xF: 64 KWords (128K samples)                                   |
+|        | - 0x0: 2 Cells (8 samples)                                        |
+|        | - 0x1: 4 Cells (16 samples)                                       |
+|        | - 0x2: 8 Cells (32 samples)                                       |
+|        | - 0x3: 16 Cells (64 samples)                                      |
+|        | - 0x4: 32 Cells (128 samples)                                     |
+|        | - 0x5: 64 Cells (256 samples)                                     |
+|        | - 0x6: 128 Cells (512 samples)                                    |
+|        | - 0x7: 256 Cells (1K samples)                                     |
+|        | - 0x8: 512 Cells (2K samples)                                     |
+|        | - 0x9: 1 KCells (4K samples)                                      |
+|        | - 0xA: 2 KCells (8K samples)                                      |
+|        | - 0xB: 4 KCells (16K samples)                                     |
+|        | - 0xC: 8 KCells (32K samples)                                     |
+|        | - 0xD: 16 KCells (64K samples)                                    |
+|        | - 0xE: 32 KCells (128K samples)                                   |
+|        | - 0xF: 64 KCells (256K samples)                                   |
 +--------+-------------------------------------------------------------------+
-| 0xF18  | Destination start pointer & partition select (addresses 16 bit    |
-|        | word units). Updated during a mixer operation.                    |
-+--------+-------------------------------------------------------------------+
-|        | 64KWord bank selection settings (start address high bits).        |
-| 0xF19  |                                                                   |
-|        | - bit 12-15: Frequency source bank select.                        |
+|        | 64 KCell bank selection settings (start address high bits).       |
+| 0x8006 |                                                                   |
+|        | - bit 12-15: Unused                                               |
 |        | - bit  8-11: Amplitude source bank select.                        |
 |        | - bit  4- 7: Sample source bank select.                           |
 |        | - bit  0- 3: Destination bank select.                             |
 +--------+-------------------------------------------------------------------+
+| 0x8007 | Destination partition select bits.                                |
++--------+-------------------------------------------------------------------+
+| 0x8008 | Destination start pointer (addresses 32 bit cell units).          |
++--------+-------------------------------------------------------------------+
 |        | Amplitude multiplier.                                             |
-| 0xF1A  |                                                                   |
-|        | - bit  9-15: Unused, cleared during a mixer operation.            |
+| 0x8009 |                                                                   |
+|        | - bit  9-15: Unused                                               |
 |        | - bit     8: If set, the multiplier is not effective.             |
 |        | - bit  0- 7: Amplitude multiplier.                                |
 |        |                                                                   |
-|        | In AM mode the last read Amplitude source will be written here.   |
-|        | Note that the layout of this cell allows writing 0x100 (one       |
+|        | Used only if AM mode is disabled.                                 |
+|        |                                                                   |
+|        | Note that the layout of this register allows writing 0x100 (one   |
 |        | higher than the greatest valid multiplier) to turn this           |
 |        | multiplication off.                                               |
 +--------+-------------------------------------------------------------------+
-| 0xF1B  | Sample source start partition select bits.                        |
+| 0x800A | Sample source partition select bits.                              |
 +--------+-------------------------------------------------------------------+
-| 0xF1C  | Sample source start pointer whole part (addresses 16 bit word     |
-|        | units). Updated during a Mixer operation.                         |
+| 0x800B | Sample source start pointer whole part (addresses 32 bit cell     |
+|        | units).                                                           |
 +--------+-------------------------------------------------------------------+
-| 0xF1D  | Sample source start pointer fractional part. Updated during a     |
-|        | Mixer operation.                                                  |
+| 0x800C | Sample source start pointer fractional part.                      |
 +--------+-------------------------------------------------------------------+
-|        | Frequency select.                                                 |
-| 0xF1E  |                                                                   |
-|        | - bit  8-15: Unused, cleared during a mixer operation.            |
-|        | - bit  0- 7: Frequency of Sample source reads.                    |
-|        |                                                                   |
-|        | The value indexes into the frequency table, fetching the "S. add" |
-|        | value. In FM mode the last read Frequency source will be written  |
-|        | here.                                                             |
+| 0x800D | Frequency, whole part. Provides the increment for the Sample      |
+|        | source pointer.                                                   |
 +--------+-------------------------------------------------------------------+
-|        | Start on write & DMA mode.                                        |
-| 0xF1F  |                                                                   |
-|        | - bit    15: FM mode enabled if set, the FM source is used.       |
+| 0x800E | Frequency, fractional part. Provides the increment for the Sample |
+|        | source pointer.                                                   |
++--------+-------------------------------------------------------------------+
+|        | Mode & Start trigger.                                             |
+| 0x800F |                                                                   |
+|        | - bit    15: Destination overwrite if set (otherwise sat. add).   |
 |        | - bit    14: AM mode enabled if set, the AM source is used.       |
-|        | - bit    13: Destination overwrite if set (otherwise sat. add).   |
-|        | - bit  9-12: Unused.                                              |
-|        | - bit  0- 8: Number of words to process; 0: 512 (1024 samples).   |
+|        | - bit 10-13: Unused                                               |
+|        | - bit  0-11: Number of cells to process; 0: 4096 (16384 samples). |
 +--------+-------------------------------------------------------------------+
 
-The Frequency table contains 256 entries of 16.16 fixed point in two separate
-arrays indexed by 0xF0E and 0xF0F. The table is indexed by the "S. frq", "FM
-frq" or "AM frq" values producing the respective "S. add", "FM add" and "AM
-add" values.
+If partitioning settings are set to anything other than 64 KCells for a
+pointer, the appropriate (high) bits of the matching whole part register are
+ignored, and the partition select's matching bits are used instead for
+generating the address.
 
-Note that bits marked unused keep any value written to them unless otherwise
-specified in the memory map.
+Note that no interface register changes it's value during the course of a
+Mixer DMA operation, so retriggering the mixer performs the exact same
+operation.

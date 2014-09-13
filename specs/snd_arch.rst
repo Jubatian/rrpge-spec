@@ -44,21 +44,21 @@ Output DMA buffers
 ------------------------------------------------------------------------------
 
 
-The audio output DMA is capable to operate from the first 1 MWords (pages
-0x4000 - 0x40FF) of the Data memory.
+The audio output DMA operates on the Peripheral bus, accessing the Peripheral
+RAM.
 
-Seperate left & right channel DMA start offsets can select a region from this
-area where the audio output DMA may operate. The buffer size is defined by a
-mask which mixes bits from the DMA sample counter and these start offset bits,
-normally selecting the higher bits from the start offsets, the lower bits from
-the DMA sample counter.
+Seperate left & right channel DMA start offsets are provided. The buffer size
+is defined by a mask which mixes bits from the DMA sample counter and these
+start offset bits, normally selecting the higher bits from the start offsets,
+the lower bits from the DMA sample counter.
 
-Mono output may be used by making the left & right channel DMA offsets equal.
+Mono output may be realized by making the left & right channel DMA offsets
+equal.
 
 Note that the audio output DMA uses a left and a right sample (8 bits) every
-audio base clock tick. This is half of a 16 bit word. The lowest bit of the
-Audio DMA sample counter selects the high (0) or low (1) byte of the sample
-source word to use.
+audio base clock tick. This is quarter of a 32 bit PRAM cell. The lower two
+bits of the Audio DMA sample counter selects the byte of the sample source
+cell to use (00 selecting the highest byte, 11 selecting the lowest byte).
 
 
 
@@ -67,35 +67,41 @@ Audio output memory map
 ------------------------------------------------------------------------------
 
 
-The following table lists the memory addresses within the User peripheral page
-which relate the audio output DMA. Note that these repeat every 32 words in
-the 0xF00 - 0xFFF range within this page.
+The following table lists the memory addresses within the User peripheral area
+which relate the audio output DMA.
 
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0xF08  | Audio left channel DMA start offset bits, specifying offset bits  |
+| 0x0000 | Unused, writes ignored, reads 0x0000 ("NULL" pointer target)      |
++--------+-------------------------------------------------------------------+
+| 0x0001 | 187.5Hz clock (48KHz / 256; incrementing counter), writes ignored |
++--------+-------------------------------------------------------------------+
+|        | Audio DMA sample counter / next sample read offset. Derived from  |
+| 0x0002 | the base clock after applying the divider. Writes to this field   |
+|        | are ignored. The high 14 bits of this register are used to        |
+|        | generate a PRAM offset for the DMA, the low 2 bits are used to    |
+|        | select the sample byte to use within the selected cell (assuming  |
+|        | Big Endian byte order).                                           |
++--------+-------------------------------------------------------------------+
+|        | Audio DMA base clock. Increments starting with zero at a fixed    |
+| 0x0003 | 48 KHz rate until reaching the divider, resetting to zero when    |
+|        | it matches. Writes to this field are ignored.                     |
++--------+-------------------------------------------------------------------+
+| 0x0004 | Audio left channel DMA start offset bits, specifying offset bits  |
 |        | 4 - 19. Low 4 start offset bits are always zero.                  |
 +--------+-------------------------------------------------------------------+
-| 0xF09  | Audio right channel DMA start offset bits, specifying offset bits |
+| 0x0005 | Audio right channel DMA start offset bits, specifying offset bits |
 |        | 4 - 19. Low 4 start offset bits are always zero.                  |
 +--------+-------------------------------------------------------------------+
 |        | Audio DMA buffer size mask bits, specifying mask for offset bits  |
-| 0xF0A  | 4 - 19. Bits set in this mask come from the DMA start offset,     |
+| 0x0006 | 4 - 19. Bits set in this mask come from the DMA start offset,     |
 |        | bits cleared from the DMA sample counter. Note that since the DMA |
-|        | sample counter only provides data for bits 0 - 14, bits 15 - 19   |
+|        | sample counter only provides data for bits 0 - 13, bits 14 - 19   |
 |        | will be zero if the corresponding mask bits are cleared.          |
 +--------+-------------------------------------------------------------------+
 |        | Audio clock divider. Writing it zero produces a sample counter    |
-| 0xF0B  | increment every 65536 base clocks. 1 produces a 48KHz sample      |
+| 0x0007 | increment every 65536 base clocks. 1 produces a 48KHz sample      |
 |        | counter increment rate, the Audio DMA base clock always reading   |
 |        | zero. Writing it resets the Audio DMA base clock to zero.         |
-+--------+-------------------------------------------------------------------+
-|        | Audio DMA sample counter / next sample read offset. Derived from  |
-| 0xF0C  | the base clock after applying the divider. Writes to this field   |
-|        | are ignored.                                                      |
-+--------+-------------------------------------------------------------------+
-|        | Audio DMA base clock. Increments starting with zero at a fixed    |
-| 0xF0D  | 48 KHz rate until reaching the divider, resetting to zero when.   |
-|        | it matches. Writes to this field are ignored.                     |
 +--------+-------------------------------------------------------------------+
