@@ -14,242 +14,192 @@ Introduction
 ------------------------------------------------------------------------------
 
 
-The RRPGE CPU is capable to access memory in four distinct address spaces:
-Code, Stack, Data read and Data write. Of these the Code and Stack spaces are
-fixed through the application's lifetime and have no special regions. The Data
-read and write spaces support banking through kernel calls, so for them
-providing a complete memory map for reference is beneficial.
+The RRPGE CPU is capable to access memory in three distinct address spaces:
+Code, Stack, and Data. Of these the Code and Stack address spaces have no
+special regions, while in the Data address space, which is normally used to
+access 64 KWords of CPU RAM, has memory mapped peripherals accessible on it's
+first 64 words.
 
-The memory map first describes the reachable page regions, then, where
-appropriate, the contents of a page are described in addition.
-
-No distinction is made for Data read and Data write address spaces since their
-source is a common pool of pages. Some pages however are not accessible for
-writing, and Video RAM pages have special rules for writing.
+Other areas of interest are the Mixer DMA and the Graphics Accelerator which
+are accessible through their respective FIFOs only, and so have distinct
+address spaces.
 
 
 
 
-Page map
+Data address space
 ------------------------------------------------------------------------------
 
 
-The following table lists the accessible pages from the common page pool. Note
-that since the kernel performs the page switches in a controlled way, it is
-not possible to bank in inappropriate pages, so page contents and usage need
-not be defined for those areas.
+This address space is reached by the Data addressing mode of the RRPGE CPU.
 
-+--------+-----+-------------------------------------------------------------+
-| Range  | R/W | Description                                                 |
-+========+=====+=============================================================+
-| 0x0000 |     |                                                             |
-| \-     | \-  | Reserved                                                    |
-| 0x3FFF |     |                                                             |
-+--------+-----+-------------------------------------------------------------+
-| 0x4000 |     |                                                             |
-| \-     | RW  | Data memory (CPU RAM).                                      |
-| 0x41BF |     |                                                             |
-+--------+-----+-------------------------------------------------------------+
-|        |     | Read Only Process Descriptor (ROPD). For the application    |
-| 0x41C0 |  R  | this is read only. The kernel may write into it to pass     |
-|        |     | information to the application.                             |
-+--------+-----+-------------------------------------------------------------+
-| 0x41C1 |     |                                                             |
-| \-     | \-  | Reserved                                                    |
-| 0x7FFE |     |                                                             |
-+--------+-----+-------------------------------------------------------------+
-|        |     | User peripheral page. This region provides the user         |
-| 0x7FFF | RW  | accessible memory mapped registers, and part of the first   |
-|        |     | Data memory page is also visible here.                      |
-+--------+-----+-------------------------------------------------------------+
-| 0x8000 |     | Video memory (VRAM). Can only be banked in for writing if   |
-| \-     | RW* | the same page is also banked in for read at the same        |
-| 0x807F |     | location in the CPU's address space.                        |
-+--------+-----+-------------------------------------------------------------+
-| 0x8080 |     |                                                             |
-| \-     | \-  | Reserved                                                    |
-| 0xFFFF |     |                                                             |
-+--------+-----+-------------------------------------------------------------+
-
-The areas in "R/W" marked with "*" need the same page banked in for read at
-the same location in the CPU's address space.
++--------+-------------------------------------------------------------------+
+| Range  | Description                                                       |
++========+===================================================================+
+| 0x0000 |                                                                   |
+| \-     | User peripheral area (Memory mapped registers).                   |
+| 0x003F |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0x0040 |                                                                   |
+| \-     | Data memory (CPU RAM).                                            |
+| 0xFFFF |                                                                   |
++--------+-------------------------------------------------------------------+
 
 
 
 
-Read Only Process Descriptor (ROPD)
+User peripheral area
 ------------------------------------------------------------------------------
 
 
-The Read Only Process Descriptor is the area where the kernel makes a part of
-the system's state visible to to the running application. It also serves as a
-smaller data source as it contains the application binary's header (see
-"bin_rpa.rst" for details) in which data may also be stored.
+The first 64 words of the Data address space.
 
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0x000  | Application binary header page, as-is, except for head bytes:     |
-| \-     | they read as "RPS\n" (instead of "RPA\n" as originally found in   |
-| 0xBFF  | the application binary), for state. See "bin_rpa.rst".            |
+| 0x0000 | Unused, writes ignored, reads 0x0000 ("NULL" pointer target)      |
 +--------+-------------------------------------------------------------------+
-| 0xC00  | Video palette in 4-4-4 RGB format, high 4 bits are zero. All      |
-| \-     | entries are populated even in 4bit display mode. See "Palette" in |
-| 0xCFF  | "vid_arch.rst" and "Set palette entry" in "kcall.rst".            |
+| 0x0001 | 187.5Hz clock (48KHz / 256; incrementing counter), writes ignored |
 +--------+-------------------------------------------------------------------+
-| 0xD00  |                                                                   |
-| \-     | Pages mapped in the CPU's Data read address space.                |
-| 0xD0F  |                                                                   |
+| 0x0002 | Audio DMA sample counter / next read offset (see "snd_arch.rst")  |
 +--------+-------------------------------------------------------------------+
-| 0xD10  |                                                                   |
-| \-     | Pages mapped in the CPU's Data write address space.               |
-| 0xD1F  |                                                                   |
+| 0x0003 | Audio DMA base clock (see "snd_arch.rst")                         |
 +--------+-------------------------------------------------------------------+
-| 0xD20  |                                                                   |
-| \-     | Empty (reads as 0x0000)                                           |
-| 0xD3E  |                                                                   |
+| 0x0004 | Audio left channel DMA start offset bits (see "snd_arch.rst")     |
 +--------+-------------------------------------------------------------------+
-| 0xD3F  | Network availability: 0: not available, 1: available              |
+| 0x0005 | Audio right channel DMA start offset bits (see "snd_arch.rst")    |
 +--------+-------------------------------------------------------------------+
-| 0xD40  |                                                                   |
-| \-     | Constant data. See "data.rst" for details.                        |
-| 0xDFF  |                                                                   |
+| 0x0006 | Audio DMA buffer size mask bits (see "snd_arch.rst")              |
++--------+-------------------------------------------------------------------+
+| 0x0007 | Audio clock divider (see "snd_arch.rst")                          |
++--------+-------------------------------------------------------------------+
+| 0x0008 | Mixer FIFO location & size (see "fifo.rst")                       |
++--------+-------------------------------------------------------------------+
+| 0x0009 | Mixer FIFO status flags (see "fifo.rst")                          |
++--------+-------------------------------------------------------------------+
+| 0x000A | Mixer FIFO address word (see "fifo.rst")                          |
++--------+-------------------------------------------------------------------+
+| 0x000B | Mixer FIFO data word & store trigger (see "fifo.rst")             |
++--------+-------------------------------------------------------------------+
+| 0x000C | Graphics FIFO location & size (see "fifo.rst")                    |
++--------+-------------------------------------------------------------------+
+| 0x000D | Graphics FIFO status flags (see "fifo.rst")                       |
++--------+-------------------------------------------------------------------+
+| 0x000E | Graphics FIFO address word (see "fifo.rst")                       |
++--------+-------------------------------------------------------------------+
+| 0x000F | Graphics FIFO data word & store trigger (see "fifo.rst")          |
++--------+-------------------------------------------------------------------+
+| 0x0010 | GDG Mask / Colorkey definition 0 (see "vid_arch.rst")             |
++--------+-------------------------------------------------------------------+
+| 0x0011 | GDG Mask / Colorkey definition 1 (see "vid_arch.rst")             |
++--------+-------------------------------------------------------------------+
+| 0x0012 | GDG Mask / Colorkey definition 2 (see "vid_arch.rst")             |
++--------+-------------------------------------------------------------------+
+| 0x0013 | GDG Mask / Colorkey definition 3 (see "vid_arch.rst")             |
++--------+-------------------------------------------------------------------+
+| 0x0014 | GDG Shift mode region A (see "vid_arch.rst")                      |
++--------+-------------------------------------------------------------------+
+| 0x0015 | GDG Shift mode region B (see "vid_arch.rst")                      |
++--------+-------------------------------------------------------------------+
+| 0x0016 | GDG Display list clear controls (see "vid_arch.rst")              |
++--------+-------------------------------------------------------------------+
+| 0x0017 | GDG Display list definition & process flags (see "vid_arch.rst")  |
++--------+-------------------------------------------------------------------+
+| 0x0018 | GDG Source definition A0 (see "vid_arch.rst")                     |
++--------+-------------------------------------------------------------------+
+| 0x0019 | GDG Source definition A1 (see "vid_arch.rst")                     |
++--------+-------------------------------------------------------------------+
+| 0x001A | GDG Source definition A2 (see "vid_arch.rst")                     |
++--------+-------------------------------------------------------------------+
+| 0x001B | GDG Source definition A3 (see "vid_arch.rst")                     |
++--------+-------------------------------------------------------------------+
+| 0x001C | GDG Source definition B0 (see "vid_arch.rst")                     |
++--------+-------------------------------------------------------------------+
+| 0x001D | GDG Source definition B1 (see "vid_arch.rst")                     |
++--------+-------------------------------------------------------------------+
+| 0x001E | GDG Source definition B2 (see "vid_arch.rst")                     |
++--------+-------------------------------------------------------------------+
+| 0x001F | GDG Source definition B3 (see "vid_arch.rst")                     |
++--------+-------------------------------------------------------------------+
+| 0x0020 | Pointer 0 Address, high (see "pointer.rst")                       |
++--------+-------------------------------------------------------------------+
+| 0x0021 | Pointer 0 Address, low (see "pointer.rst")                        |
++--------+-------------------------------------------------------------------+
+| 0x0022 | Pointer 0 Post-increment, high (see "pointer.rst")                |
++--------+-------------------------------------------------------------------+
+| 0x0023 | Pointer 0 Post-increment, low (see "pointer.rst")                 |
++--------+-------------------------------------------------------------------+
+| 0x0024 | Pointer 0 Data unit size (see "pointer.rst")                      |
++--------+-------------------------------------------------------------------+
+| 0x0025 | Unused, writes ignored, reads 0x0000                              |
++--------+-------------------------------------------------------------------+
+| 0x0026 | Pointer 0 Read / Write without post-increment (see "pointer.rst") |
++--------+-------------------------------------------------------------------+
+| 0x0027 | Pointer 0 Read / Write with post-increment (see "pointer.rst")    |
++--------+-------------------------------------------------------------------+
+| 0x0028 |                                                                   |
+| \-     | Pointer 1 (identical layout to Pointer 0, see "pointer.rst")      |
+| 0x002F |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0x0030 |                                                                   |
+| \-     | Pointer 2 (identical layout to Pointer 0, see "pointer.rst")      |
+| 0x0037 |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0x0038 |                                                                   |
+| \-     | Pointer 3 (identical layout to Pointer 0, see "pointer.rst")      |
+| 0x003F |                                                                   |
 +--------+-------------------------------------------------------------------+
 
 
 
 
-User peripheral page
+Mixer FIFO memory map
 ------------------------------------------------------------------------------
 
 
-The user peripheral page contains the memory mapped registers of the DMA
-peripherals, the Graphics FIFO, and the audio output on it's higher addresses.
-On the low part the first Data memory page is accessible.
+The Mixer FIFO is capable to access the 16 registers of the Mixer DMA
+peripheral. The addresses are given here with bit 15 set (not actually
+belonging to the address) as this is how they have to be passed through the
+FIFO's address word (bit 15 zero requests the FIFO to skip). The 16 Mixer DMA
+registers repeat through the entire address space of the FIFO.
+
+The register's descriptions may be found in the Mixer's documentation
+("mix_arch.rst").
 
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0x000  | Shadow of the first memory page (page 0x4000) where the initial   |
-| \-     | audio buffers are located. This area is also populated with       |
-| 0xDFF  | important initial data, see "data.rst" for details.               |
+| 0x8000 | Unused                                                            |
 +--------+-------------------------------------------------------------------+
-| 0xE00  | User peripheral registers, Graphics. They repeat every 16 words   |
-| \-     | in this range.                                                    |
-| 0xEFF  |                                                                   |
+| 0x8001 | Frequency table offset                                            |
 +--------+-------------------------------------------------------------------+
-| 0xF00  | User peripheral registers, Audio & DMA. They repeat every 32      |
-| \-     | words in this range.                                              |
-| 0xFFF  |                                                                   |
+| 0x8002 | Amplitude source partition select                                 |
 +--------+-------------------------------------------------------------------+
-
-Summary of the user peripheral registers. For more detailed descriptions of
-the registers, see the appropriate peripheral.
-
-Graphics registers:
-
+| 0x8003 | Amplitude source start, whole                                     |
 +--------+-------------------------------------------------------------------+
-| Range  | Description                                                       |
-+========+===================================================================+
-| 0xE00  | Unused, always reads zero                                         |
+| 0x8004 | Amplitude source start, fraction                                  |
 +--------+-------------------------------------------------------------------+
-| 0xE01  | Graphics FIFO busy flag & start trigger (see "gfifo.rst")         |
+| 0x8005 | Frequency select for AM source read                               |
 +--------+-------------------------------------------------------------------+
-| 0xE02  | Graphics FIFO command word (see "gfifo.rst")                      |
+| 0x8006 | Partitioning settings                                             |
 +--------+-------------------------------------------------------------------+
-| 0xE03  | Graphics FIFO data word & store trigger (see "gfifo.rst")         |
+| 0x8007 | 64KCell bank selection settings                                   |
 +--------+-------------------------------------------------------------------+
-| 0xE04  | Shift mode region (see "vid_arch.rst")                            |
+| 0x8008 | Destination partition select                                      |
 +--------+-------------------------------------------------------------------+
-| 0xE05  | Display list definition (see "vid_arch.rst")                      |
+| 0x8009 | Destination start                                                 |
 +--------+-------------------------------------------------------------------+
-| 0xE06  | Mask / Colorkey definition 0 (see "vid_arch.rst")                 |
+| 0x800A | Amplitude multiplier                                              |
 +--------+-------------------------------------------------------------------+
-| 0xE07  | Mask / Colorkey definition 1 (see "vid_arch.rst")                 |
+| 0x800B | Sample source partition select                                    |
 +--------+-------------------------------------------------------------------+
-| 0xE08  | Source definition 0 (see "vid_arch.rst")                          |
+| 0x800C | Sample source start, whole                                        |
 +--------+-------------------------------------------------------------------+
-| 0xE09  | Source definition 1 (see "vid_arch.rst")                          |
+| 0x800D | Sample source start, fraction                                     |
 +--------+-------------------------------------------------------------------+
-| 0xE0A  | Source definition 2 (see "vid_arch.rst")                          |
+| 0x800E | Frequency select                                                  |
 +--------+-------------------------------------------------------------------+
-| 0xE0B  | Source definition 3 (see "vid_arch.rst")                          |
-+--------+-------------------------------------------------------------------+
-| 0xE0C  | Source definition 4 (see "vid_arch.rst")                          |
-+--------+-------------------------------------------------------------------+
-| 0xE0D  | Source definition 5 (see "vid_arch.rst")                          |
-+--------+-------------------------------------------------------------------+
-| 0xE0E  | Source definition 6 (see "vid_arch.rst")                          |
-+--------+-------------------------------------------------------------------+
-| 0xE0F  | Source definition 7 (see "vid_arch.rst")                          |
-+--------+-------------------------------------------------------------------+
-
-Audio & DMA registers:
-
-+--------+-------------------------------------------------------------------+
-| Range  | Description                                                       |
-+========+===================================================================+
-| 0xF00  | DMA source 256 word area or fill value (see "dma.rst")            |
-+--------+-------------------------------------------------------------------+
-| 0xF01  | CPU fill DMA target 256 word area & trigger (see "dma.rst")       |
-+--------+-------------------------------------------------------------------+
-| 0xF02  | CPU <=> CPU DMA target 256 word area & trigger (see "dma.rst")    |
-+--------+-------------------------------------------------------------------+
-| 0xF03  | CPU <=> VRAM DMA target 128 cell VRAM area, direction and trigger |
-|        | (see "dma.rst")                                                   |
-+--------+-------------------------------------------------------------------+
-| 0xF04  |                                                                   |
-| \-     | Unused, written values preserved                                  |
-| 0xF07  |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0xF08  | Audio left channel DMA start offset bits (see "snd_arch.rst")     |
-+--------+-------------------------------------------------------------------+
-| 0xF09  | Audio right channel DMA start offset bits (see "snd_arch.rst")    |
-+--------+-------------------------------------------------------------------+
-| 0xF0A  | Audio DMA buffer size mask bits (see "snd_arch.rst")              |
-+--------+-------------------------------------------------------------------+
-| 0xF0B  | Audio clock divider (see "snd_arch.rst")                          |
-+--------+-------------------------------------------------------------------+
-| 0xF0C  | Audio DMA sample counter / next read offset (see "snd_arch.rst")  |
-+--------+-------------------------------------------------------------------+
-| 0xF0D  | Audio DMA base clock (see "snd_arch.rst")                         |
-+--------+-------------------------------------------------------------------+
-| 0xF0E  | Mixer DMA frequency table whole pointer (see "mix_arch.rst")      |
-+--------+-------------------------------------------------------------------+
-| 0xF0F  | Mixer DMA frequency table fractional pointer (see "mix_arch.rst") |
-+--------+-------------------------------------------------------------------+
-| 0xF10  | Mixer DMA frequency source partition select (see "mix_arch.rst")  |
-+--------+-------------------------------------------------------------------+
-| 0xF11  | Mixer DMA frequency source start, whole (see "mix_arch.rst")      |
-+--------+-------------------------------------------------------------------+
-| 0xF12  | Mixer DMA frequency source start, fraction (see "mix_arch.rst")   |
-+--------+-------------------------------------------------------------------+
-| 0xF13  | Mixer DMA amplitude source partition select (see "mix_arch.rst")  |
-+--------+-------------------------------------------------------------------+
-| 0xF14  | Mixer DMA amplitude source start, whole (see "mix_arch.rst")      |
-+--------+-------------------------------------------------------------------+
-| 0xF15  | Mixer DMA amplitude source start, fraction (see "mix_arch.rst")   |
-+--------+-------------------------------------------------------------------+
-| 0xF16  | Mixer DMA frequency indices for AM / FM (see "mix_arch.rst")      |
-+--------+-------------------------------------------------------------------+
-| 0xF17  | Mixer DMA partitioning settings (see "mix_arch.rst")              |
-+--------+-------------------------------------------------------------------+
-| 0xF18  | Mixer DMA destination start and partition select (see             |
-|        | "mix_arch.rst")                                                   |
-+--------+-------------------------------------------------------------------+
-| 0xF19  | Mixer DMA 64KWord bank selection settings (see "mix_arch.rst")    |
-+--------+-------------------------------------------------------------------+
-| 0xF1A  | Mixer DMA amplitude multiplier (see "mix_arch.rst")               |
-+--------+-------------------------------------------------------------------+
-| 0xF1B  | Mixer DMA sample source partition select (see "mix_arch.rst")     |
-+--------+-------------------------------------------------------------------+
-| 0xF1C  | Mixer DMA sample source start, whole (see "mix_arch.rst")         |
-+--------+-------------------------------------------------------------------+
-| 0xF1D  | Mixer DMA sample source start, fraction (see "mix_arch.rst")      |
-+--------+-------------------------------------------------------------------+
-| 0xF1E  | Mixer DMA frequency select (see "mix_arch.rst")                   |
-+--------+-------------------------------------------------------------------+
-| 0xF1F  | Mixer DMA mode & start trigger (see "mix_arch.rst")               |
+| 0x800F | Mode & start trigger                                              |
 +--------+-------------------------------------------------------------------+
 
 
@@ -259,90 +209,97 @@ Graphics FIFO memory map
 ------------------------------------------------------------------------------
 
 
-The Graphics FIFO can write on a separate unidirectional bus (FIFO bus),
-accessible only to it for writing, which bus connects to the graphics
-hardware.
+The Graphics FIFO is capable to access the registers of the Graphics
+Accelerator peripheral and it's Reindex table. The addresses are given here
+with bit 15 set (not actually belonging to the address) as this is how they
+have to be passed through the FIFO's address word (bit 15 zero requests the
+FIFO to skip).
 
-There are 9 address bits for this 16 bit bus, providing a range between 0x000
-and 0x1FF. This range is assigned to the graphics hardware components as
-follows:
-
-+--------+-------------------------------------------------------------------+
-| Range  | Description                                                       |
-+========+===================================================================+
-| 0x000  | Accelerator registers. They repeat every 32 words in this range.  |
-| \-     | See the memory maps in "acc_arch.rst" for details.                |
-| 0x0FF  |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0x100  |                                                                   |
-| \-     | Reindex table. See memory map in "acc_arch.rst" for details.      |
-| 0x1FF  |                                                                   |
-+--------+-------------------------------------------------------------------+
-
-Summary of the Accelerator registers. For more detailed descriptions of the
-registers, see the memory maps in the Accelerator's documentation
+The register's descriptions may be found in the Accelerator's documentation
 ("acc_arch.rst").
 
+Only the 9 low bits of the address word are effective for addressing,
+providing a repeating pattern every 0x0200 addresses. The first 0x200 (512)
+words of these are described below.
+
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0x000  |                                                                   |
-| \-     | Unused                                                            |
-| 0x003  |                                                                   |
+| 0x8000 |                                                                   |
+| \-     | Accelerator registers. They repeat every 32 words in this range   |
+| 0x80FF |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0x004  | VRAM write mask high                                              |
+| 0x8100 |                                                                   |
+| \-     | Reindex table                                                     |
+| 0x81FF |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0x005  | VRAM write mask low                                               |
+
+The Accelerator registers:
+
 +--------+-------------------------------------------------------------------+
-| 0x006  | Source bank & partition select                                    |
+| Range  | Description                                                       |
++========+===================================================================+
+| 0x8000 | PRAM cell write mask high                                         |
 +--------+-------------------------------------------------------------------+
-| 0x007  | Destination bank & partition select                               |
+| 0x8001 | PRAM cell write mask low                                          |
 +--------+-------------------------------------------------------------------+
-| 0x008  | Partitioning settings                                             |
+| 0x8002 | Unused                                                            |
 +--------+-------------------------------------------------------------------+
-| 0x009  | Substitution flags & Source barrel rotate                         |
+| 0x8003 | Unused                                                            |
 +--------+-------------------------------------------------------------------+
-| 0x00A  | Source AND mask and Colorkey                                      |
+| 0x8004 | Source bank select                                                |
 +--------+-------------------------------------------------------------------+
-| 0x00B  | Reindex bank select                                               |
+| 0x8005 | Destination bank select                                           |
 +--------+-------------------------------------------------------------------+
-| 0x00C  | Blit control flags                                                |
+| 0x8006 | Source partition select                                           |
 +--------+-------------------------------------------------------------------+
-| 0x00D  | Count of rows to process                                          |
+| 0x8007 | Destination partition select                                      |
 +--------+-------------------------------------------------------------------+
-| 0x00E  | Count of 4 bit pixels to process per row                          |
+| 0x8008 | Partitioning settings                                             |
 +--------+-------------------------------------------------------------------+
-| 0x00F  | Pattern for Line & Filler mode & start trigger                    |
+| 0x8009 | Substitution flags & Source barrel rotate                         |
 +--------+-------------------------------------------------------------------+
-| 0x010  | Source Y whole                                                    |
+| 0x800A | Source AND mask and Colorkey                                      |
 +--------+-------------------------------------------------------------------+
-| 0x011  | Source Y fraction                                                 |
+| 0x800B | Reindex bank select                                               |
 +--------+-------------------------------------------------------------------+
-| 0x012  | Source Y increment whole                                          |
+| 0x800C | Blit control flags                                                |
 +--------+-------------------------------------------------------------------+
-| 0x013  | Source Y increment fraction                                       |
+| 0x800D | Count of rows to process                                          |
 +--------+-------------------------------------------------------------------+
-| 0x014  | Source Y post-add whole                                           |
+| 0x800E | Count of 4 bit pixels to process per row                          |
 +--------+-------------------------------------------------------------------+
-| 0x015  | Source Y post-add fraction                                        |
+| 0x800F | Pattern for Line & Filler mode & start trigger                    |
 +--------+-------------------------------------------------------------------+
-| 0x016  | Source X whole                                                    |
+| 0x8010 | Source Y whole                                                    |
 +--------+-------------------------------------------------------------------+
-| 0x017  | Source X fraction                                                 |
+| 0x8011 | Source Y fraction                                                 |
 +--------+-------------------------------------------------------------------+
-| 0x018  | Source X increment whole                                          |
+| 0x8012 | Source Y increment whole                                          |
 +--------+-------------------------------------------------------------------+
-| 0x019  | Source X increment fraction                                       |
+| 0x8013 | Source Y increment fraction                                       |
 +--------+-------------------------------------------------------------------+
-| 0x01A  | Source X post-add whole                                           |
+| 0x8014 | Source Y post-add whole                                           |
 +--------+-------------------------------------------------------------------+
-| 0x01B  | Source X post-add fraction                                        |
+| 0x8015 | Source Y post-add fraction                                        |
 +--------+-------------------------------------------------------------------+
-| 0x01C  | Destination whole                                                 |
+| 0x8016 | Source X whole                                                    |
 +--------+-------------------------------------------------------------------+
-| 0x01D  | Destination fraction                                              |
+| 0x8017 | Source X fraction                                                 |
 +--------+-------------------------------------------------------------------+
-| 0x01E  | Destination increment whole                                       |
+| 0x8018 | Source X increment whole                                          |
 +--------+-------------------------------------------------------------------+
-| 0x01F  | Destination post-add whole                                        |
+| 0x8019 | Source X increment fraction                                       |
++--------+-------------------------------------------------------------------+
+| 0x801A | Source X post-add whole                                           |
++--------+-------------------------------------------------------------------+
+| 0x801B | Source X post-add fraction                                        |
++--------+-------------------------------------------------------------------+
+| 0x801C | Destination whole                                                 |
++--------+-------------------------------------------------------------------+
+| 0x801D | Destination fraction                                              |
++--------+-------------------------------------------------------------------+
+| 0x801E | Destination increment whole                                       |
++--------+-------------------------------------------------------------------+
+| 0x801F | Destination post-add whole                                        |
 +--------+-------------------------------------------------------------------+
