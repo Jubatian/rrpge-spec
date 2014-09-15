@@ -18,8 +18,7 @@ Version 00.010.000 ()
  - Graphics Display Generator received a Display list clear feature which it
    can exploit in the VBlank after a Display list definition change.
  - Minor graphics double buffering assistance features introduced.
- - Frequency source option from the Mixer removed, frequency index space
-   increased from 8 bits to up to 16 bits.
+ - Frequency source option and frequency tables from the Mixer removed.
  - Touch sensitive areas and touch awareness feature removed, changed over for
    a pointing device specific area query.
  - RRPGE logo trademark state changed (registered European trademark).

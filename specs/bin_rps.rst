@@ -20,12 +20,7 @@ that the state save does not contain the application binary, so both the state
 save and the application binary (of exactly matching versions) is necessary to
 be able restore.
 
-The state save's most important component is the ROPD dump (see "ropddump.rst"
-for details) which contains the Application Header with the necessary
-identification and version information so the state can be matched to the
-application along with the internal state of the RRPGE system.
-
-The total size of the state save is 593 pages or 4.63 Mbytes (4857856 bytes).
+The total size of the state save is 2145 KWords or 4290 KBytes.
 
 
 
@@ -34,29 +29,32 @@ State save map
 ------------------------------------------------------------------------------
 
 
-The state save simply combines the necessary RRPGE system pages to completely
-cover the system's state from the user's point of view (with the limitations
-described in "ropddump.rst"). Following the map of pages as they occur in the
-state save binary are listed.
+The state save simply combines the Application Header and the necessary RRPGE
+system memories to completely cover the system's state from the user's point
+of view (with the limitations described in "state.rst"). Following the map of
+areas as they occur in the state save binary are listed (the addresses are in
+16 bit word units).
 
-+--------+-------------------------------------------------------------------+
-| Range  | Description                                                       |
-+--------+-------------------------------------------------------------------+
-| 0x0000 | ROPD dump as defined in "ropddump.rst".                           |
-+--------+-------------------------------------------------------------------+
-| 0x0001 |                                                                   |
-| \-     | Stack memory pages.                                               |
-| 0x0008 |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0x0009 |                                                                   |
-| \-     | Data memory pages.                                                |
-| 0x01C8 |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0x01C9 |                                                                   |
-| \-     | Video memory pages.                                               |
-| 0x0148 |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0x0149 |                                                                   |
-| \-     | Graphics FIFO pages.                                              |
-| 0x0150 |                                                                   |
-+--------+-------------------------------------------------------------------+
++----------+-----------------------------------------------------------------+
+| Range    | Description                                                     |
++==========+=================================================================+
+| 0x000000 | Application header, the "RPA" head replaced to "RPS", otherwise |
+| \-       | left as-is. This is used to identify the matching application   |
+| 0x00003F | binary.                                                         |
++----------+-----------------------------------------------------------------+
+| 0x000040 |                                                                 |
+| \-       | Application state. See "state.rst" for details.                 |
+| 0x0003FF |                                                                 |
++----------+-----------------------------------------------------------------+
+| 0x000400 |                                                                 |
+| \-       | Stack memory (32 KWords).                                       |
+| 0x0083FF |                                                                 |
++----------+-----------------------------------------------------------------+
+| 0x008400 |                                                                 |
+| \-       | CPU RAM data (64 KWords, first 64 words unused).                |
+| 0x0183FF |                                                                 |
++----------+-----------------------------------------------------------------+
+| 0x018400 |                                                                 |
+| \-       | Peripheral RAM data (1 MCells or 2 MWords).                     |
+| 0x2183FF |                                                                 |
++----------+-----------------------------------------------------------------+
