@@ -18,16 +18,11 @@ The RRPGE system is composed of the following fundamental functional
 components:
 
 - 16bit CISC CPU for running the application and kernel code. It is coupled
-  with 2 MWords of Data memory of which 1984 KWords are visible to the user
-  for data.
+  with CPU RAM from which the user is served with 64 KWords of Data memory and
+  8 KWords of stack in addition to the Code memory.
 
-- 32bit Graphics system coupled with 512 KWords (256K x 32bit) of Video
-  memory.
-
-- Graphics FIFO supporting asynchronous rendering.
-
-- Mixer DMA peripheral coupled with the CPU and 1 Mwords of the data memory
-  assisting in audio related algorithms.
+- 32bit asynchronous Peripheral system coupled with 2 MWords (1M x 32bit) of
+  Peripheral RAM. Graphics and Audio operates in this domain.
 
 - Kernel providing interface for certain hardware (or in emulated case, host)
   features, particularly the input system.
@@ -109,8 +104,8 @@ Description of component documents
 File "acc_arch.rst"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The architecture of the Video Accelerator and the data bus components provided
-for interfacing the 32 bit Video bus through the CPU's 16 bit bus.
+The architecture of the Graphics Accelerator providing blit, fill and line
+drawing functions.
 
 
 File "bin_rpa.rst"
@@ -152,23 +147,16 @@ File "data.rst"
 Constant data provided for the application, and the layout of those.
 
 
-File "dma.rst"
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Simple DMA copy & fill peripherals in the system.
-
-
 File "file_io.rst"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The usage of the file I/O interface provided by the kernel.
 
 
-File "grapfifo.rst"
+File "fifo.rst"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The operation of the Graphics FIFO, providing support for asynchronous
-rendering.
+The operation of FIFO's which run the Graphics Accelerator and the Mixer DMA.
 
 
 File "index.rst"
@@ -223,17 +211,24 @@ File "overview.rst"
 The overall hardware architecture of the system as seen by the user.
 
 
-File "ropddump.rst"
+File "pointer.rst"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The structure and the mapping of the Read Only Process Descriptor page
-containing necessary internal state information to make state saves possible.
+Peripheral RAM interface description, which provides pointers for accessing
+the Peripheral RAM in a sequential manner.
 
 
 File "snd_arch.rst"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The sound system of RRPGE.
+
+
+File "state.rst"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The structure and the mapping of the Application State containing necessary
+internal state information to make state saves possible.
 
 
 File "vid_arch.rst"

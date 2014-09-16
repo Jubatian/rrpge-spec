@@ -23,9 +23,9 @@ The input peripherals are accessible through kernel functions (see the
 further information).
 
 Moreover the application specifies it's device requirements in it's
-Application Header (see locations 0xBC1 and 0xBD0 at "Application binary
-header map" in "bin_rpa.rst" for details), so the host may select the most
-appropriate way it may serve the application.
+Application Header (see locations 0x0008 in the Application descriptor at
+"Application binary maps" in "bin_rpa.rst" for details), so the host may
+select the most appropriate way it may serve the application.
 
 In this part of the specification, the additional details required for
 completing the input system are defined, along with acceptable suggested
@@ -62,16 +62,6 @@ The RRPGE system is capable to use the following types of input devices:
   input feature is not adequate since the application's requirement is rather
   a larger set of buttons in a deterministic layout.
 
-In addition to the types, the application may suggest the following properties
-of it's input requirements (using the Application Header's 0xBC1 field):
-
-- The capability to use touch. This indicates that the application is touch -
-  aware, that is it will use the appropriate kernel calls to set up touch
-  sensitive areas to make it's digital inputs functional even if physical
-  digital inputs can not be provided at all by the host. This flag suggests
-  the host that it does not need to resort to some awkward emulation to
-  provide virtual digital inputs to operate the application.
-
 
 
 
@@ -84,10 +74,6 @@ device, some may find it beneficial to work with multiple devices either for
 easing the use (such as by a keyboard and a mouse), or for providing better
 support for a wider number of devices (such as supporting both mice and touch
 devices).
-
-If an application wants to use more than one device type, it can indicate this
-using the 0xBD0 field in the Application Header (see "bin_rpa.rst" for further
-details).
 
 When multiple devices are present, the host may decide to provide multiple
 logical presentations for a single physical device. This condition can be
@@ -103,34 +89,6 @@ keyboard.
 
 
 
-Touch awareness
-------------------------------------------------------------------------------
-
-
-An application can indicate that it is touch aware by the 0xBC1 field of the
-Application Header (see "bin_rpa.rst").
-
-This flag if set indicates that the application will set up the touch
-sensitive areas according to the controller it actively uses (the areas map to
-digital input bank zero). This case the host may provide a specific emulated
-device (such as a digital gamepad) without actually providing any physical
-buttons or switches for it.
-
-If the application does not provide this (has the flag cleared), the host
-should assume it won't use the touch sensitive areas to complement a
-controller, and so may use different means of emulation or may provide a more
-limited set of input devices.
-
-If the application accepts a touch pointing device as input device and
-provides this flag, the host should provide the virtual devices which are
-supposed to be complemented with touch buttons as mapping to the touch
-pointing device (see "Multiple devices, combinations" above). If the
-application does not accept a touch pointing device, these may be provided
-stand-alone.
-
-
-
-
 Hotplug support
 ------------------------------------------------------------------------------
 
@@ -141,11 +99,11 @@ The system is capable to support this adequately, even without the awareness
 of the application.
 
 When the 0x0410 "Get device properties" kernel call is called, the kernel also
-populates the appropriate field in the application state (Read Only Process
-Descriptor, see "ropddump.rst") with the return value. This indicates the type
-of the device at the given device ID (or the fact that the device is absent).
-The 0x0411 "Drop device" kernel call may be used to drop out devices from this
-state indicating they are no longer used.
+populates the appropriate field in the application state (see "state.rst")
+with the return value. This indicates the type of the device at the given
+device ID (or the fact that the device is absent). The 0x0411 "Drop device"
+kernel call may be used to drop out devices from this state indicating they
+are no longer used.
 
 When an used device is removed, the application might still be excepting it to
 function. A removed device however returns complete inactivity (just as a
@@ -156,7 +114,7 @@ Host side
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When a device is plugged in, the host should normally check the application
-state (0xEC0 - 0xECF in the ROPD), to see if there is a device ID where the
+state (0x070 - 0x07F in the state), to see if there is a device ID where the
 application expects no device, and add the new device there. If the host is
 capable to identify that the device added matches (at least by type) one
 previously removed, it may reuse the device ID.
@@ -206,24 +164,22 @@ analog input mappings.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The mouse pointing device provides a normal computer mouse requiring a cursor
-presented for the user to assist tracking it's position. The touch sensitive
-areas can be used to specify automatic buttons for this device, which are
-activated by a primary mouse button (typically left) press.
+presented for the user to assist tracking it's position. The "0x0425: Return
+area activity" kernel call should be activated by any button click with the
+pointer on the queried area.
 
 Digital input mapping:
 
 +------+-------+-------------------------------------------------------------+
 | Bank | Input | Description                                                 |
 +======+=======+=============================================================+
-| 0    | 0-15  | Touch sensitive areas (buttons)                             |
-+------+-------+-------------------------------------------------------------+
-|      | 0     | Scroll up (if any)                                          |
-| 1    +-------+-------------------------------------------------------------+
-|      | 1     | Scroll right (if any)                                       |
+|      | 0     | Scroll up (if there is any button in this role)             |
+| 0    +-------+-------------------------------------------------------------+
+|      | 1     | Scroll right (if there is any button in this role)          |
 |      +-------+-------------------------------------------------------------+
-|      | 2     | Scroll down (if any)                                        |
+|      | 2     | Scroll down (if there is any button in this role)           |                                        |
 |      +-------+-------------------------------------------------------------+
-|      | 3     | Scroll left (if any)                                        |
+|      | 3     | Scroll left (if there is any button in this role)           |                                        |
 |      +-------+-------------------------------------------------------------+
 |      | 4     | Primary (left) mouse button                                 |
 |      +-------+-------------------------------------------------------------+
@@ -243,15 +199,24 @@ Analog input mapping:
 +-------+--------------------------------------------------------------------+
 | 1     | Position Y (0-399)                                                 |
 +-------+--------------------------------------------------------------------+
+| 2     | Scroll wheel X (infinite, wrapping)                                |
++-------+--------------------------------------------------------------------+
+| 3     | Scroll wheel Y (infinite, wrapping)                                |
++-------+--------------------------------------------------------------------+
+
+The scroll wheel inputs represent distance travelled compared to a 0 point
+sampled on the device's initialization. Negative values should relate to
+scrolling up (Y) or left (X). On a typical mouse Scroll wheel Y is available,
+and there are no scroll buttons. On some mice a horizontal scroll wheel, or
+buttons associated with left / right scroll are available.
 
 
 0x1: Touch pointing device
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The touch pointing device assumes a touch display where no cursor is necessary
-to feed back to the user's actions. The device may support multi-touch, and
-so the touch sensitive areas may return press information simultaneously even
-if they don't overlap.
+to feed back to the user's actions. The device may support multi-touch which
+may be exploited through the "0x0425: Return area activity" kernel call.
 
 Hover activites may be returned if the physical device supports it. These
 indicate that the user did not actually press, but the respective analog
@@ -262,10 +227,8 @@ Digital input mapping:
 +------+-------+-------------------------------------------------------------+
 | Bank | Input | Description                                                 |
 +======+=======+=============================================================+
-| 0    | 0-15  | Touch sensitive areas (press sensitive)                     |
-+------+-------+-------------------------------------------------------------+
 |      | 4     | Primary touch press activity                                |
-| 1    +-------+-------------------------------------------------------------+
+| 0    +-------+-------------------------------------------------------------+
 |      | 5     | Secondary touch press activity (if supported)               |
 |      +-------+-------------------------------------------------------------+
 |      | 12    | Primary touch hover activity (if supported)                 |
@@ -459,7 +422,7 @@ returned accordingly. Notes (#x) in the table are described below it.
 +---+--------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+-------+
 | 5 | HomeRow|#1 | A | S | D | F | G | H | J | K | L | : | " |#2 |ENT|       |
 +---+--------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+-------+
-| 6 | BotRow |SHL|#3 | Y | X | C | V | B | N | M | < | > | ? |#3 |SHR|       |
+| 6 | BotRow |SHL|#3 | Z | X | C | V | B | N | M | < | > | ? |#3 |SHR|       |
 +---+--------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+-------+
 | 7 | Control|CTL|#4 |ALT|SPC|ALG| #4    |CTR|#5 |                           |
 +---+--------+---+---+---+---+---+---+---+---+---+---+-----------------------+
@@ -486,6 +449,12 @@ returned accordingly. Notes (#x) in the table are described below it.
 
 - #6: If the keyboard contains additional keys to those defined, they may be
   implemented in this area.
+
+On banks 17 - 25 a similar map must be made available, but mapping by symbol
+correspondance (so for example a QWERTZ keyboard's 'Z' would produce an
+activity on bank 4, bit 6, and bank 22, bit 2). If the host is not capable to
+support symbol correspondance, it is allowed to replicate the same mapping
+like used for banks 1 - 9.
 
 
 
@@ -515,7 +484,7 @@ Otherwise the following special codes are available:
 +--------------+-------------------------------------------------------------+
 | Code (32bit) | Description                                                 |
 +==============+=============================================================+
-| 0x00000000   | Input does not exist (may only be provided by touch)        |
+| 0x00000000   | Input does not exist                                        |
 +--------------+-------------------------------------------------------------+
 | 0x00000008   | 'Backspace' key                                             |
 +--------------+-------------------------------------------------------------+

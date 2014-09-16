@@ -19,8 +19,9 @@ This state is described here most importantly detailing the reset state of all
 registers and memories.
 
 Unless otherwise mentioned any memory area must be reset to zero. This
-includes the Data, the Stack, the Graphics FIFO, and the Video memories. Note
-that some parts of the Data and Video memories however contain initial data.
+includes the CPU Data, the CPU Stack, and the Peripheral memories. Note that
+some parts of the CPU Data and Peripheral memories however contain initial
+data.
 
 
 
@@ -38,46 +39,8 @@ The CPU's address space is initialized to a suitable initial configuration as
 follows:
 
 - 8 stack pages are made available (0x8000 words of stack space).
-- Code space is filled incrementally with the application's code pages.
-- If there are less than 16 application code pages, the last page repeats.
-
-Data Read and Data Write pages are set up according to the following table:
-
-+----------+--------------------------------+--------------------------------+
-| CPU page | Read page assigned             | Write page assigned            |
-+==========+================================+================================+
-|        0 | ROPD (0x40E0)                  | User peripheral area (0x7FFF)  |
-+----------+--------------------------------+--------------------------------+
-|        1 | User peripheral area (0x7FFF)  | User peripheral area (0x7FFF)  |
-+----------+--------------------------------+--------------------------------+
-|        2 | Video memory page 127 (0x807F) | Video memory page 127 (0x807F) |
-+----------+--------------------------------+--------------------------------+
-|        3 | Data memory page 1 (0x4001)    | Data memory page 1 (0x4001)    |
-+----------+--------------------------------+--------------------------------+
-|        4 | Data memory page 2 (0x4002)    | Data memory page 2 (0x4002)    |
-+----------+--------------------------------+--------------------------------+
-|        5 | Data memory page 3 (0x4003)    | Data memory page 3 (0x4003)    |
-+----------+--------------------------------+--------------------------------+
-|        6 | Data memory page 4 (0x4004)    | Data memory page 4 (0x4004)    |
-+----------+--------------------------------+--------------------------------+
-|        7 | Data memory page 5 (0x4005)    | Data memory page 5 (0x4005)    |
-+----------+--------------------------------+--------------------------------+
-|        8 | Video memory page 0 (0x8000)   | Video memory page 0 (0x8000)   |
-+----------+--------------------------------+--------------------------------+
-|        9 | Video memory page 1 (0x8001)   | Video memory page 1 (0x8001)   |
-+----------+--------------------------------+--------------------------------+
-|       10 | Video memory page 2 (0x8002)   | Video memory page 2 (0x8002)   |
-+----------+--------------------------------+--------------------------------+
-|       11 | Video memory page 3 (0x8003)   | Video memory page 3 (0x8003)   |
-+----------+--------------------------------+--------------------------------+
-|       12 | Video memory page 4 (0x8004)   | Video memory page 4 (0x8004)   |
-+----------+--------------------------------+--------------------------------+
-|       13 | Video memory page 5 (0x8005)   | Video memory page 5 (0x8005)   |
-+----------+--------------------------------+--------------------------------+
-|       14 | Video memory page 6 (0x8006)   | Video memory page 6 (0x8006)   |
-+----------+--------------------------------+--------------------------------+
-|       15 | Video memory page 7 (0x8007)   | Video memory page 7 (0x8007)   |
-+----------+--------------------------------+--------------------------------+
+- Code space is filled with the application's code area.
+- If there is less than 64 KWords of code, the Code space is padded with 0.
 
 
 
@@ -103,14 +66,19 @@ Video reset state
 ------------------------------------------------------------------------------
 
 
+Video mode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The starting mode is mode 3 (320x200; 8 bit double scanned).
+
+
 Display layout
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The display list is up as follows:
 
-- Double scanned mode.
-- 8 entries / line.
-- Video RAM page 127; Offset 0x000 (as seen by the CPU).
+- 8 entries / line (smallest).
+- Peripheral RAM offset 0xFF000.
 
 The display list is populated the following way:
 
@@ -120,17 +88,17 @@ The display list is populated the following way:
 
 Source definitions are set up as follows:
 
-- Source 0: 0x0450
-- Source 1: 0x4A04
-- Source 2: 0x8A04
-- Source 3: 0xCA04
-- Source 4: 0x1308
-- Source 5: 0x9308
-- Source 6: 0x1B08
-- Source 7: 0x9B08
+- Source A0: 0x0082
+- Source A1: 0x4140
+- Source A2: 0x8140
+- Source A3: 0xC140
+- Source B0: 0x0260
+- Source B1: 0x8260
+- Source B2: 0x0360
+- Source B3: 0x8360
 
-Source 0 sets up positioned source on Video RAM bank 0 of 80 cells width. This
-is useful for non-scrolling display.
+Source 0 sets up positioned source on Peripheral RAM bank 0 of 80 cells width.
+This is useful for non-scrolling display.
 
 Sources 1-3 are set up 4 cell wide (16 pixels in 8 bit mode, 32 pixels in 4
 bit mode) positioned source on Video RAM bank 1, in a manner they may be
@@ -145,30 +113,28 @@ Entry 1 of the display list is populated as follows:
 
 Line 0 gets the value 0x0000C000. Line 1 is 0x0005C000. Subsequent lines get
 their entry values in a similar manner, adding 0x50000 to the previous line.
-This layout produces a simple 320x200 surface in the beginning of the Video
-RAM (which is banked in the CPU's address space initially).
+This layout produces a simple 320x200 surface in the beginning of the
+Peripheral RAM.
 
 Note that only the valid lines of the display list are populated (so 200
 lines), the rest of the area of the display list remains zero.
 
 The mask / colorkey definitions are set up as follows:
 
-- Definition 0: 0x1020
-- Definition 1: 0x4080
+- Definition 0: 0x0102
+- Definition 1: 0x0408
+- Definition 2: 0x1020
+- Definition 3: 0x4080
+
+The shift mode regions are both set up for 80 cells width, beginning at cell
+0 (so filling entire display).
 
 
 Palette
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The palette is populated initially by the RRPGE Incremental palette. See the
-"RRPGE Incremental palette" section in "data.rst" for details. The full
-palette is loaded even in 4 bit mode.
-
-
-Video mode
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The starting mode is mode 1 (320x400; 8 bit).
+"RRPGE Incremental palette" section in "data.rst" for details.
 
 
 Accelerator
@@ -181,16 +147,15 @@ reindex map except the VRAM write masks, which are all set (both 0xFFFF).
 Graphics FIFO
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-All registers of the Graphics FIFO are set to zero, so the Graphics FIFO is
-empty and idle.
+Internal pointers of the Graphics FIFO are set zero (so it is empty). The
+FIFO's position is 0xFE000 in the Peripheral RAM, it's size is 4K cells.
 
 
 Display state
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The application may be started with the display entering in Vertical blanking
-(most negative line), so the application may have time to prepare some
-display. This behavior is not mandatory.
+The application may be started with the display entering in Vertical blanking,
+so it may have time to prepare some display. This behavior is not mandatory.
 
 
 
@@ -199,18 +164,14 @@ Audio reset state
 ------------------------------------------------------------------------------
 
 
-Audio related data
+Audio buffers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Data memory page 0 is used primarily for audio. It has two major areas
-initialized:
+The audio output buffers are set up for mono output (left and right pointed at
+the same location), at 0xFF800 in the Peripheral RAM, 1024 cells in size (4096
+samples). It is filled with 0x8080, producing silence.
 
-- 0x000 - 0x7FF: Filled with 0x8080, producing silence if played.
-- 0x800 - 0xDFF: Populated according to the specification in "data.rst".
-- 0xE00 - 0xFFF: 0
-
-The Audio output DMA is prepared for mono 48KHz output, with the 0x000 - 0x7FF
-area used for DMA buffer (for both channels).
+The Audio output DMA is prepared for 48KHz output.
 
 
 Mixer peripheral
@@ -218,67 +179,150 @@ Mixer peripheral
 
 Most registers are initialized to zero except the followings:
 
-- 0xEDA: 0x0100 (Amplitude)
-- 0xECE: 0x000C (Frequency table whole pointer)
-- 0xECF: 0x000D (Frequency table fractional pointer)
-- 0xED7: 0x6667 (Partitioning: 256 samples for sources, 512 for destination)
+- 0x8005: 0x0558 (Partitioning: 256 samples for sources, 2048 for destination)
+- 0x8009: 0x0100 (Amplitude)
+
+
+Mixer FIFO
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Internal pointers of the Mixer FIFO are set zero (so it is empty). The FIFO's
+position is 0xFFC00 in the Peripheral RAM, it's size is 512 cells.
 
 
 
 
-ROPD dump memory map
+Peripheral RAM interface reset state
 ------------------------------------------------------------------------------
 
 
-A suitable Read Only Process Descriptor dump is provided here which fulfills
-the initialization requirements. For more information on the layout of the
-ROPD dump, see "ropddump.rst". Note that the 0x000 - 0xBFF area of the ROPD
-dump replicates the application header.
+All four pointers are set to point at the beginning of the Peripheral RAM
+(where the display surface is also set up). Data unit sizes are set up as
+follows:
 
-0xC00 - 0xCFF: ::
+- Pointer 0: 1 bit.
+- Pointer 1: 4 bits.
+- Pointer 2: 8 bits.
+- Pointer 3: 16 bits.
 
-    (See "RRPGE Incremental palette" in "data.rst")
+Increments are set up so they increment 1 data unit (corresponding with the
+data unit size set up for the pointer).
 
-0xD00 - 0xD1F: ::
 
-    0x41C0U, 0x7FFFU, 0x807FU, 0x4001U, 0x4002U, 0x4003U, 0x4004U, 0x4005U,
-    0x8000U, 0x8001U, 0x8002U, 0x8003U, 0x8004U, 0x8005U, 0x8006U, 0x8007U,
-    0x7FFFU, 0x7FFFU, 0x807FU, 0x4001U, 0x4002U, 0x4003U, 0x4004U, 0x4005U,
-    0x8000U, 0x8001U, 0x8002U, 0x8003U, 0x8004U, 0x8005U, 0x8006U, 0x8007U,
 
-0xD20 - 0xD47: 0
 
-0xD48: ::
+Application state fill memory map
+------------------------------------------------------------------------------
 
-    0x6666U
 
-0xD49 - 0xD56: 0
+A suitable Application state fill is provided here which accords with the
+initialization requirements. For more information on the layout of the
+Application state, see "state.rst".
 
-0xD57: ::
-
-    0x0001U
-
-0xD58 - 0xD6F: 0
-
-0xD70 - 0xD7F: ::
-
-    0x0000U, 0x0000U, 0x0000U, 0x0000U, 0xD000U, 0x01FCU, 0x1020U, 0x4080U,
-    0x0450U, 0x4A04U, 0x8A04U, 0xCA04U, 0x1308U, 0x9308U, 0x1B08U, 0x9B08U,
-
-0xD80 - 0xECF: 0
-
-0xEC0 - 0xEDF: ::
-
-    0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U,
-    0x0000U, 0x0000U, 0xFF80U, 0x0001U, 0x0000U, 0x0000U, 0x000CU, 0x000DU,
-    0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x6667U,
-    0x0000U, 0x0000U, 0x0100U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U,
-
-0xEE0 - 0xEFF: ::
-
-    0x0000U, 0x0000U, 0x0000U, 0x0000U, 0xFFFFU, 0xFFFFU, 0x0000U, 0x0000U,
-    0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U,
-    0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U,
-    0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U,
-
-0xF00 - 0xFFF: 0
++--------+-------------------------------------------------------------------+
+| Range  | Fill data                                                         |
++========+===================================================================+
+| 0x000  |                                                                   |
+| \-     | Application header, the "RPA" heading changed to "RPS".           |
+| 0x03F  |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0x040  |                                                                   |
+| \-     | 0                                                                 |
+| 0x047  |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0x048  | 0x6666                                                            |
++--------+-------------------------------------------------------------------+
+| 0x049  |                                                                   |
+| \-     | 0                                                                 |
+| 0x051  |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0x052  | 0x0003                                                            |
++--------+-------------------------------------------------------------------+
+| 0x053  |                                                                   |
+| \-     | 0                                                                 |
+| 0x094  |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0x095  | 0x0558                                                            |
++--------+-------------------------------------------------------------------+
+| 0x096  |                                                                   |
+| \-     | 0                                                                 |
+| 0x098  |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0x099  | 0x0100                                                            |
++--------+-------------------------------------------------------------------+
+| 0x09A  |                                                                   |
+| \-     | 0                                                                 |
+| 0x09F  |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0x0A0  | 0xFFFF                                                            |
++--------+-------------------------------------------------------------------+
+| 0x0A1  | 0xFFFF                                                            |
++--------+-------------------------------------------------------------------+
+| 0x0A2  |                                                                   |
+| \-     | 0                                                                 |
+| 0x0C3  |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0x0C4  |                                                                   |
+| \-     | 0xFF80, 0xFF80, 0xFFC0, 0x0001                                    |
+| 0x0C7  |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0x0C8  | 0x1FFC                                                            |
++--------+-------------------------------------------------------------------+
+| 0x0C9  |                                                                   |
+| \-     | 0                                                                 |
+| 0x0CB  |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0x0CC  | 0x4FE0                                                            |
++--------+-------------------------------------------------------------------+
+| 0x0CD  |                                                                   |
+| \-     | 0                                                                 |
+| 0x0CF  |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0x0D0  | 0x0102, 0x0408, 0x1020, 0x4080, 0x5000, 0x5000, 0x0000, 0x07F8,   |
+| \-     | 0x0082, 0x4140, 0x8140, 0xC140, 0x0260, 0x8260, 0x0360, 0x8360    |
+| 0x0DF  |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0x0E0  |                                                                   |
+| \-     | 0                                                                 |
+| 0x0E2  |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0x0E3  | 0x0001                                                            |
++--------+-------------------------------------------------------------------+
+| 0x0E4  | 0x0000                                                            |
++--------+-------------------------------------------------------------------+
+| 0x0E5  |                                                                   |
+| \-     | 0                                                                 |
+| 0x0EA  |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0x0EB  | 0x0004                                                            |
++--------+-------------------------------------------------------------------+
+| 0x0EC  | 0x0002                                                            |
++--------+-------------------------------------------------------------------+
+| 0x0ED  |                                                                   |
+| \-     | 0                                                                 |
+| 0x0F2  |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0x0F3  | 0x0008                                                            |
++--------+-------------------------------------------------------------------+
+| 0x0F4  | 0x0003                                                            |
++--------+-------------------------------------------------------------------+
+| 0x0F5  |                                                                   |
+| \-     | 0                                                                 |
+| 0x0FA  |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0x0FB  | 0x0010                                                            |
++--------+-------------------------------------------------------------------+
+| 0x0FC  | 0x0004                                                            |
++--------+-------------------------------------------------------------------+
+| 0x0FD  |                                                                   |
+| \-     | 0                                                                 |
+| 0x0FF  |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0x100  |                                                                   |
+| \-     | Palette, see "RRPGE Incremental palette" in "data.rst".           |
+| 0x1FF  |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0x200  |                                                                   |
+| \-     | 0                                                                 |
+| 0x3FF  |                                                                   |
++--------+-------------------------------------------------------------------+

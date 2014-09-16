@@ -353,7 +353,7 @@ are accessible in the 0x0010 - 0x001F area in the User peripheral area.
 +--------+-------------------------------------------------------------------+
 |        | Source definition A0                                              |
 | 0x0018 |                                                                   |
-|        | - bit 12-15: Base offset bits 13-15                               |
+|        | - bit 12-15: Base offset bits 12-15                               |
 |        | - bit  8-11: PRAM bank select                                     |
 |        | - bit  5- 7: Source line size (line select shift)                 |
 |        | - bit     4: If set, shift source. If clear, positioned source.   |

@@ -27,12 +27,12 @@ fields:
 
 - Basic waveforms and noise data for composing simple generated audio samples.
 
-- Musical logarithmic table for outputting audio samples at tone frequencies.
+- Musical logarithmic table for outputting power of 2 sized audio samples at
+  tone frequencies.
 
 In the following chapters these data blocks and their uses are described. On
 the end of this document a memory map is provided showing their mapping at
-boot. Note that not all of them are located in read only memory, so they may
-be overwritten by the application.
+boot.
 
 
 
@@ -328,12 +328,11 @@ Musical logarithmic table
 
 The Musical logarithmic table is meant to be used with the Audio mixer to
 assist in outputting power of 2 sized samples at given musical frequencies. An
-A4 (440Hz) for a 256 byte sample at 48KHz can be produced using offset 0x8E in
+A4 (440Hz) for a 256 byte sample at 48KHz can be produced using offset 0x82 in
 this table.
 
-The table contains 32 bit 16.16 fixed point sample pointer increments, split
-in a whole and a fractional table (256 entries each) to suit the Audio mixer's
-requirements.
+The table contains 32 bit 16.16 fixed point sample pointer increments, whole
+part first. It's size is 512 words.
 
 There are 12 tones within an octave, the octave above or below may be obtained
 by multiplying or dividing the table entries by two respectively. For the
@@ -341,8 +340,8 @@ greatest accuracy the top 12 entries are provided (offsets 0xF4 - 0xFF); lower
 octaves then may be obtained by right shifting these values one by one for
 each until generating the whole table.
 
-The high 12 entries (offsets 0xF4 - 0xFF) of the table as 32bit values are as
-follows: ::
+The high 12 entries (offsets 0x1E8 - 0x1FF) of the table as 32bit values are
+as follows: ::
 
     55678343U,  58989149U,  62496826U,  66213081U,  70150316U,  74321671U,
     78741067U,  83423255U,  88383859U,  93639437U,  99207528U, 105106715U
@@ -357,78 +356,70 @@ Memory maps
 ------------------------------------------------------------------------------
 
 
-The constant data blocks appear in two places within the user's address space:
-one is the ROPD (Read Only Process Descriptor), area 0xD40 - 0xFFF, the other
-is Data memory page 0 (page 0x4000), area 0x800 - 0xDFF. The latter may be
-overwritten by the application. The latter area is selected since it appears
-in the Audio peripheral page (page 0x7FFF), where it provides convenient
-access to audio related data (the area 0x000 - 0x7FF may be occupied by the
-audio output buffers).
+The data blocks appear in two places within the user accessible memories: One
+is the high end of the CPU Data memory (which may be overwritten with
+application data if in the Application Header a large enough initial data is
+specified), the other is the high end of the Peripheral RAM.
 
 
-ROPD data
+CPU data memory
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0xD40  |                                                                   |
-| \-     | The first 64 colors of RRPGE Incremental.                         |
-| 0xD7F  |                                                                   |
+| 0xFB00 |                                                                   |
+| \-     | The RRPGE Incremental palette.                                    |
+| 0xFBFF |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xD80  |                                                                   |
-| \-     | Sine wave from Waveform data.                                     |
-| 0xDFF  |                                                                   |
+| 0xFC00 |                                                                   |
+| \-     | Musical logarithmic table.                                        |
+| 0xFDFF |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xE00  |                                                                   |
+| 0xFE00 |                                                                   |
 | \-     | Large sine table.                                                 |
-| 0xFFF  |                                                                   |
+| 0xFFFF |                                                                   |
 +--------+-------------------------------------------------------------------+
 
 
-Data RAM page 0
+Peripheral RAM
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In the Peripheral RAM the offsets specified are within the highest 64 KCell
+bank, as 32 bit offsets. That is the base of these offsets is 0xF0000.
 
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0x800  |                                                                   |
+| 0xFE00 |                                                                   |
 | \-     | Square wave.                                                      |
-| 0x87F  |                                                                   |
+| 0xFE3F |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0x880  |                                                                   |
+| 0xFE40 |                                                                   |
 | \-     | Sine wave.                                                        |
-| 0x8FF  |                                                                   |
+| 0xFE7F |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0x900  |                                                                   |
+| 0xFE80 |                                                                   |
 | \-     | Triangle wave.                                                    |
-| 0x97F  |                                                                   |
+| 0xFEBF |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0x980  |                                                                   |
+| 0xFEC0 |                                                                   |
 | \-     | Spiked wave.                                                      |
-| 0x9FF  |                                                                   |
+| 0xFEFF |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xA00  |                                                                   |
+| 0xFF00 |                                                                   |
 | \-     | Incremental sawtooth.                                             |
-| 0xA7F  |                                                                   |
+| 0xFF3F |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xA80  |                                                                   |
+| 0xFF40 |                                                                   |
 | \-     | Decremental sawtooth.                                             |
-| 0xAFF  |                                                                   |
+| 0xFF7F |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xB00  |                                                                   |
+| 0xFF80 |                                                                   |
 | \-     | Noise 1.                                                          |
-| 0xB7F  |                                                                   |
+| 0xFFBF |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xB80  |                                                                   |
+| 0xFFC0 |                                                                   |
 | \-     | Noise 2.                                                          |
-| 0xBFF  |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0xC00  |                                                                   |
-| \-     | Musical logarithmic table, whole part.                            |
-| 0xCFF  |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0xD00  |                                                                   |
-| \-     | Musical logarithmic table, fractional part.                       |
-| 0xDFF  |                                                                   |
+| 0xFFFF |                                                                   |
 +--------+-------------------------------------------------------------------+
