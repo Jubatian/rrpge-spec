@@ -160,8 +160,9 @@ of the header. Beginning at this offset it is mapped as follows:
 |        |   | - bit    10: Has important video output if set                |
 |        |   | - bit  8- 9: Icon resource type and availability              |
 |        |   | - bit     7: Has alternate icon for inverted theme            |
-|        |   | - bit  2- 6: Must be 0                                        |
-|        |   | - bit     1: Requires file I/O if set                         |
+|        |   | - bit  3- 6: Must be 0                                        |
+|        |   | - bit     2: Requires generic file I/O if set                 |
+|        |   | - bit     1: Requires file I/O for "default.rbb" if set       |
 |        |   | - bit     0: Requires network if set                          |
 |        |   |                                                               |
 |        |   | Icon resource type and availability:                          |

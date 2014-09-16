@@ -21,6 +21,8 @@ Version 00.010.000 ()
  - Frequency source option and frequency tables from the Mixer removed.
  - Touch sensitive areas and touch awareness feature removed, changed over for
    a pointing device specific area query.
+ - Kernel functions from now return in C:X3, to adapt to a preferred calling
+   convention.
  - RRPGE logo trademark state changed (registered European trademark).
 
 

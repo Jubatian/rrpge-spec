@@ -83,17 +83,17 @@ Mcycles worth of processing power per second.
 
 
 
-Video peripheral use
+Peripheral use
 ------------------------------------------------------------------------------
 
 
-The kernel does not use the video peripheral for any of it's internal tasks,
-so it does not stall on user initiated Graphics FIFO operations.
+The kernel does not use the Peripheral bus and any Peripheral on it for any of
+it's internal tasks.
 
 Some video related kernel calls are exceptions, these are mentioned at the
 appropriate calls in the "kcall.rst" documentation. These are allowed to
-terminate the user application if they are called while the Graphics FIFO
-blocks.
+terminate the user application if they are called in an inappropriate
+situation which the application should check for before calling.
 
 
 
@@ -110,7 +110,7 @@ parameters for validity, and only allowing the call to proceed and finish if
 the parameters are right (there are however some kernel calls which can
 purposefully return failure, indicated in their documentation).
 
-Otherwise there are four sources of termination:
+Otherwise there are two sources of termination:
 
 - Attempting to execute an instruction from the supervisor area (see the
   "Instruction Matrix" table in "cpu_inst.rst").
@@ -118,12 +118,6 @@ Otherwise there are four sources of termination:
 - Malformed stack accesses (addressing outside the allowed stack area, see
   "Stack Management" in "cpu_arch.rst").
 
-- Improper CPU RAM addresses provided for the DMA peripherals (see "dma.rst").
-
-- Optionally improper uses of the Graphics FIFO may generate traps (see
-  "Graphics FIFO operation basics" in "grapfifo.rst").
-
 These in real hardware are realized by trap mechanisms. The result is the same
 like for inappropriately formatted kernel calls: the kernel terminates the
 application.
-
