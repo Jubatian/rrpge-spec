@@ -18,6 +18,7 @@ Version 00.010.000 ()
  - Graphics Display Generator received a Display list clear feature which it
    can exploit in the VBlank after a Display list definition change.
  - Minor graphics double buffering assistance features introduced.
+ - Arbitrary source start in the Accelerator's Block Blitter removed.
  - Frequency source option and frequency tables from the Mixer removed.
  - Touch sensitive areas and touch awareness feature removed, changed over for
    a pointing device specific area query.

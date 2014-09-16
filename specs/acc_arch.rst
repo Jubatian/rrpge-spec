@@ -172,10 +172,9 @@ Block Blitter (BB)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The Block Blitter normally produces a horizontal strip of sequentially read
-data beginning at an arbitrary position. The source data may begin at an
-arbitrary location, and the blit may have an arbitrary length in pixels. The
-begin position is handled as a part of the incrementing logic, detailed
-further below.
+data beginning at an arbitrary position. The source data may only begin at
+block boundary (the fractional part of the source offset is ignored), however
+the blit may have an arbitrary length in pixels.
 
 Preparing the source data requires a memory of the previous data to be able
 to shift it according to the destination start pointer's fractional part. For
@@ -217,14 +216,6 @@ out). The data from each source cell is prepared as follows: ::
     +----+----+----+----+
     |    Data to blit   |
     +----+----+----+----+
-
-
-The Block Blitter upon entry calculates the destination alignment shift. This
-is taken from the destination fraction after subtracting the source fraction
-from it. If the subtraction wraps around, the first source fetch stage
-terminates after the write into the shift register (the destination combine
-stage is not started). Note that the calculation of the begin mask is not
-affected, and the mask applies on the first executed destination combine.
 
 
 Filler (FL)
@@ -580,10 +571,6 @@ this determines the performance are marked with a '*'.
 
 Note that the Accelerated combine may be in effect for any processed cell if
 it's conditions are met. In Line mode the conditions of it can never be met.
-
-In some cases the Block Blitter may need one more source fetch in a row than
-destination combines. The cycles (two) taken for this fetch should be
-interpreted as part of the row transition cycles.
 
 
 
