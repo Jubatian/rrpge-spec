@@ -155,8 +155,9 @@ Usage guides
 ------------------------------------------------------------------------------
 
 
-Following some details are provided on how the ROPD dump should be used and
-populated within emulators so the desired cross-compatibility may be achieved.
+Following some details are provided on how the application state should be
+used and populated within emulators so the desired cross-compatibility may be
+achieved.
 
 
 0x050: Current video line

@@ -263,7 +263,7 @@ are accessible in the 0x0010 - 0x001F area in the User peripheral area.
 |        | - bit  8-15: Mask / Colorkey for 0x8                              |
 |        | - bit  0- 7: Mask / Colorkey for 0x9                              |
 |        |                                                                   |
-|        | Provides user-defineable Mask or Colorkey values for the given    |
+|        | Provides user-definable Mask or Colorkey values for the given     |
 |        | values of the Mask / Colorkey selector in the render command.     |
 +--------+-------------------------------------------------------------------+
 |        | Mask / Colorkey definition 1                                      |
@@ -271,7 +271,7 @@ are accessible in the 0x0010 - 0x001F area in the User peripheral area.
 |        | - bit  8-15: Mask / Colorkey for 0xA                              |
 |        | - bit  0- 7: Mask / Colorkey for 0xB                              |
 |        |                                                                   |
-|        | Provides user-defineable Mask or Colorkey values for the given    |
+|        | Provides user-definable Mask or Colorkey values for the given     |
 |        | values of the Mask / Colorkey selector in the render command.     |
 +--------+-------------------------------------------------------------------+
 |        | Mask / Colorkey definition 2                                      |
@@ -279,7 +279,7 @@ are accessible in the 0x0010 - 0x001F area in the User peripheral area.
 |        | - bit  8-15: Mask / Colorkey for 0xC                              |
 |        | - bit  0- 7: Mask / Colorkey for 0xD                              |
 |        |                                                                   |
-|        | Provides user-defineable Mask or Colorkey values for the given    |
+|        | Provides user-definable Mask or Colorkey values for the given     |
 |        | values of the Mask / Colorkey selector in the render command.     |
 +--------+-------------------------------------------------------------------+
 |        | Mask / Colorkey definition 3                                      |
@@ -287,7 +287,7 @@ are accessible in the 0x0010 - 0x001F area in the User peripheral area.
 |        | - bit  8-15: Mask / Colorkey for 0xE                              |
 |        | - bit  0- 7: Mask / Colorkey for 0xF                              |
 |        |                                                                   |
-|        | Provides user-defineable Mask or Colorkey values for the given    |
+|        | Provides user-definable Mask or Colorkey values for the given     |
 |        | values of the Mask / Colorkey selector in the render command.     |
 +--------+-------------------------------------------------------------------+
 |        | Shift mode region A                                               |
@@ -408,7 +408,7 @@ The layout of a render command is as follows:
 +========+===================================================================+
 |        | If set, bit 3 (4 bit mode) or bit 5 (8 bit mode) of destination   |
 | 31     | pixel values become a priority selector. If bit 3 / 5 of the      |
-|        | destination pixel is set, it won't be overriden by the source     |
+|        | destination pixel is set, it won't be overridden by the source    |
 |        | pixel.                                                            |
 +--------+-------------------------------------------------------------------+
 | 28-30  | Source definition select                                          |

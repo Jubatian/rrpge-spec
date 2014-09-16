@@ -51,7 +51,7 @@ graphics engines).
 The constraints described here do not involve the cycle requirements of
 processing particular kernel calls. They however include any other time spent
 by the kernel, including time required to serve user initiated kernel tasks
-(such as asynchronously loading a binary page).
+(such as asynchronously loading from the application binary).
 
 The constraints:
 

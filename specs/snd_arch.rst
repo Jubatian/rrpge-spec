@@ -47,7 +47,7 @@ Output DMA buffers
 The audio output DMA operates on the Peripheral bus, accessing the Peripheral
 RAM.
 
-Seperate left & right channel DMA start offsets are provided. The buffer size
+Separate left & right channel DMA start offsets are provided. The buffer size
 is defined by a mask which mixes bits from the DMA sample counter and these
 start offset bits, normally selecting the higher bits from the start offsets,
 the lower bits from the DMA sample counter.

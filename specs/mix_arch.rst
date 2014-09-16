@@ -148,7 +148,7 @@ with bit 15 set as this is how they should be supplied to the FIFO.
 |        | units). Used in AM mode for reading the amplitude source.         |
 +--------+-------------------------------------------------------------------+
 | 0x8002 | Amplitude source start pointer fractional part. Used in AM mode   |
-|        | for reading the amplitude source.gnored.                          |
+|        | for reading the amplitude source.                                 |
 +--------+-------------------------------------------------------------------+
 | 0x8003 | Frequency for AM source read, whole part. Provides the increment  |
 |        | for the AM source pointer.                                        |

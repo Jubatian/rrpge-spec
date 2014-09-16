@@ -204,7 +204,7 @@ Analog input mapping:
 | 3     | Scroll wheel Y (infinite, wrapping)                                |
 +-------+--------------------------------------------------------------------+
 
-The scroll wheel inputs represent distance travelled compared to a 0 point
+The scroll wheel inputs represent distance traveled compared to a 0 point
 sampled on the device's initialization. Negative values should relate to
 scrolling up (Y) or left (X). On a typical mouse Scroll wheel Y is available,
 and there are no scroll buttons. On some mice a horizontal scroll wheel, or
@@ -218,7 +218,7 @@ The touch pointing device assumes a touch display where no cursor is necessary
 to feed back to the user's actions. The device may support multi-touch which
 may be exploited through the "0x0425: Return area activity" kernel call.
 
-Hover activites may be returned if the physical device supports it. These
+Hover activities may be returned if the physical device supports it. These
 indicate that the user did not actually press, but the respective analog
 inputs are valid.
 
@@ -451,9 +451,9 @@ returned accordingly. Notes (#x) in the table are described below it.
   implemented in this area.
 
 On banks 17 - 25 a similar map must be made available, but mapping by symbol
-correspondance (so for example a QWERTZ keyboard's 'Z' would produce an
+correspondence (so for example a QWERTZ keyboard's 'Z' would produce an
 activity on bank 4, bit 6, and bank 22, bit 2). If the host is not capable to
-support symbol correspondance, it is allowed to replicate the same mapping
+support symbol correspondence, it is allowed to replicate the same mapping
 like used for banks 1 - 9.
 
 

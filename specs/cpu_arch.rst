@@ -173,8 +173,8 @@ hold true:
   zero.
 
 - The Stack space is 32 KWords. When kernel calls are executed, a kernel trap,
-  or an interrupt happens, a stack page switch is performed (automatically by
-  the CPU), so stack accesses related to these populate a supervisor stack
+  or an interrupt happens, a stack switch is performed (automatically by the
+  CPU), so stack accesses related to these populate a supervisor stack
   invisible to the user.
 
 - The Data space is 64 KWords. The first 64 words of this show memory mapped
@@ -275,7 +275,7 @@ based on the current BP and the BP pushed on the stack at entry. ::
     | (...)      |
 
 In user mode there are no direct push and pop operations, however subroutine
-entries, returns and parameter passings realize identical mechanisms. The
+entries, returns and parameter passing realize identical mechanisms. The
 primary use of the stack is providing an efficient parameter and local
 variable storage for subroutines supporting reentrancy.
 

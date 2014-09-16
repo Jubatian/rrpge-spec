@@ -38,7 +38,9 @@ RRPGE CPU reset state
 The CPU's address space is initialized to a suitable initial configuration as
 follows:
 
-- 8 stack pages are made available (0x8000 words of stack space).
+- 32 KWords of stack space is made available to the application.
+- 64 KWords of data space is made available to the application.
+- User Peripheral Area set up to data address range 0x0000 - 0x003F.
 - Code space is filled with the application's code area.
 - If there is less than 64 KWords of code, the Code space is padded with 0.
 
@@ -141,7 +143,7 @@ Accelerator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 All registers of the Graphics Accelerator are set zero including the whole
-reindex map except the VRAM write masks, which are all set (both 0xFFFF).
+reindex map except the PRAM write masks, which are all set (both 0xFFFF).
 
 
 Graphics FIFO

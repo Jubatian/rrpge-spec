@@ -215,7 +215,7 @@ The task always returns 0x8000 on completion.
 - Ret.X3: Index of kernel task or 0x8000 if no more task slots are available.
 
 Loads bytes from a file. The bytes are loaded in Big Endian order (so first
-byte of the page in the file will be the high byte of the first word of the
+loaded byte of the file will be the high byte of the first word of the
 target).
 
 The file name is excepted to be a zero terminated UTF-8 string.
@@ -248,9 +248,9 @@ See "file_io.rst" for further details including fault codes.
 - Param5: File name offset in CPU Data memory.
 - Ret.X3: Index of kernel task or 0x8000 if no more task slots are available.
 
-Saves bytes into a page of a target file. The bytes are saved in Big Endian
-order (so first byte of the page in the file will be from the high byte of the
-first word in the source page).
+Saves bytes into the target file. The bytes are saved in Big Endian order (so
+first saved byte of the file will be from the high byte of the first word in
+the source area).
 
 Note that the host should fail if the file is not sufficiently large already
 so the new data can be added without gaps.
@@ -793,7 +793,7 @@ availability bit at 0x05F of the Application state.
 0x0721: Query network availability
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- F.name: kc_net_setavail
+- F.name: kc_net_getavail
 - Cycles: 400
 - Host:   Not required.
 - Ret.X3: 0: Not available, Nonzero: Available.

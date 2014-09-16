@@ -1,4 +1,4 @@
-Version 00.010.000 ()
+Version 00.010.000 (2014.09.16)
  - Large changes!
  - Paging concept removed entirely. This affects file structures, kernel
    calls, RAM layout, and in general just about everything. Nothing remains at
@@ -15,6 +15,8 @@ Version 00.010.000 ()
  - DMA functions introduced in 00.006.000 are removed.
  - CPU: The ASL (Low bit extending shift to left) instruction is dropped for a
    NOT and a NEG instruction.
+ - CPU: The JFL and JML opcodes changed into relative jumps and calls. The
+   mnemonic of the original JMR changes into JMS.
  - Graphics Display Generator received a Display list clear feature which it
    can exploit in the VBlank after a Display list definition change.
  - Minor graphics double buffering assistance features introduced.

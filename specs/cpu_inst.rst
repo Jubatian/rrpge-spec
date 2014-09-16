@@ -311,18 +311,17 @@ condition does not trigger any supervisor action (trap).
 Timing (cycles): 11 + ai + wc
 
 
-JFL
+JFR
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 1000 1000 0eaa aaaa | JFL adr {...}      |
+| 1000 1000 0eaa aaaa | JFR adr {...}      |
 +---------------------+--------------------+
 
-Local function call (subroutine entry). Only the low 12 bits of the target
-address is used, the high 4 address bits receive the the high 4 bits of the
-opcode's address, thus calling within the same page as the caller.
+Relative function call (subroutine entry). The target address is calculated by
+adding the operand to the current PC which points to the JFR instruction.
 
 The stack receives the PC pointing after the function call opcode, then the
 current BP, after which the called function's stack frame is established.
@@ -389,26 +388,24 @@ JFA
 | 1000 1001 0eaa aaaa | JFA adr {...}      |
 +---------------------+--------------------+
 
-Absolute function call (subroutine entry). All 16 bits of the target address
-are used.
+Absolute function call (subroutine entry). The target address is the operand.
 
 See JFL for details.
 
 Timing (cycles): 9 + ai; 4 + ai / parameter
 
 
-JML
+JMR
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 1000 1100 --aa aaaa | JML adr            |
+| 1000 1100 --aa aaaa | JMR adr            |
 +---------------------+--------------------+
 
-Local jump. Only the low 12 bits of the target address is used, the high 4
-address bits receive the the high 4 bits of the opcode's address, thus jumping
-within the same page.
+Relative jump. The target address is calculated by adding the operand to the
+current PC which points to the JMR instruction.
 
 Timing (cycles): 5 + ai
 
@@ -422,21 +419,21 @@ JMA
 | 1000 1101 --aa aaaa | JMA adr            |
 +---------------------+--------------------+
 
-Absolute jump. The PC is made equal to the value loaded from adr.
+Absolute jump. The target address is the operand.
 
 Timing (cycles): 5 + ai
 
 
-JMR
+JMS
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 1000 01ii iiii iiii | JMR simm10         |
+| 1000 01ii iiii iiii | JMS simm10         |
 +---------------------+--------------------+
 
-Relative jump. The base of the jump is the address of the opcode, so an
+Short relative jump. The base of the jump is the address of the opcode, so an
 immediate of zero will generate an infinite loop. The 10bit immediate is 2's
 complement signed ranging from -512 to +511 inclusive.
 
@@ -1042,15 +1039,15 @@ layout. The columns group by the highest two bits (bit 15 and bit 14) and bit
 |    |         |         |          |          || adr, SP|| SP, adr|         |
 +----+---------+---------+----------+----------+---------+---------+         |
 |    || MOV    || MOV    || AND     || AND     |                   |         |
-|0001|| adr,xmn|| xmn,adr|| adr, rx || rx, adr |    JMR simm10     |         |
+|0001|| adr,xmn|| xmn,adr|| adr, rx || rx, adr |    JMS simm10     |         |
 |    || adr,xhn|| xhn,adr|          |          |                   |         |
 +----+---------+---------+----------+----------+---------+---------+         |
-|    || ADD    || ADD    || ADD     || ADD     || JFL    || ADD    |         |
+|    || ADD    || ADD    || ADD     || ADD     || JFR    || ADD    |         |
 |0010|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|| JFA    || SP, adr|         |
 |    |         |         |          |          || JSV    |         |         |
 |    |         |         |          |          || RFN    |         |         |
 +----+---------+---------+----------+----------+---------+---------+         |
-|    || SUB    || SUB    || SUB     || SUB     || JML    || SUB    |         |
+|    || SUB    || SUB    || SUB     || SUB     || JMR    || SUB    |         |
 |0011|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|| JMA    || SP, adr|         |
 +----+---------+---------+----------+----------+---------+---------+         |
 |    || XCH    || XCH    || XOR     || XOR     |                   |         |

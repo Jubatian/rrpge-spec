@@ -91,7 +91,7 @@ value 0x0A.
 | \-     | F | "\nDescOff: "                                                 |
 | 0x003D |   |                                                               |
 +--------+---+---------------------------------------------------------------+
-| 0x003E |   | Hexadecimal location of application descriptor. It specfies   |
+| 0x003E |   | Hexadecimal location of application descriptor. It specifies  |
 | \-     | M | the start offset of the descriptor as a word offset within    |
 | 0x003F |   | the first 64K words (must be within). Uppercase.              |
 +--------+---+---------------------------------------------------------------+
@@ -102,7 +102,7 @@ value 0x0A.
 | 0x0045 |   | License or licenses (if multiple alternative licenses are     |
 | \-     | M | supported) the application may be used under. Multiple        |
 | L.End  |   | license identifications must be separated by commas (","),    |
-|        |   | spaces (" ") inbetween are allowed. The end of the license    |
+|        |   | spaces (" ") in-between are allowed. The end of the license   |
 |        |   | list is marked by a newline ("\n"). It is not necessarily on  |
 |        |   | a word boundary.                                              |
 +--------+---+---------------------------------------------------------------+
@@ -209,7 +209,7 @@ Version information
 ------------------------------------------------------------------------------
 
 
-There are two version informations at 0x002A and 0x0034, one specifying the
+There are two version information at 0x002A and 0x0034, one specifying the
 application version, the other the specification's version the application
 conforms to. The specification's version suggests the host whether it may or
 may not load and run the application.

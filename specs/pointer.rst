@@ -36,7 +36,7 @@ For realizing this in the write direction, the interface relies on that the
 RRPGE CPU always performs a Read - Modify - Write sequence when it wants to
 write out data. On the Read access, the appropriate 32 bit PRAM cell is
 latched, and on the Write access it is combined with the data coming from the
-CPU in correspondance with the data unit size.
+CPU in correspondence with the data unit size.
 
 To prevent post-incrementing the pointer on the Read access of a Read -
 Modify - Write sequence, the signal line defined in "Memory accessing" in the
@@ -92,7 +92,7 @@ these, the rest are formatted in an identical manner.
 |        |                                                                   |
 |        | Bit 4 of the sub-cell address is always used. Other bits are used |
 |        | depending on the selected data unit size, however they are always |
-|        | writeable, and the post-increment always affects them.            |
+|        | writable, and the post-increment always affects them.             |
 +--------+-------------------------------------------------------------------+
 | 0x0022 | Pointer 0 Post-increment, high (layout matches Address high's).   |
 +--------+-------------------------------------------------------------------+
