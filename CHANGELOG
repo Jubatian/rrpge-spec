@@ -1,3 +1,14 @@
+Version 00.010.001 (2014.09.19)
+ - Application state fields added to hold important elements of the
+   Application descriptor (from the application binary).
+ - Acceleartor's remaining cycle count must not contain Mixer cycles.
+ - File name area size parameters in File system kernel calls are added to
+   contain undefined behavior if the application writes those while the kernel
+   task is executing.
+ - Processing time of 0x0425: Return area activity increased to 1200 cycles.
+ - The main README.rst updated to match the new architecture.
+
+
 Version 00.010.000 (2014.09.16)
  - Large changes!
  - Paging concept removed entirely. This affects file structures, kernel

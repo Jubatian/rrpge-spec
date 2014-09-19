@@ -52,19 +52,24 @@ Main components
 - 16bit CISC CPU with user / supervisor mode separation, memory protection,
   with a highly orthogonal instruction set. Notable features are small chunk
   (even bit) level memory accesses, no flags logic, and complex function call
-  instructions. The CPU is provided with 2 MWords of data memory (half of
-  which is also used for audio) of which 1792 KWords are available to the
-  user.
+  instructions. The CPU is provided with CPU Data memory of which 64 KWords
+  are available to the user as Data, 32 KWords as Stack, while another 64
+  KWords contain the application code.
 
-- 32bit Graphic Display Generator & Accelerator unit capable of outputting
-  50-70Hz 640x400 4bit or 320x400 8bit graphics. Notable features are display
-  list based line composing, and a FIFO assisted Accelerator capable to
-  perform many types of fast blit operations. The graphics hardware is
-  accompanied with 512 KWords of Video memory.
+- 32bit Peripheral system on a separate bus, operating in parallel with the
+  CPU. 1M * 32bits of Peripheral RAM is provided on this bus, accessible by
+  the CPU through a streaming interface.
 
-- 8bit Stereo digital audio output with up to 48KHz sampling frequency.
+- Graphic Display Generator & Accelerator unit on the Peripheral bus capable
+  of outputting 50-70Hz 640x400 4bit or 320x400 8bit graphics. Notable
+  features are display list based line composing, and a FIFO assisted
+  Accelerator capable to perform many types of fast blit operations.
 
-- Mixer DMA peripheral capable to assist audio mixing algorithms.
+- 8bit Stereo digital audio output with up to 48KHz sampling frequency on the
+  Peripheral bus.
+
+- FIFO assisted Mixer DMA peripheral capable to assist audio mixing
+  algorithms.
 
 - Various input sources including, but not limited to digital gamepads,
   pointing devices, touch devices, and joysticks.
@@ -80,10 +85,9 @@ the early 90s. In this era already the IBM PC dominated, still running mostly
 DOS in 16 bits, gradually pushing Commodore's Amiga behind. By design RRPGE is
 closer to an Amiga than an IBM PC with it's extensive graphics system (the IBM
 PC mostly only had VGA with very little acceleration used), however it has a
-16 bit CPU with a necessity of memory banking. The latter is somewhat similar
-to the concepts used in the Enterprise 128K (8 bit, Z80 based computer), which
-is more efficient and provides larger address space than the system used by
-the IBM PC.
+16 bit CPU. Access to larger amounts of RAM than directly adressable by this
+processor is provided through an unique streaming interface, mostly resembling
+to a concept utilized by a rare type of REU for the Commodore 64.
 
 By CPU power and the main clock frequency of 12.5MHz RRPGE mostly falls behind
 the microcomputers of the era, however it provides a graphics subsystem and
@@ -208,5 +212,5 @@ This file.
 File "logo.png"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The RRPGE Logo. Note that this logo is under trademark registration, rights
+The RRPGE Logo. Note that this logo is a registered European trademark, rights
 owned by Sandor Zsuga (Jubatian).

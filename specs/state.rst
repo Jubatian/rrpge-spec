@@ -104,6 +104,21 @@ The State variables area's map:
 +--------+-------------------------------------------------------------------+
 | 0x054  |                                                                   |
 | \-     | Unused, must be 0x0000.                                           |
+| 0x057  |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0x058  | Application binary total size in words, high. Copies 0x0000 from  |
+|        | the Application descriptor.                                       |
++--------+-------------------------------------------------------------------+
+| 0x059  | Application binary total size in words, low. Copies 0x0001 from   |
+|        | the Application descriptor.                                       |
++--------+-------------------------------------------------------------------+
+| 0x05A  | Input controller types the application may see. Copies 0x0008     |
+|        | from the Application descriptor.                                  |
++--------+-------------------------------------------------------------------+
+| 0x05B  | Application flags. Copies 0x0009 from the Application descriptor. |
++--------+-------------------------------------------------------------------+
+| 0x05C  |                                                                   |
+| \-     | Unused, must be 0x0000.                                           |
 | 0x05E  |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0x05F  | Network availability flag on bit 0 (1: Available). Other bits     |
@@ -128,10 +143,8 @@ The State variables area's map:
 | 0x069  | Graphics FIFO read pointer.                                       |
 +--------+-------------------------------------------------------------------+
 | 0x06A  | Cycles remaining from accelerator operation or FIFO fetch, high.  |
-|        | (this must include stall cycles from the mixer)                   |
 +--------+-------------------------------------------------------------------+
 | 0x06B  | Cycles remaining from accelerator operation or FIFO fetch, low.   |
-|        | (this must include stall cycles from the mixer)                   |
 +--------+-------------------------------------------------------------------+
 | 0x06C  | Graphics FIFO address latch.                                      |
 +--------+-------------------------------------------------------------------+
@@ -177,10 +190,8 @@ the state accordingly. This usually should not affect applications as there
 are no reference points to adequately rely on individual operation timings.
 
 If an Accelerator and a Mixer operation is running simultaneously, the
-Accelerator operation's remaining cycle count must include the Mixer
-operation's cycle count, thus showing the effective remaining cycles (after
-stalled by the Mixer). The cycle counts necessarily have to be updated
-whenever anything stalls either the Accelerator or Mixer operation.
+Accelerator operation's remaining cycle count must not include the Mixer
+operation's cycle count (which stalls the Accelerator).
 
 
 0x060; 0x068: FIFOs

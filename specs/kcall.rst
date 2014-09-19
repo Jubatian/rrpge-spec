@@ -212,6 +212,7 @@ The task always returns 0x8000 on completion.
 - Param3: Byte offset to start loading from the file, high word.
 - Param4: Byte offset to start loading from the file, low word.
 - Param5: File name offset in CPU Data memory.
+- Param6: File name size limit in words.
 - Ret.X3: Index of kernel task or 0x8000 if no more task slots are available.
 
 Loads bytes from a file. The bytes are loaded in Big Endian order (so first
@@ -246,6 +247,7 @@ See "file_io.rst" for further details including fault codes.
 - Param3: Byte offset to start at in the file, high word.
 - Param4: Byte offset to start at the file, low word.
 - Param5: File name offset in CPU Data memory.
+- Param6: File name size limit in words.
 - Ret.X3: Index of kernel task or 0x8000 if no more task slots are available.
 
 Saves bytes into the target file. The bytes are saved in Big Endian order (so
@@ -278,7 +280,7 @@ See "file_io.rst" for further details including fault codes.
 - Host:   Required.
 - N/S:    The target area may always be zeroed to indicate no files.
 - Param1: File name offset in CPU Data memory.
-- Param2: File name size limit in bytes (including terminating zero).
+- Param2: File name size limit in words.
 - Ret.X3: Index of kernel task or 0x8000 if no more task slots are available.
 
 Finds and fills in the next valid file after the one passed. The passed file
@@ -309,7 +311,9 @@ See "file_io.rst" for further details.
 - Host:   Required.
 - N/S:    The task may always return 0xC000 indicating unsuccessful move.
 - Param1: Target file name offset in CPU Data memory.
-- Param2: Source file name offset in CPU Data memory.
+- Param2: Target file name size limit in words.
+- Param3: Source file name offset in CPU Data memory.
+- Param4: Source file name size limit in words.
 - Ret.X3: Index of kernel task or 0x8000 if no more task slots are available.
 
 Moves (renames) a file, or deletes it. Deleting can be performed by setting
@@ -537,7 +541,7 @@ may be used to assist editing the text. For more information, see
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_inp_checkarea
-- Cycles: 800
+- Cycles: 1200
 - Host:   Required.
 - N/S:    May always return 0 indicating the area is inactive.
 - Param1: Device to query (only low 4 bits used).
@@ -861,13 +865,13 @@ abbreviations used in the table are:
 +========+========+===+===+===+======+=======================================+
 | 0x0100 |    800 | X | M | 4 |  X3  | kc_sfi_loadbin                        |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0110 |    800 | X | O | 5 |  X3  | kc_sfi_load                           |
+| 0x0110 |    800 | X | O | 6 |  X3  | kc_sfi_load                           |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0111 |    800 | X | O | 5 |  X3  | kc_sfi_save                           |
+| 0x0111 |    800 | X | O | 6 |  X3  | kc_sfi_save                           |
 +--------+--------+---+---+---+------+---------------------------------------+
 | 0x0112 |    800 | X | O | 2 |  X3  | kc_sfi_next                           |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0113 |    800 | X | O | 2 |  X3  | kc_sfi_move                           |
+| 0x0113 |    800 | X | O | 4 |  X3  | kc_sfi_move                           |
 +--------+--------+---+---+---+------+---------------------------------------+
 | 0x0300 |    100 |   | M | 2 |      | kc_vid_setpal                         |
 +--------+--------+---+---+---+------+---------------------------------------+
@@ -885,7 +889,7 @@ abbreviations used in the table are:
 +--------+--------+---+---+---+------+---------------------------------------+
 | 0x0424 |    800 |   | O | 1 | C:X3 | kc_inp_popchar                        |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0425 |    800 |   | O | 5 |      | kc_inp_checkarea                      |
+| 0x0425 |   1200 |   | O | 5 |      | kc_inp_checkarea                      |
 +--------+--------+---+---+---+------+---------------------------------------+
 | 0x0500 |  Param |   |   | 1 |      | kc_dly_delay                          |
 +--------+--------+---+---+---+------+---------------------------------------+
