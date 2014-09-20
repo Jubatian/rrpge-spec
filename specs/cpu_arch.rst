@@ -288,8 +288,10 @@ should identify a return to supervisor mode.
 
 In the RRPGE system the kernel on stack addressing traps will terminate the
 application. A return to supervisor mode results in a normal ("clean")
-application exit. The stack top is fixed at 0x8000 (32768), and the stack
-bottom is fixed at 0, corresponding with the stack size of 32 KWords.
+application exit. If a separate stack space is used, the stack top is fixed at
+0x8000 (32768), and the stack bottom is fixed at 0, corresponding with the
+stack size of 32 KWords. Otherwise the stack top and bottom are set according
+to the contents of the Application descriptor.
 
 
 
@@ -372,7 +374,7 @@ Instructions may include only up to one operand specified by an addressing
 mode, the other operand (if any) is always a general purpose register (or some
 special registers in some cases).
 
-The following eight addressing modes are implemented:
+The following nine addressing modes are implemented:
 
 - General purpose register. One of A, B, C, D, X0, X1, X2 or X3.
 
@@ -380,6 +382,11 @@ The following eight addressing modes are implemented:
 
 - 16 bit immediate. Specifies an immediate value in the full 16 bit range, but
   needs an extra instruction word (and one additional cycle to decode).
+
+- BP relative immediate. Specifies an immediate value in the full 16 bit
+  range, added to the current value of BP. This is useful to retrieve pointers
+  into the stack if the stack is within the data address space. Needs an extra
+  instruction word.
 
 - Stack: BP + 4 bit immediate. Accesses a 16 bit unit from the Stack address
   space. This addressing mode is suitable for accessing the parameters of a
@@ -400,10 +407,9 @@ The following eight addressing modes are implemented:
   the given pointer register's mode, post-incrementing or pre-decrementing the
   pointer register if such mode was set.
 
-Note that the 4 bit immediate and 16 bit immediate modes may also be used as
-destinations. Doing so realizes an essential NOP, although any side effect of
-the operation is still carried out (such as writing the Carry register for
-operations affecting it).
+Note that the three immediate modes may also be used as destinations. Doing so
+realizes an essential NOP, although any side effect of the operation is still
+carried out (such as writing the Carry register for operations affecting it).
 
 In Pointer modes the high 16 of the used pointer bits are used to address the
 16 bit cells. An example shows this concept with the following parameters:

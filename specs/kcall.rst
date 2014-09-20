@@ -636,9 +636,9 @@ For the layout of User ID's, see "names.rst".
 - Host:   Required.
 - N/S:    May not provide this information returning zero strings.
 - Param1: Target offset in CPU Data memory to load the main part into.
-- Param2: Size limit for the main part in bytes (including terminating zero).
+- Param2: Size limit for the main part in words.
 - Param3: Target offset in CPU Data memory to load the extended part into.
-- Param4: Size limit for the extended part in bytes (incl. terminating zero).
+- Param4: Size limit for the extended part in words.
 - Param5: Offset of 8 word User ID to get the UTF-8 representation of.
 - Ret.X3: Index of kernel task or 0x8000 if no more task slots are available.
 

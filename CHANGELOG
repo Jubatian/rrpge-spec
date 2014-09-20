@@ -1,3 +1,16 @@
+Version 00.011.000 (2014.09.20)
+ - Introduction of data space stack, primarily to support adapting a C
+   compiler in the future.
+ - Application descriptor (in the Application binary) changes to accommodate
+   stack configuration.
+ - New immediate addressing mode in the CPU to make it possible to load BP
+   relative pointers.
+ - Reversed the position of Data and separate Stack areas in state saves to
+   ease merging them in one address space in emulators.
+ - Get UTF-8 representation of User ID kernel call's size parameters are
+   changed to word units.
+
+
 Version 00.010.001 (2014.09.19)
  - Application state fields added to hold important elements of the
    Application descriptor (from the application binary).

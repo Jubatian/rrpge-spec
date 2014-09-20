@@ -147,12 +147,21 @@ of the header. Beginning at this offset it is mapped as follows:
 | 0x0007 | M | Count of data words. 0: no data. Data is loaded beginning at  |
 |        |   | address 0x0040 in the Data space.                             |
 +--------+---+---------------------------------------------------------------+
+|        |   | Count of stack words. 0: Use a separate 32 KWords stack       |
+| 0x0008 | M | address space (no Data memory is taken for stack, but         |
+|        |   | pointers into stack requested with the BP + immediate         |
+|        |   | addressing mode can not be used to retrieve data in stack).   |
++--------+---+---------------------------------------------------------------+
+|        |   | Start offset of stack. The stack must not overlap with the    |
+| 0x0009 | O | User Peripheral Area, and can not exceed the data space. Only |
+|        |   | used if Count of stack words is set nonzero.                  |
++--------+---+---------------------------------------------------------------+
 |        |   | Input controller types the application may see. Each bit      |
-| 0x0008 | M | refers to one of the controller types (bit 0 corresponding to |
+| 0x000A | M | refers to one of the controller types (bit 0 corresponding to |
 |        |   | controller type 0). See "inputdev.rst" for details.           |
 +--------+---+---------------------------------------------------------------+
 |        |   | Application flags.                                            |
-| 0x0009 | M |                                                               |
+| 0x000B | M |                                                               |
 |        |   | - bit 14-15: Suggested data caching scheme                    |
 |        |   | - bit    13: Has media total length if set                    |
 |        |   | - bit    12: Has seek entry point and location data if set    |

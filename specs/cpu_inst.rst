@@ -97,7 +97,7 @@ Addressing modes
 ------------------------------------------------------------------------------
 
 The addressing mode if the opcode has such an operand, is specified on the low
-6 bits of the opcode. The eight supported addressing modes are as follows:
+6 bits of the opcode. The nine supported addressing modes are as follows:
 
 +---------------------+--------------+---------------------------------------+
 | Binary              | Mnemonic     | Notes                                 |
@@ -106,7 +106,9 @@ The addressing mode if the opcode has such an operand, is specified on the low
 +---------------------+--------------+---------------------------------------+
 | 01 iiii             | [BP + imm4]  | Stack space.                          |
 +---------------------+--------------+---------------------------------------+
-| 10 0-ii / 11ii...ii | imm16        | 16bit immediate (2 opcode words).     |
+| 10 00ii / 11ii...ii | imm16        | 16bit immediate (2 opcode words).     |
++---------------------+--------------+---------------------------------------+
+| 10 01ii / 11ii...ii | BP + imm16   | BP rel. immediate (2 opcode words).   |
 +---------------------+--------------+---------------------------------------+
 | 10 10ii / 11ii...ii | [imm16]      | Data space (2 opcode words).          |
 +---------------------+--------------+---------------------------------------+

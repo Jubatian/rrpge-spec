@@ -112,14 +112,18 @@ The State variables area's map:
 | 0x059  | Application binary total size in words, low. Copies 0x0001 from   |
 |        | the Application descriptor.                                       |
 +--------+-------------------------------------------------------------------+
-| 0x05A  | Input controller types the application may see. Copies 0x0008     |
+| 0x05A  | Count of stack words. Copies 0x0008 from the Application          |
+|        | descriptor.                                                       |
++--------+-------------------------------------------------------------------+
+| 0x05B  | Start offset of stack. Copies 0x0009 from the Application         |
+|        | descriptor.                                                       |
++--------+-------------------------------------------------------------------+
+| 0x05C  | Input controller types the application may see. Copies 0x000A     |
 |        | from the Application descriptor.                                  |
 +--------+-------------------------------------------------------------------+
-| 0x05B  | Application flags. Copies 0x0009 from the Application descriptor. |
+| 0x05D  | Application flags. Copies 0x000B from the Application descriptor. |
 +--------+-------------------------------------------------------------------+
-| 0x05C  |                                                                   |
-| \-     | Unused, must be 0x0000.                                           |
-| 0x05E  |                                                                   |
+| 0x05E  | Unused, must be 0x0000.                                           |
 +--------+-------------------------------------------------------------------+
 | 0x05F  | Network availability flag on bit 0 (1: Available). Other bits     |
 |        | must be zero.                                                     |

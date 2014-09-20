@@ -23,7 +23,7 @@ The input peripherals are accessible through kernel functions (see the
 further information).
 
 Moreover the application specifies it's device requirements in it's
-Application Header (see locations 0x0008 in the Application descriptor at
+Application Header (see locations 0x000A in the Application descriptor at
 "Application binary maps" in "bin_rpa.rst" for details), so the host may
 select the most appropriate way it may serve the application.
 
