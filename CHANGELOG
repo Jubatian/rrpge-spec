@@ -1,3 +1,10 @@
+Version 00.011.001 (2014.09.24)
+ - 48KHz audio base clock added to the Application State (necessary to provide
+   the 187.5Hz clock).
+ - Latched Display List Definition added to the Application State (necessary
+   to support the Display List clear function in the GDG.
+
+
 Version 00.011.000 (2014.09.20)
  - Introduction of data space stack, primarily to support adapting a C
    compiler in the future.

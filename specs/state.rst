@@ -102,7 +102,13 @@ The State variables area's map:
 +--------+-------------------------------------------------------------------+
 | 0x053  | Cycles until next 48KHz audio base clock tick.                    |
 +--------+-------------------------------------------------------------------+
-| 0x054  |                                                                   |
+| 0x054  | 48KHz audio base clock (incrementing).                            |
++--------+-------------------------------------------------------------------+
+|        | Latched Display List Definition register. Stores the previous     |
+| 0x055  | value of the Display List Definition register until the Display   |
+|        | List clear completes, then updates to the current value.          |
++--------+-------------------------------------------------------------------+
+| 0x056  |                                                                   |
 | \-     | Unused, must be 0x0000.                                           |
 | 0x057  |                                                                   |
 +--------+-------------------------------------------------------------------+
