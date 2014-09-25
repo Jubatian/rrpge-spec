@@ -177,9 +177,9 @@ Digital input mapping:
 | 0    +-------+-------------------------------------------------------------+
 |      | 1     | Scroll right (if there is any button in this role)          |
 |      +-------+-------------------------------------------------------------+
-|      | 2     | Scroll down (if there is any button in this role)           |                                        |
+|      | 2     | Scroll down (if there is any button in this role)           |
 |      +-------+-------------------------------------------------------------+
-|      | 3     | Scroll left (if there is any button in this role)           |                                        |
+|      | 3     | Scroll left (if there is any button in this role)           |
 |      +-------+-------------------------------------------------------------+
 |      | 4     | Primary (left) mouse button                                 |
 |      +-------+-------------------------------------------------------------+

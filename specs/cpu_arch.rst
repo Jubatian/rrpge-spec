@@ -136,7 +136,8 @@ pointer is used to address memory. There are 15 modes as follows:
 The XH register adds high bits to the pointers in sub-word addressing modes,
 as many as required to keep addressing the whole 64KWord address space. Bits
 in the register above this are not used and are ignored. In pre-incrementing
-or post-decrementing modes only the used bits are affected as well.
+or post-decrementing modes however all bits of the appropriate XH part is
+affected by the increment or decrement.
 
 Sub-word addressing modes take the higher bits for the lower address (that is
 the system is Big Endian).
