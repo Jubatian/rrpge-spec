@@ -35,7 +35,6 @@ An instruction may have multiple effects. These effects if their target
 clashes are executed in a rigid order as follows; topmost in the list first,
 so bottommost having the largest priority in affecting the target:
 
-- Pre-decrement if addressing mode requires it.
 - Address generation for Read and Write memory accesses.
 - Source read.
 - Destination read.
@@ -64,7 +63,7 @@ Parameter notations
 Timing notations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- ai: 1 additional cycle if 2nd opcode word is used or pre-incrementing.
+- ai: 1 additional cycle if 2nd opcode word is used.
 - wc: 1 additional cycle if carry write is necessary.
 
 
@@ -310,7 +309,7 @@ If Carry was specified, it receives the remainder.
 If the divisor is zero, both the destination and the remainder is zeroed; this
 condition does not trigger any supervisor action (trap).
 
-Timing (cycles): 11 + ai + wc
+Timing (cycles): 21 + ai + wc
 
 
 JFR
@@ -495,7 +494,7 @@ then adds carry, and stores the result in the destination: ::
 
 If Carry was specified, it receives the high 16 bits of the result.
 
-Timing (cycles): 12 + ai + wc
+Timing (cycles): 14 + ai + wc
 
 
 MOV
@@ -565,7 +564,7 @@ the destination: ::
 
 If Carry was specified, it receives the high 16 bits of the result.
 
-Timing (cycles): 11 + ai + wc
+Timing (cycles): 13 + ai + wc
 
 
 NEG

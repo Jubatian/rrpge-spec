@@ -58,3 +58,7 @@ areas as they occur in the state save binary are listed (the addresses are in
 | \-       | Peripheral RAM data (1 MCells or 2 MWords).                     |
 | 0x2183FF |                                                                 |
 +----------+-----------------------------------------------------------------+
+
+Note that in the Application state all bits which are marked being zero, or
+in the case of the User Peripheral Area, marked as always reading zero, must
+be set zero.

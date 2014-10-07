@@ -101,6 +101,7 @@ these, the rest are formatted in an identical manner.
 |        | Pointer 0 Data unit size.                                         |
 | 0x0024 |                                                                   |
 |        | - bit  3-15: Unused, reads zero                                   |
+|        | - bit     3: If set, only post-increments after a R-M-W sequence  |
 |        | - bit     2: If set, data unit size is 16 bits                    |
 |        | - bit  0- 1: Data unit size                                       |
 |        |                                                                   |
@@ -117,3 +118,9 @@ these, the rest are formatted in an identical manner.
 +--------+-------------------------------------------------------------------+
 | 0x0027 | Pointer 0 Read / Write with post-increment.                       |
 +--------+-------------------------------------------------------------------+
+
+Setting bit 3 of the Data unit size register has a similar effect to the
+processor's post-increment after write only mode: an increment is only
+performed if the access includes a write. Note that the Read access of an
+R-M-W sequence never generates a post-increment (realized by the R-M-W signal
+from the processor as described in "Memory accessing" in "cpu_arch.rst").

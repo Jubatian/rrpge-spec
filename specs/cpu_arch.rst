@@ -123,21 +123,21 @@ pointer is used to address memory. There are 15 modes as follows:
 - 0100b: 16 bit stationary.
 - 0101b: 16 bit stationary (same as above).
 - 0110b: 16 bit post-incrementing.
-- 0111b: 16 bit pre-decrementing.
+- 0111b: 16 bit post-increment after write only.
 - 1000b:  8 bit post-incrementing.
 - 1001b:  4 bit post-incrementing.
 - 1010b:  2 bit post-incrementing.
 - 1011b:  1 bit post-incrementing.
-- 1100b:  8 bit pre-decrementing.
-- 1101b:  4 bit pre-decrementing.
-- 1110b:  2 bit pre-decrementing.
-- 1111b:  1 bit pre-decrementing.
+- 1100b:  8 bit post-increment after write only.
+- 1101b:  4 bit post-increment after write only.
+- 1110b:  2 bit post-increment after write only.
+- 1111b:  1 bit post-increment after write only.
 
 The XH register adds high bits to the pointers in sub-word addressing modes,
 as many as required to keep addressing the whole 64KWord address space. Bits
-in the register above this are not used and are ignored. In pre-incrementing
-or post-decrementing modes however all bits of the appropriate XH part is
-affected by the increment or decrement.
+in the register above this are not used and are ignored. In post-incrementing
+modes however all bits of the appropriate XH part is affected by the
+increment.
 
 Sub-word addressing modes take the higher bits for the lower address (that is
 the system is Big Endian).
@@ -398,15 +398,15 @@ The following nine addressing modes are implemented:
   (and one additional cycle to decode).
 
 - Stack: BP + Pointer. Accesses an unit from the Stack address space as
-  specified by the given pointer register's mode, post-incrementing or pre-
-  decrementing the pointer register if such mode was set.
+  specified by the given pointer register's mode, post-incrementing the
+  pointer register if such mode was set.
 
 - Data: 16 bit immediate. Accesses a 16 bit unit from the Data address space
   reaching it's full range. Needs an extra instruction word.
 
 - Data: Pointer. Accesses an unit from the Data address space as specified by
-  the given pointer register's mode, post-incrementing or pre-decrementing the
-  pointer register if such mode was set.
+  the given pointer register's mode, post-incrementing the pointer register if
+  such mode was set.
 
 Note that the three immediate modes may also be used as destinations. Doing so
 realizes an essential NOP, although any side effect of the operation is still
