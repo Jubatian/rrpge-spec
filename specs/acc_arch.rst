@@ -105,6 +105,8 @@ affect how the accelerator stages are chained together:
 - (VDR) Reindex using destination. This extends the reindex stage by involving
   the destination data to select from a larger table.
 
+- (VBT) Display mode to work for: either 4 bit mode or 8 bit mode.
+
 The Accelerator has two major stages as follows:
 
 - Source fetch. This stage is performed according to the the selected mode
@@ -407,7 +409,7 @@ This stage swaps the pixel order. It behaves differently depending on the
 display mode, as shown on the following charts: ::
 
 
-    4 bit mode                        8bit mode
+    4 bit mode                        8 bit mode
     +--+--+--+--+--+--+--+--+         +-----+-----+-----+-----+
     |P0|P1|P2|P3|P4|P5|P6|P7|         | P0  | P1  | P2  | P3  |
     +--+--+--+--+--+--+--+--+         +-----+-----+-----+-----+
@@ -684,7 +686,8 @@ provided with bit 15 set as this is how they should be supplied to the FIFO.
 |        | - bit    13: (VDR) If bit 12 is set, Reindex using dest. if set   |
 |        | - bit    12: (VRE) Reindexing enabled if set                      |
 |        | - bit 10-11: (VMD) Selects blit mode                              |
-|        | - bit  8- 9: Unused                                               |
+|        | - bit     9: (VBT) If set, 8 bit mode, if clear, 4 bit mode       |
+|        | - bit     8: Unused                                               |
 |        | - bit  0- 7: Pixel OR mask (only low 4 bits used in 4 bit mode)   |
 |        |                                                                   |
 |        | The blit modes:                                                   |

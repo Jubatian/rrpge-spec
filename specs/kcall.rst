@@ -382,13 +382,11 @@ palette updates may delay by multiple frames.
 - N/S:    This function must be supported if the host produces display.
 - Param1: Requested video mode.
 
-Changes the video mode. The action is performed after all accelerator
-operations finish using the current video mode, then may include extra stalls
-to meet implementation-specific timing requirements during the video mode
-change.
+Changes the video mode. The action may include extra stalls to meet
+implementation-specific timing requirements during the video mode change.
 
-The contents of the Video RAM, the configuration of the Accelerator, and the
-palette is not changed by this action.
+The contents of the Video RAM, the configuration of the Graphics Display
+Generator or the Accelerator, and the palette is not changed by this action.
 
 The following video modes are available:
 
