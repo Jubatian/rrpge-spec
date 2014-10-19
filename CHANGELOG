@@ -5,6 +5,7 @@ Version 00.012.000 ()
  - CPU: DIV and MUL / MAC instruction's timing is made more relaxed.
  - Accelerator: New mode flag added to specify graphics mode (4 bits / 8 bits)
    to use for the operation, so decoupling the Accelerator from the GDG state.
+ - License changed to the Temporary RRPGE License.
 
 
 Version 00.011.003 (2014.10.02)

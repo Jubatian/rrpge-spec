@@ -4,8 +4,9 @@ RRPGE constant data blocks
 
 :Author:    Sandor Zsuga (Jubatian)
 :Copyright: 2013 - 2014, GNU GPLv3 (version 3 of the GNU General Public
-            License) extended as RRPGEv2 (version 2 of the RRPGE License): see
-            LICENSE.GPLv3 and LICENSE.RRPGEv2 in the project root.
+            License) extended as RRPGEvt (temporary version of the RRPGE
+            License): see LICENSE.GPLv3 and LICENSE.RRPGEvt in the project
+            root.
 
 
 
