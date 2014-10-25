@@ -182,7 +182,7 @@ RRPGE system by itself is functional without the implementation of any of
 these.
 
 
-File "LICENSE.RRPGEv1"
+File "LICENSE.RRPGEvt"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The RRPGE License.
@@ -193,13 +193,6 @@ File "LICENSE.GPLv3"
 
 A copy of version 3 of the GNU General Public License license text
 (http://www.gnu.org/licenses/gpl-3.0.html).
-
-
-File "LICENSE.LGPLv3"
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-A copy of version 3 of the GNU Lesser General Public License license text
-(http://www.gnu.org/licenses/lgpl-3.0.html).
 
 
 File "TRADEMRK"
