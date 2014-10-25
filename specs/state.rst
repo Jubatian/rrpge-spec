@@ -96,10 +96,10 @@ The State variables area's map:
 +--------+-------------------------------------------------------------------+
 |        | Current video mode.                                               |
 | 0x052  |                                                                   |
-|        | 0: 640x400, 4bit                                                  |
-|        | 1: 320x400, 8bit                                                  |
-|        | 2: 640x200, 4bit (double scan)                                    |
-|        | 3: 320x200, 8bit (double scan)                                    |
+|        | - 0: 640x400, 4bit                                                |
+|        | - 1: 320x400, 8bit                                                |
+|        | - 2: 640x200, 4bit (double scan)                                  |
+|        | - 3: 320x200, 8bit (double scan)                                  |
 +--------+-------------------------------------------------------------------+
 | 0x053  | Cycles until next 48KHz audio base clock tick.                    |
 +--------+-------------------------------------------------------------------+
@@ -109,9 +109,22 @@ The State variables area's map:
 | 0x055  | value of the Display List Definition register until the Display   |
 |        | List clear completes, then updates to the current value.          |
 +--------+-------------------------------------------------------------------+
-| 0x056  |                                                                   |
-| \-     | Unused, must be 0x0000.                                           |
+| 0x056  | Unused, must be 0x0000.                                           |
++--------+-------------------------------------------------------------------+
+|        | Stereoscopic 3D output configuration.                             |
 | 0x057  |                                                                   |
+|        | - bit  3-15: 0                                                    |
+|        | - bit  1- 2: Vertical used pixels if stereoscopic 3D is used.     |
+|        | - bit     0: 1 if stereoscopic 3D is used, 0 otherwise.           |
+|        |                                                                   |
+|        | Values for the Vertical used pixels element:                      |
+|        |                                                                   |
+|        | - 0: 400 pixels (full height used).                               |
+|        | - 1: 320 pixels (320x320 rectangular 3D content).                 |
+|        | - 2: 240 pixels (4:3 aspect ratio for the 3D content).            |
+|        | - 3: 200 pixels (16:10 aspect ratio for the 3D content).          |
+|        |                                                                   |
+|        | Also see 0x0340 "Set stereoscopic 3D" in "kcall.rst".             |
 +--------+-------------------------------------------------------------------+
 | 0x058  | Application binary total size in words, high. Copies 0x0000 from  |
 |        | the Application descriptor.                                       |

@@ -399,6 +399,43 @@ The following video modes are available:
 Other values passed in Param1 set mode 0 (640x400; 4 bit).
 
 
+0x0340: Set stereoscopic 3D
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- F.name: kc_vid_setst3d
+- Cycles: 2400
+- Host:   Required.
+- N/S:    This function may be ignored (apart from altering the app. state).
+- Param1: Stereoscopic 3D output parameters.
+
+Informs the host about current use of stereoscopic 3D. Upon initialization,
+this is disabled. The parameter is formatted as follows:
+
+- bit  1- 2: Vertical used pixels (only used if bit 0 is set).
+- bit     0: 1 if stereoscopic 3D output is generated, 0 otherwise.
+
+Other bits of the parameter are ignored.
+
+If the application sets stereoscopic 3D, it should continue to render the
+image for the left eye on the right half of the display, and the image for
+the right eye on the left half (cross-eyed format). If the host supports 3D
+devices, it may combine the two halves appropriately for the device by the
+information provided through this function.
+
+The Vertical used pixels may be used if the application does not utilize the
+entire height of the half-image. The following values are possible:
+
+- 0: 400 pixels (full height used).
+- 1: 320 pixels (320x320 rectangular 3D content).
+- 2: 240 pixels (4:3 aspect ratio for the 3D content).
+- 3: 200 pixels (16:10 aspect ratio for the 3D content).
+
+The application must vertically center the output (start it 0 / 40 / 80 / 100
+pixels from the top respectively), and should leave the top and bottom unused
+areas showing the darkest color of the current palette. In double scanned
+mode all these pixel counts are halved.
+
+
 
 
 Kernel functions, Input devices (0x0400 - 0x04FF)
@@ -684,6 +721,20 @@ the user has no such preference provided.
 For more on the color representation, see "Palette" in "vid_arch.rst".
 
 
+0x0612: Get user stereoscopic 3D preference
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- F.name: kc_usr_getst3d
+- Cycles: 2400
+- Host:   Required.
+- N/S:    May return zero.
+- Ret.X3: 1 if stereoscopic 3D may be used, 0 otherwise.
+
+Returns whether the user is willing to accept stereoscopic 3D or not (see
+"0x340: Set stereoscopic 3D" for more). If this function returns zero, the
+application should not provide such content, otherwise it may.
+
+
 
 
 Kernel functions, Networking (0x0700 - 0x07FF)
@@ -876,6 +927,8 @@ abbreviations used in the table are:
 +--------+--------+---+---+---+------+---------------------------------------+
 | 0x0330 |     \- |   | M | 1 |      | kc_vid_mode                           |
 +--------+--------+---+---+---+------+---------------------------------------+
+| 0x0340 |   2400 |   | O | 1 |      | kc_vid_setst3d                        |
++--------+--------+---+---+---+------+---------------------------------------+
 | 0x0410 |    800 |   | O | 1 |  X3  | kc_inp_getprops                       |
 +--------+--------+---+---+---+------+---------------------------------------+
 | 0x0411 |    800 |   | O | 1 |      | kc_inp_dropdev                        |
@@ -899,6 +952,8 @@ abbreviations used in the table are:
 | 0x0610 |   2400 |   | O | 1 | C:X3 | kc_usr_getlang                        |
 +--------+--------+---+---+---+------+---------------------------------------+
 | 0x0611 |   2400 |   | O | 0 | C:X3 | kc_usr_getcolors                      |
++--------+--------+---+---+---+------+---------------------------------------+
+| 0x0612 |   2400 |   | O | 0 |  X3  | kc_usr_getst3d                        |
 +--------+--------+---+---+---+------+---------------------------------------+
 | 0x0700 |   2400 | X | O | 3 |  X3  | kc_net_send                           |
 +--------+--------+---+---+---+------+---------------------------------------+

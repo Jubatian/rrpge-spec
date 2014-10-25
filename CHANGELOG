@@ -1,10 +1,11 @@
-Version 00.012.000 ()
+Version 00.012.000 (2014.10.25)
  - CPU: Pre-decrement mode dropped, a post-increment on write only introduced
    instead.
  - Peripheral RAM interface: Post-increment on write only introduced.
  - CPU: DIV and MUL / MAC instruction's timing is made more relaxed.
  - Accelerator: New mode flag added to specify graphics mode (4 bits / 8 bits)
    to use for the operation, so decoupling the Accelerator from the GDG state.
+ - New kernel calls and state variable for simple stereoscopic 3D support.
  - Clarification in state saves regarding bits which must be set zero in the
    Application State.
  - License changed to the Temporary RRPGE License.
