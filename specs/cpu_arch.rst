@@ -147,8 +147,7 @@ The PC (Program Counter) increments before executing the instruction;
 instructions referring to it (subroutine entries and skips) will see it
 pointing at the following instruction (or the parameter list of the subroutine
 entry). Note that some instructions also require the address of the opcode,
-that is the original value of the PC (local jumps and calls and relative
-jumps).
+that is the original value of the PC (relative jumps and calls).
 
 The Stack registers are described in the Stack management section.
 
