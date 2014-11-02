@@ -211,7 +211,8 @@ The Graphics Display Generator provides some assistance for implementing
 double (or triple) buffering.
 
 This is primarily realized through the Display List Definition register.
-Writing this register latches the previous value, and puts the Graphics FIFO
+When writing this register, it's previous value remains latched in an internal
+register used for completing the current frame, and the Graphics FIFO is put
 in suspend mode until the end of the current display frame (the rendering
 passes the last display line of the frame).
 
@@ -351,6 +352,11 @@ are accessible in the 0x0010 - 0x001F area in the User peripheral area.
 |        | The Display list clear is waiting or processing flag becomes set  |
 |        | when writing this register, and clears as soon as the clearing    |
 |        | process is completed or terminated.                               |
+|        |                                                                   |
+|        | The newly written Display list start offset & entry / line size   |
+|        | does not affect the currently displayed frame (the previous       |
+|        | value is latched internally), however the new value will show on  |
+|        | reading this register.                                            |
 +--------+-------------------------------------------------------------------+
 |        | Source definition A0                                              |
 | 0x0018 |                                                                   |
