@@ -1,3 +1,7 @@
+Version 00.012.001 (2014.11.02)
+ - An additional level of file I/O support defined in the Application Header.
+
+
 Version 00.012.000 (2014.10.25)
  - CPU: Pre-decrement mode dropped, a post-increment on write only introduced
    instead.

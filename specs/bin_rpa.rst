@@ -171,8 +171,7 @@ of the header. Beginning at this offset it is mapped as follows:
 |        |   | - bit  8- 9: Icon resource type and availability              |
 |        |   | - bit     7: Has alternate icon for inverted theme            |
 |        |   | - bit  3- 6: Must be 0                                        |
-|        |   | - bit     2: Requires generic file I/O if set                 |
-|        |   | - bit     1: Requires file I/O for "default.rbb" if set       |
+|        |   | - bit  1- 2: Required File I/O support level                  |
 |        |   | - bit     0: Requires network if set                          |
 |        |   |                                                               |
 |        |   | Icon resource type and availability:                          |
@@ -181,6 +180,13 @@ of the header. Beginning at this offset it is mapped as follows:
 |        |   | - 1: 1 bit 64 x 64 icon (256 words)                           |
 |        |   | - 2: 2 bit 64 x 64 icon (512 words)                           |
 |        |   | - 3: 4 bit 64 x 64 icon (1024 words)                          |
+|        |   |                                                               |
+|        |   | File I/O support levels:                                      |
+|        |   |                                                               |
+|        |   | - 0: No File I/O support is required.                         |
+|        |   | - 1: File I/O for "default.rbb" is required.                  |
+|        |   | - 2: File I/O for ".rb*" and ".rf*" files is required.        |
+|        |   | - 3: Generic File I/O is required.                            |
 +--------+---+---------------------------------------------------------------+
 
 The application descriptor from this point provides data for the optional
