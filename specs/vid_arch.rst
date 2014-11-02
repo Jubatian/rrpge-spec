@@ -328,7 +328,9 @@ are accessible in the 0x0010 - 0x001F area in the User peripheral area.
 | 0x0017 |                                                                   |
 |        | - bit    15: Frame rate limiter flag                              |
 |        | - bit    14: Display list clear is waiting or processing if set   |
-|        | - bit 11-13: Unused, reads zero                                   |
+|        | - bit    13: Set if double scanned mode, clear otherwise          |
+|        | - bit    12: Set if 8 bit mode, clear if 4 bit mode               |
+|        | - bit    11: Unused, reads zero                                   |
 |        | - bit  2-10: Display list start offset in 2048 PRAM cell units    |
 |        | - bit  0- 1: Display list entry / line size                       |
 |        |                                                                   |
@@ -338,6 +340,8 @@ are accessible in the 0x0010 - 0x001F area in the User peripheral area.
 |        | - 1: 8 / 16 (double scan) entries, bit 3 is unused                |
 |        | - 2: 16 / 32 (double scan) entries, bits 3-4 are unused           |
 |        | - 3: 32 / 64 (double scan) entries, bits 3-5 are unused           |
+|        |                                                                   |
+|        | Bits 11-15 are not writeable (writes to these are ignored).       |
 |        |                                                                   |
 |        | Note that in double scanned mode there are only 200 lines, so the |
 |        | total size of the display list is identical to that of the single |

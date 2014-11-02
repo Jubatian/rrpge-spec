@@ -1,6 +1,8 @@
 Version 00.012.001 (2014.11.02)
  - An additional level of file I/O support defined in the Application Header.
  - Clarified the operation of the Display List Definition latch in the GDG.
+ - The Display List Definition & Process Flags register now also reports the
+   current graphics mode.
 
 
 Version 00.012.000 (2014.10.25)
