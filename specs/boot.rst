@@ -33,13 +33,13 @@ RRPGE CPU reset state
 
 - Most of the user register set (a, b, c, d, x0, x1, x2, x3, xh) is zeroed.
 - The pointer mode register (xm) is set 0x6666 (16 bit pre-incrementing).
-- The stack is empty (sp and bp is zeroed, the entire stack memory is zero).
+- The stack is empty (sp zeroed, bp set up, the entire stack memory is zero).
 - The program counter (pc) points at offset 0x0000.
 
 The CPU's address space is initialized to a suitable initial configuration as
 follows:
 
-- 32 KWords of stack space is made available to the application.
+- Stack is set up according to the application's requirements.
 - 64 KWords of data space is made available to the application.
 - User Peripheral Area set up to data address range 0x0000 - 0x003F.
 - Code space is filled with the application's code area.
