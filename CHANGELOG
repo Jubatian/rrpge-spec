@@ -1,6 +1,8 @@
-Version 00.013.000 (2014.11.04)
+Version 00.013.000 ()
  - User Library fundamentals were started, low level pointer & memory
    management functions added.
+ - Current video mode removed from the Application State (this information is
+   found in the Display List Definition register of the GDG).
 
 
 Version 00.012.002 (2014.11.04)
