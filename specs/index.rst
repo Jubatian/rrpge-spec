@@ -102,6 +102,13 @@ Description of component documents
 ------------------------------------------------------------------------------
 
 
+Directory "userlib"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The RRPGE User Library specification, which library is accessible to any
+application (unless it's own code overwrites it).
+
+
 File "acc_arch.rst"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
