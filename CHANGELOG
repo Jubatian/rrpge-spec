@@ -1,3 +1,8 @@
+Version 00.012.002 (2014.11.04)
+ - Stack initialization description fixed according to the data space stack
+   support.
+
+
 Version 00.012.001 (2014.11.02)
  - An additional level of file I/O support defined in the Application Header.
  - Clarified the operation of the Display List Definition latch in the GDG.
