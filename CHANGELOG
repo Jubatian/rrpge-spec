@@ -1,4 +1,4 @@
-Version 00.013.000 ()
+Version 00.013.000 (2014.11.06)
  - User Library fundamentals were started, low level pointer & memory
    management functions added.
  - Current video mode removed from the Application State (this information is
