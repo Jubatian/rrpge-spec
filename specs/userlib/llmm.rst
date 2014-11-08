@@ -290,7 +290,7 @@ Fill (memory set) functions
 - Param0: Target PRAM word address, high
 - Param1: Target PRAM word address, low
 - Param2: Value to set the area to
-- Param3: Length of the area (0 is valid)
+- Param3: Length of the area in words (0 is valid)
 
 Sets the given PRAM memory area to the given value. Uses PRAM pointer 3 for
 this, which is not preserved (not restored after the set).
@@ -303,7 +303,7 @@ this, which is not preserved (not restored after the set).
 - Cycles: 200 + 6 / word
 - Param0: Target CPU RAM word address
 - Param1: Value to set the area to
-- Param2: Length of the area (0 is valid)
+- Param2: Length of the area in words (0 is valid)
 
 Sets the given CPU RAM memory area to the given value.
 
@@ -316,8 +316,8 @@ Sets the given CPU RAM memory area to the given value.
 - Param0: Target PRAM word address, high
 - Param1: Target PRAM word address, low
 - Param2: Value to set the area to
-- Param3: Length of the area, high (0 is also valid)
-- Param4: Length of the area, low (0 is also valid)
+- Param3: Length of the area in words, high (0 is valid)
+- Param4: Length of the area in words, low (0 is valid)
 
 Sets the given PRAM memory area to the given value. Uses PRAM pointer 3 for
 this, which is not preserved (not restored after the set).

@@ -1,3 +1,7 @@
+Version 00.013.001 ()
+ - Memory set functions' length parameter clarified to use word units.
+
+
 Version 00.013.000 (2014.11.06)
  - User Library fundamentals were started, low level pointer & memory
    management functions added.
