@@ -1,5 +1,8 @@
 Version 00.013.001 ()
- - Memory set functions' length parameter clarified to use word units.
+ - Display list and graphics double buffering related functions and data
+   introduced in the user library.
+ - Length parameter of user library memory set functions clarified to use word
+   units.
 
 
 Version 00.013.000 (2014.11.06)
