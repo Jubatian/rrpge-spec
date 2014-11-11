@@ -95,6 +95,26 @@ locations are not meant to be accessed directly by applications.
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
+| 0xF990 | Current work surface 0, high                                      |
++--------+-------------------------------------------------------------------+
+| 0xF991 | Current display surface 0, high                                   |
++--------+-------------------------------------------------------------------+
+| 0xF992 | Current work surface 0, low                                       |
++--------+-------------------------------------------------------------------+
+| 0xF993 | Current display surface 0, low                                    |
++--------+-------------------------------------------------------------------+
+| 0xF994 |                                                                   |
+| \-     | Current work & display surface 1 (same structure like 0)          |
+| 0xF997 |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0xF998 |                                                                   |
+| \-     | Current work & display surface 2 (same structure like 0)          |
+| 0xF99B |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0xF99C |                                                                   |
+| \-     | Current work & display surface 3 (same structure like 0)          |
+| 0xF99F |                                                                   |
++--------+-------------------------------------------------------------------+
 | 0xFAE0 |                                                                   |
 | \-     | Frame end hooks (functions to call when frame ends)               |
 | 0xFAED |                                                                   |
@@ -136,11 +156,12 @@ The display lists themselves are not altered, so they should be set up as
 necessary before calling this.
 
 Setting Display list definition 1 for display is treated as a page flip, the
-flip hooks are called after it. Then the function waits for the end of the
-frame (unless already reached, using the frame rate limiter flag of the
-Display List Definition & Process flags register), sets display list clear
-controls by the provided value, finally transferring to us_dbus_getlist to
-process frame hooks and to return the work display list.
+flip hooks are called after it (work and display surfaces however are not
+exchanged). Then the function waits for the end of the frame (unless already
+reached, using the frame rate limiter flag of the Display List Definition &
+Process flags register), sets display list clear controls by the provided
+value, finally transferring to us_dbus_getlist to process frame hooks and to
+return the work display list.
 
 The display list parameters are written out in the respective CPU RAM
 variables after the current mode flags (4 / 8 bit mode, double scan) are added
@@ -155,11 +176,13 @@ to them.
 
 First if necessary, it waits for the Graphics FIFO to be drained, so anything
 still processing for the current work display list may finish before flipping
-it in. Then the pages are flipped, and the flip hooks are called, also setting
-the Flip performed flag (0xFAFD in CPU RAM).
+it in. Then the pages are flipped, work and display surfaces are exchanged
+(0xF990 - 0xF99F in CPU RAM), and the flip hooks are called, also setting the
+Flip performed flag (0xFAFD in CPU RAM).
 
 Before starting the above described tasks, it may also call the frame hooks if
-calling us_dbuf_getlist was omitted after the last page flip.
+calling us_dbuf_getlist or us_dbuf_getsurface was omitted after the last page
+flip.
 
 If necessary, the mode flags in the display list CPU RAM variables are updated
 according to the currently set display mode.
@@ -236,6 +259,44 @@ first).
 
 Removes a function from the frame end hook list. If it does not exist in the
 list, no effect.
+
+
+0xF068: Set work & display surface pair
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- F.name: us_dbuf_setsurface
+- Cycles: 100
+- Param0: Surface to set (only low 2 bits used)
+- Param1: Display surface offset, high
+- Param2: Display surface offset, low
+- Param3: Work surface offset, high
+- Param4: Work surface offset, low
+
+Sets one of the 4 surface pairs. The work & display surfaces are relative to
+the current layout (the passed work surface offsets will pair with the current
+work display list).
+
+Note that the offsets can be arbitrary, they don't even have to be actual
+offsets: any kind of value pair may be set which should be managed by double
+buffering.
+
+If the hooks added require properly set up surfaces, this function should be
+called before us_dbuf_init to set up the surfaces.
+
+
+0xF06A: Get work surface
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- F.name: us_dbuf_getsurface
+- Cycles: Waits for frame end (of previous flip), otherwise 50
+- Param0: Surface to query (only low 2 bits used)
+- Ret. C: Work surface offset, high
+- Ret.X3: Work surface offset, low
+
+First if necessary, it waits for the frame (in which the pages were last
+flipped) to end, also calling the frame hooks when this happens. The wait is
+performed by the Frame rate limiter flag (in the Display List Definition &
+Process Flags register).
 
 
 
@@ -690,4 +751,8 @@ included, and are maximal counts.
 | 0xF064 |           500 | 1 |      | us_dbuf_addframehook                   |
 +--------+---------------+---+------+----------------------------------------+
 | 0xF066 |           500 | 1 |      | us_dbuf_remframehook                   |
++--------+---------------+---+------+----------------------------------------+
+| 0xF068 |           100 | 5 |      | us_dbuf_setsurface                     |
++--------+---------------+---+------+----------------------------------------+
+| 0xF06A |            50 | 1 | C:X3 | us_dbuf_getsurface                     |
 +--------+---------------+---+------+----------------------------------------+

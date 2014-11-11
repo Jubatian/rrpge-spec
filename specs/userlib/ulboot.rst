@@ -34,7 +34,9 @@ Double buffering management initialization
 ------------------------------------------------------------------------------
 
 
-The display lists are not initialized, starting out being zero.
+Display lists are not initialized, starting out being zero.
+
+Surfaces are not initialized, starting out being zero.
 
 The flip performed flag is cleared (zero).
 
