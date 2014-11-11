@@ -1,5 +1,5 @@
 
-RRPGE user library bootup state
+RRPGE user library boot up state
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
@@ -16,8 +16,8 @@ Introduction
 
 
 When starting an application, the RRPGE system starts up in a definite state.
-The core system's bootup state is described in "boot.rst", this document
-complements that with defining the bootup state of memories associated with
+The core system's boot up state is described in "boot.rst", this document
+complements that with defining the boot up state of memories associated with
 the User Library.
 
 The following two RAM memory areas are covered in this specification:

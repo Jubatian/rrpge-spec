@@ -1,5 +1,5 @@
 
-RRPGE application bootup state
+RRPGE application boot up state
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)

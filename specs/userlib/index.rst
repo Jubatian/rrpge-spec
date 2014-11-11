@@ -94,8 +94,8 @@ Low Level Memory Management functions.
 File "ulboot.rst"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-User Library boot state descrition: initial fill values to be provided for CPU
-RAM and PRAM locations.
+User Library boot state description: initial fill values to be provided for
+CPU RAM and PRAM locations.
 
 
 
@@ -205,7 +205,7 @@ formatted as a NOP. Not used handlers are filled with NOPs.
 +--------+---------------+---+------+-------------------------+--------------+
 | 0xF050 |             W | 0 |      | us_dbuf_flip            | dlist.rst    |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xF052 |             W | 0 |  X3  | us_dbuf_getlist         | dlist.rst    |
+| 0xF052 |        25 + W | 0 |  X3  | us_dbuf_getlist         | dlist.rst    |
 +--------+---------------+---+------+-------------------------+--------------+
 | 0xF054 |       270 + W | 2 |  X3  | us_dlist_db_setptr      | dlist.rst    |
 +--------+---------------+---+------+-------------------------+--------------+

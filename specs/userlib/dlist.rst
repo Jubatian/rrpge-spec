@@ -169,7 +169,7 @@ according to the currently set display mode.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dbuf_getlist
-- Cycles: Waits for frame end (of previous flip), otherwise 20
+- Cycles: Waits for frame end (of previous flip), otherwise 25
 - Ret.X3: Current work display list (size and mode flags included)
 
 First if necessary, it waits for the frame (in which the pages were last
@@ -193,8 +193,7 @@ Adds a function (no parameters, no return) to the page flip hook list. The
 hooks are processed in the order they were added. Re-adding a function moves
 it to the end of the list.
 
-No effect if the page flip hook list is full (and the function does not
-already exist in the list).
+No effect if the page flip hook list is full.
 
 The list of hooks in CPU RAM grows incrementally (lower locations filled
 first).
@@ -222,8 +221,7 @@ Adds a function (no parameters, no return) to the frame end hook list. The
 hooks are processed in the order they were added. Re-adding a function moves
 it to the end of the list.
 
-No effect if the frame end hook list is full (and the function does not
-already exist in the list).
+No effect if the frame end hook list is full.
 
 The list of hooks in CPU RAM grows incrementally (lower locations filled
 first).
@@ -249,10 +247,10 @@ Basic display list management
 Provides basic functions for performing various common display list related
 operations. They do not rely on the current Display List Definition & Process
 Flags register state, rather take it entirely as parameter, so any kind of
-display list can be populated with them (useful for example for pre-filling
+display list can be populated with them (useful for example for prefilling
 lists to be used after some graphics configuration change). Some of the
 functions however use some Graphics Display Definition registers to do their
-job, indicated at the descritions of those.
+job, indicated at the descriptions of those.
 
 All functions populating the display list in some manner use the
 us_dlist_setptr function to initialize pointers to walk them, so the
@@ -335,7 +333,7 @@ that if the source is wider than 384 (4 bit) or 192 (8 bit) pixels, it may
 partially show on the "wrong" side of the display (this behavior is caused by
 the architecture of the Graphics Display Generator).
 
-Shift sources are not supported by this function, the behavior for attemting
+Shift sources are not supported by this function, the behavior for attempting
 to add a shift source with this function is undefined.
 
 PRAM pointers 2 and 3 are used and not preserved.
@@ -378,6 +376,9 @@ depending on whether the Double Scan flag in parameter 4 is set or not), start
 offset of the render command list adjusted accordingly. The display list
 column is not affected if the source falls entirely off-display.
 
+The render commands in the render command list take 2 words each, and are in
+Big Endian order (high word first).
+
 PRAM pointers 1, 2 and 3 are used and not preserved.
 
 
@@ -392,7 +393,8 @@ Clears the entire display list to zero. The passed display list definition is
 sanitized as defined for us_dloff_clip.
 
 Uses us_set_p for the clear, taking 6 cycles for a word, or 12 cycles for a 32
-bit display list entry.
+bit display list entry. Total cycle counts are 19480 / 38680 / 77080 / 153880
+cycles depending on display list size.
 
 PRAM pointer 3 is used and not preserved.
 
