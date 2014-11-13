@@ -1,4 +1,4 @@
-Version 00.013.001 ()
+Version 00.013.001 (2014.11.13)
  - Display list and graphics double buffering related functions and data
    introduced in the user library.
  - Length parameter of user library memory set functions clarified to use word
