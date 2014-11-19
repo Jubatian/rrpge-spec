@@ -424,7 +424,7 @@ PRAM pointers 2 and 3 are used and not preserved.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dlist_addlist
-- Cycles: 380 + 19 / line
+- Cycles: 500 + 19 / line
 - Param0: PRAM word offset of render command list, high
 - Param1: PRAM word offset of render command list, low
 - Param2: Height in lines
@@ -539,7 +539,7 @@ PRAM pointers 2 and 3 are used and not preserved.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dlist_sb_addlist
-- Cycles: 400 + 19 / line
+- Cycles: 520 + 19 / line
 - Param0: PRAM word offset of render command list, high
 - Param1: PRAM word offset of render command list, low
 - Param2: Height in lines
@@ -647,7 +647,7 @@ PRAM pointers 2 and 3 are used and not preserved.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dlist_db_addlist
-- Cycles: 420 + 19 / line + Wait for frame end
+- Cycles: 540 + 19 / line + Wait for frame end
 - Param0: PRAM word offset of render command list, high
 - Param1: PRAM word offset of render command list, low
 - Param2: Height in lines
@@ -708,7 +708,7 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | 0xF03A |     11U + 380 | 5 |      | us_dlist_addbg                         |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF03C |     19U + 380 | 6 |      | us_dlist_addlist                       |
+| 0xF03C |     19U + 500 | 6 |      | us_dlist_addlist                       |
 +--------+---------------+---+------+----------------------------------------+
 | 0xF03E |     12U + 280 | 1 |      | us_dlist_clear                         |
 +--------+---------------+---+------+----------------------------------------+
@@ -724,7 +724,7 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | 0xF04A |     11U + 400 | 4 |      | us_dlist_sb_addbg                      |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF04C |     19U + 400 | 5 |      | us_dlist_sb_addlist                    |
+| 0xF04C |     19U + 520 | 5 |      | us_dlist_sb_addlist                    |
 +--------+---------------+---+------+----------------------------------------+
 | 0xF04E |     12U + 300 | 0 |      | us_dlist_sb_clear                      |
 +--------+---------------+---+------+----------------------------------------+
@@ -740,7 +740,7 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | 0xF05A | 11U + 420 + W | 4 |      | us_dlist_db_addbg                      |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF05C | 19U + 420 + W | 5 |      | us_dlist_db_addlist                    |
+| 0xF05C | 19U + 540 + W | 5 |      | us_dlist_db_addlist                    |
 +--------+---------------+---+------+----------------------------------------+
 | 0xF05E | 12U + 320 + W | 0 |      | us_dlist_db_clear                      |
 +--------+---------------+---+------+----------------------------------------+

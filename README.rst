@@ -2,6 +2,10 @@
 RRPGE system specification and guides
 ==============================================================================
 
+.. image:: logo_txt.svg
+   :align: center
+   :width: 100%
+
 :Author:    Sandor Zsuga (Jubatian)
 :Copyright: 2013 - 2014, GNU GPLv3 (version 3 of the GNU General Public
             License) extended as RRPGEvt (temporary version of the RRPGE
@@ -26,6 +30,15 @@ Retro Revolution Project Game Engine. The abbreviation should be pronounced as
 The system roughly is a complete 16bit microcomputer with specialized CPU and
 peripherals aiming for running all genres of retro-style games and other types
 of software-art.
+
+
+Related projects
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- RRPGE Assembler: https://www.github.com/Jubatian/rrpge-asm
+- RRPGE Emulator & Library: https://www.github.com/Jubatian/rrpge-libminimal
+- RRPGE User Library: https://www.github.com/Jubatian/rrpge-userlib
+- Example programs: https://www.github.com/Jubatian/rrpge-examples
 
 
 Temporary license notes
@@ -78,7 +91,7 @@ Main components
   Accelerator capable to perform many types of fast blit operations.
 
 - 8bit Stereo digital audio output with up to 48KHz sampling frequency on the
-  Peripheral bus.
+  Peripheral bus, also providing a 187.5Hz clock.
 
 - FIFO assisted Mixer DMA peripheral capable to assist audio mixing
   algorithms.
@@ -87,6 +100,9 @@ Main components
   pointing devices, touch devices, and joysticks.
 
 - Additional features provided by a kernel, including network support.
+
+- Additional convenience routines and features provided by an User Library
+  such as a sprite system.
 
 
 Comparison with computers
@@ -97,7 +113,7 @@ the early 90s. In this era already the IBM PC dominated, still running mostly
 DOS in 16 bits, gradually pushing Commodore's Amiga behind. By design RRPGE is
 closer to an Amiga than an IBM PC with it's extensive graphics system (the IBM
 PC mostly only had VGA with very little acceleration used), however it has a
-16 bit CPU. Access to larger amounts of RAM than directly adressable by this
+16 bit CPU. Access to larger amounts of RAM than directly addressable by this
 processor is provided through an unique streaming interface, mostly resembling
 to a concept utilized by a rare type of REU for the Commodore 64.
 
@@ -182,6 +198,12 @@ RRPGE system by itself is functional without the implementation of any of
 these.
 
 
+File "CHANGELOG"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Timeline of versions and the changes introduced in them.
+
+
 File "LICENSE.RRPGEvt"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -208,14 +230,22 @@ File "VERSION"
 The version number of the RRPGE specification.
 
 
-File "index.rst"
+File "README.rst"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This file.
 
 
-File "logo.png"
+File "logo.svg"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The RRPGE Logo. Note that this logo is a registered European trademark, rights
 owned by Sandor Zsuga (Jubatian).
+
+
+File "logo_txt.svg"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The RRPGE Logo with "Retro Revolution Project Game Engine" text, used in the
+title. Note that this logo is a registered European trademark, rights owned by
+Sandor Zsuga (Jubatian).

@@ -1,3 +1,8 @@
+Version 00.013.002 (2014.11.19)
+ - Front-end (README.rst) updates, also introducing SVG logos.
+ - Revised cycle counts of some User Library functions.
+
+
 Version 00.013.001 (2014.11.13)
  - Display list and graphics double buffering related functions and data
    introduced in the user library.

@@ -35,7 +35,7 @@ PRAM pointer setup functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ptr_set1i
-- Cycles: 200
+- Cycles: 120
 - Param0: Target pointer (only low 2 bits used)
 - Param1: Start bit address, high
 - Param2: Start bit address, low
@@ -47,7 +47,7 @@ PRAM pointer setup functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ptr_set1w
-- Cycles: 200
+- Cycles: 120
 - Param0: Target pointer (only low 2 bits used)
 - Param1: Start bit address, high
 - Param2: Start bit address, low
@@ -59,7 +59,7 @@ PRAM pointer setup functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ptr_set2i
-- Cycles: 200
+- Cycles: 120
 - Param0: Target pointer (only low 2 bits used)
 - Param1: Start bit(!) address, high
 - Param2: Start bit(!) address, low
@@ -71,7 +71,7 @@ PRAM pointer setup functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ptr_set2w
-- Cycles: 200
+- Cycles: 120
 - Param0: Target pointer (only low 2 bits used)
 - Param1: Start bit(!) address, high
 - Param2: Start bit(!) address, low
@@ -83,7 +83,7 @@ PRAM pointer setup functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ptr_set4i
-- Cycles: 200
+- Cycles: 120
 - Param0: Target pointer (only low 2 bits used)
 - Param1: Start bit(!) address, high
 - Param2: Start bit(!) address, low
@@ -95,7 +95,7 @@ PRAM pointer setup functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ptr_set4w
-- Cycles: 200
+- Cycles: 120
 - Param0: Target pointer (only low 2 bits used)
 - Param1: Start bit(!) address, high
 - Param2: Start bit(!) address, low
@@ -107,7 +107,7 @@ PRAM pointer setup functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ptr_set8i
-- Cycles: 200
+- Cycles: 120
 - Param0: Target pointer (only low 2 bits used)
 - Param1: Start bit(!) address, high
 - Param2: Start bit(!) address, low
@@ -119,7 +119,7 @@ PRAM pointer setup functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ptr_set8w
-- Cycles: 200
+- Cycles: 120
 - Param0: Target pointer (only low 2 bits used)
 - Param1: Start bit(!) address, high
 - Param2: Start bit(!) address, low
@@ -131,7 +131,7 @@ PRAM pointer setup functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ptr_set16i
-- Cycles: 200
+- Cycles: 120
 - Param0: Target pointer (only low 2 bits used)
 - Param1: Start word address, high
 - Param2: Start word address, low
@@ -143,7 +143,7 @@ PRAM pointer setup functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ptr_set16w
-- Cycles: 200
+- Cycles: 120
 - Param0: Target pointer (only low 2 bits used)
 - Param1: Start word address, high
 - Param2: Start word address, low
@@ -155,7 +155,7 @@ PRAM pointer setup functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ptr_setgen16i
-- Cycles: 200
+- Cycles: 120
 - Param0: Target pointer (only low 2 bits used)
 - Param1: Start word address, high
 - Param2: Start word address, low
@@ -169,7 +169,7 @@ PRAM pointer setup functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ptr_setgen16w
-- Cycles: 200
+- Cycles: 120
 - Param0: Target pointer (only low 2 bits used)
 - Param1: Start word address, high
 - Param2: Start word address, low
@@ -185,7 +185,7 @@ Sets the pointer up for increment on write only mode.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ptr_setgen
-- Cycles: 200
+- Cycles: 120
 - Param0: Target pointer (only low 2 bits used)
 - Param1: Start bit(!) address, high
 - Param2: Start bit(!) address, low
@@ -341,35 +341,35 @@ included, and are maximal counts.
 +--------+-----------+---+------+--------------------------------------------+
 | Addr.  | Cycles    | P |   R  | Name                                       |
 +========+===========+===+======+============================================+
-| 0xF000 |       200 | 3 | C:X3 | us_ptr_set1i                               |
+| 0xF000 |       120 | 3 | C:X3 | us_ptr_set1i                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF002 |       200 | 3 | C:X3 | us_ptr_set1w                               |
+| 0xF002 |       120 | 3 | C:X3 | us_ptr_set1w                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF004 |       200 | 3 | C:X3 | us_ptr_set2i                               |
+| 0xF004 |       120 | 3 | C:X3 | us_ptr_set2i                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF006 |       200 | 3 | C:X3 | us_ptr_set2w                               |
+| 0xF006 |       120 | 3 | C:X3 | us_ptr_set2w                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF008 |       200 | 3 | C:X3 | us_ptr_set4i                               |
+| 0xF008 |       120 | 3 | C:X3 | us_ptr_set4i                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF00A |       200 | 3 | C:X3 | us_ptr_set4w                               |
+| 0xF00A |       120 | 3 | C:X3 | us_ptr_set4w                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF00C |       200 | 3 | C:X3 | us_ptr_set8i                               |
+| 0xF00C |       120 | 3 | C:X3 | us_ptr_set8i                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF00E |       200 | 3 | C:X3 | us_ptr_set8w                               |
+| 0xF00E |       120 | 3 | C:X3 | us_ptr_set8w                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF010 |       200 | 3 | C:X3 | us_ptr_set16i                              |
+| 0xF010 |       120 | 3 | C:X3 | us_ptr_set16i                              |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF012 |       200 | 3 | C:X3 | us_ptr_set16w                              |
+| 0xF012 |       120 | 3 | C:X3 | us_ptr_set16w                              |
 +--------+-----------+---+------+--------------------------------------------+
 | 0xF014 |           |   |      | <not used>                                 |
 +--------+-----------+---+------+--------------------------------------------+
 | 0xF016 |           |   |      | <not used>                                 |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF018 |       200 | 5 | C:X3 | us_ptr_setgen16i                           |
+| 0xF018 |       120 | 5 | C:X3 | us_ptr_setgen16i                           |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF01A |       200 | 5 | C:X3 | us_ptr_setgen16w                           |
+| 0xF01A |       120 | 5 | C:X3 | us_ptr_setgen16w                           |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF01C |       200 | 6 | C:X3 | us_ptr_setgen                              |
+| 0xF01C |       120 | 6 | C:X3 | us_ptr_setgen                              |
 +--------+-----------+---+------+--------------------------------------------+
 | 0xF01E |           |   |      | <not used>                                 |
 +--------+-----------+---+------+--------------------------------------------+
