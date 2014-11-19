@@ -2,7 +2,7 @@
 RRPGE system specification and guides
 ==============================================================================
 
-.. image:: logo_txt.svg
+.. image:: https://cdn.rawgit.com/Jubatian/rrpge-spec/00.013.002/logo_txt.svg
    :align: center
    :width: 100%
 

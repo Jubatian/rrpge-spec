@@ -1,3 +1,7 @@
+Version 00.013.003 (2014.11.19)
+ - GitHub quirk work-around on project front-end page.
+
+
 Version 00.013.002 (2014.11.19)
  - Front-end (README.rst) updates, also introducing SVG logos.
  - Revised cycle counts of some User Library functions.
