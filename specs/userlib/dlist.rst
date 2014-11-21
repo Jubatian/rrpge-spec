@@ -139,6 +139,17 @@ Note that several locations are initialized to nonzero, see "ulboot.rst" for
 details.
 
 
+Hook functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This component accepts hooks to be added to some of it's functions. These hook
+functions are expected to follow the standard calling convention (described
+in "index.rst"). They may affect the state of hardware (such as the pointers),
+however then it is the responsibility of the application's designer to plan
+out the application's architecture so the users of this component are also
+aware of these.
+
+
 0xF042: Initialize for double buffering
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
