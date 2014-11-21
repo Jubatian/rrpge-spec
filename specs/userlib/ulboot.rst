@@ -40,11 +40,25 @@ Surfaces are not initialized, starting out being zero.
 
 The flip performed flag is cleared (zero).
 
-The page flip hook list is empty. The absolute offset of it's first free slot
-at 0xFAEF is set 0xFAF0 (indicating empty).
+The page flip hook list contains the following functions:
+
+- 0xF070: us_sprite_reset
+- 0xF078: us_smux_reset
+
+The absolute offset of it's first free slot at 0xFAEF is set 0xFAF2
+(indicating two functions loaded).
 
 The frame end hook list is empty. The absolute offset of it's first free slot
 at 0xFAEE is set 0xFAE0 (indicating empty).
+
+
+
+
+Sprite manager initialization
+------------------------------------------------------------------------------
+
+
+Sprite managers start out non-initialized, all associated locations set zero.
 
 
 
@@ -65,9 +79,13 @@ The following table provides the initial fill data to be used for the range
 +--------+-------------------------------------------------------------------+
 | 0xFAEE | 0xFAE0                                                            |
 +--------+-------------------------------------------------------------------+
-| 0xFAEF | 0xFAF0                                                            |
+| 0xFAEF | 0xFAF2                                                            |
 +--------+-------------------------------------------------------------------+
-| 0xFAF0 |                                                                   |
+| 0xFAF0 | 0xF070                                                            |
++--------+-------------------------------------------------------------------+
+| 0xFAF1 | 0xF078                                                            |
++--------+-------------------------------------------------------------------+
+| 0xFAF2 |                                                                   |
 | \-     | 0                                                                 |
 | 0xFAFF |                                                                   |
 +--------+-------------------------------------------------------------------+
