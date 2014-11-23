@@ -1,4 +1,4 @@
-Version 00.013.004 ()
+Version 00.013.004 (2014.11.23)
  - Graphics Display Generator sprite system user library functions and data
    introduced.
  - Clarifications in the use of Double buffering manager hooks.

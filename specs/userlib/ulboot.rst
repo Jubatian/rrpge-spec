@@ -42,8 +42,8 @@ The flip performed flag is cleared (zero).
 
 The page flip hook list contains the following functions:
 
-- 0xF070: us_sprite_reset
-- 0xF078: us_smux_reset
+- 0xF06C: us_sprite_reset
+- 0xF06E: us_smux_reset
 
 The absolute offset of it's first free slot at 0xFAEF is set 0xFAF2
 (indicating two functions loaded).
@@ -81,9 +81,9 @@ The following table provides the initial fill data to be used for the range
 +--------+-------------------------------------------------------------------+
 | 0xFAEF | 0xFAF2                                                            |
 +--------+-------------------------------------------------------------------+
-| 0xFAF0 | 0xF070                                                            |
+| 0xFAF0 | 0xF06C                                                            |
 +--------+-------------------------------------------------------------------+
-| 0xFAF1 | 0xF078                                                            |
+| 0xFAF1 | 0xF06E                                                            |
 +--------+-------------------------------------------------------------------+
 | 0xFAF2 |                                                                   |
 | \-     | 0                                                                 |
