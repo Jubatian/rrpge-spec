@@ -329,7 +329,7 @@ Musical logarithmic table
 
 The Musical logarithmic table is meant to be used with the Audio mixer to
 assist in outputting power of 2 sized samples at given musical frequencies. An
-A4 (440Hz) for a 256 byte sample at 48KHz can be produced using offset 0x82 in
+A4 (440Hz) for a 256 byte sample at 48KHz can be produced using offset 0x76 in
 this table.
 
 The table contains 32 bit 16.16 fixed point sample pointer increments, whole
