@@ -151,6 +151,29 @@ Details on this algorithm may be found in the reference User Library
 implementation.
 
 
+0xF090: 16 bit square root
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- F.name: us_sqrt16
+- Cycles: 260
+- Param0: Number to take square root of
+- Ret.X3: Result
+
+Calculates X3 = sqrt(P0).
+
+
+0xF092: 32 bit square root
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- F.name: us_sqrt32
+- Cycles: 650
+- Param0: Number to take square root of, high
+- Param1: Number to take square root of, low
+- Ret.X3: Result
+
+Calculates X3 = sqrt(P0:P1).
+
+
 
 
 Entry point table of Mathematics functions
@@ -183,4 +206,8 @@ included, and are maximal counts.
 | 0xF08C |            70 | 1 | C:X3 | us_rec16                               |
 +--------+---------------+---+------+----------------------------------------+
 | 0xF08E |           470 | 2 | C:X3 | us_rec32                               |
++--------+---------------+---+------+----------------------------------------+
+| 0xF090 |           260 | 1 |  X3  | us_sqrt16                              |
++--------+---------------+---+------+----------------------------------------+
+| 0xF092 |           650 | 2 |  X3  | us_sqrt32                              |
 +--------+---------------+---+------+----------------------------------------+
