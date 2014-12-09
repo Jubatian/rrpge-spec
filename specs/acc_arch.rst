@@ -40,18 +40,16 @@ operating in four distinct major modes:
 - (SC) Scaled blitter, combining a source area onto a destination.
 - \(LI) Line, capable to draw lines by start point, direction and length.
 
-On the source in "BB" and "SC" modes the following transformations may be
-applied:
+In all modes the following transformations may be applied (in "FL" and "LI"
+modes the source being the pattern to output):
 
-- Barrel rotation per pixel.
-- AND & OR mask per pixel.
-- Reindexing using a reindex table (color remapping).
-
-All three modes are capable to combine the source and the destination together
-in two ways before writing back to the destination. These are as follows:
-
+- Source barrel rotation per pixel.
+- Source AND mask per pixel.
 - Colorkeying (a designated transparent color index).
+- Source OR mask per pixel.
+- Reindexing using a reindex table (color remapping).
 - Reindexing by destination (color remapping).
+- Destination write mask (selecting bit positions to be written).
 
 Some more advanced examples of usages of the Accelerator are as follows:
 
@@ -61,14 +59,15 @@ Some more advanced examples of usages of the Accelerator are as follows:
   utilization of memory.
 
 - Using the AND and OR masks with an appropriate palette may be used to
-  generate player-specific colored variants of objects without needing
+  generate player-specific colored variants of objects without needing slower
   reindexing.
 
-- The Filler may be used for polygon filling, especially by substituting the
-  destination and count of pixels per line from the source X and Y pointers.
+- The Filler may be used for polygon filling: the destination and count
+  post-adds can be used to shape a half-triangle, the pattern rotation can
+  produce appropriate dithered output.
 
-- The Scaled blitter may be utilized for simple texture blitting for three
-  dimensional scenes.
+- The Scaled blitter may be utilized for sprite scaling, rotation, and simple
+  texture blitting for three dimensional scenes.
 
 - Reindexing by destination with an appropriate color remapping table may be
   utilized for alpha blending without needing to split up the display into
@@ -95,7 +94,7 @@ affect how the accelerator stages are chained together:
   Line (LI) mode.
 
 - (VMR) Adds a mirror stage to the Block Blitter (BB) which inverts the pixel
-  order of the source data. Also available for the Scaled Blitter (SC).
+  order of the source data.
 
 - (VCK) Colorkey stage which can be applied to all modes. This provides a
   transparent pixel value where the background shows through.
@@ -111,7 +110,7 @@ affect how the accelerator stages are chained together:
 The Accelerator has two major stages as follows:
 
 - Source fetch. This stage is performed according to the the selected mode
-  (VMD), giving three possible distinct paths.
+  (VMD), giving four possible distinct paths.
 
 - Destination combine. This stage varies according to whether reindexing is
   necessary (VRE), giving two possible distinct paths.
@@ -128,56 +127,56 @@ possible on it without the knowledge of the destination. For each Peripheral
 RAM cell necessarily affected it prepares a PRAM cell aligned data and a cell
 begin / middle / end mask.
 
-The latter is prepared according to the destination start pointer and the
-count of units to process, bits from the latter used according to the display
-mode (lowest bit ignored in 8 bit display mode). In Line (LI) mode this mask
-always selects a single pixel on the destination cell.
-
-Note that for short blits the begin and end of the blit may occur in the same
-cell. This situation also has to be supported proper.
-
-The mode selector (VMD) defines the path to take executing this stage. Only
-VMR may have effect on the execution otherwise.
+The mode selector (VMD) defines the path to take executing this stage. VMR and
+VBT may have effect on the execution otherwise.
 
 
-Source offset calculation
+The begin / middle / end mask
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-All modes except Filler (FL) (which has no source) share an identical source
-offset mechanism. Note that in Line (LI) mode this mechanism is used to
-generate destination offsets and begin / middle / end masks, but it still
-executes the same way.
+The begin / middle / end mask is prepared according to the destination start
+pointer fraction and the count of units (cells, or pixels in the case of Line
+mode) to process, bits from the latter used according to the display mode. In
+Line (LI) mode this mask always selects a single pixel on the destination
+cell.
 
-The source offset when needed, is combined from the components according to
-the following chart: ::
-
-
-                      |<- Source partition size ->|
-                      |                           |
-                      |           |<- X/Y split ->|
-                      |           |               |
-         +------------+-----------+---------------+--------------------------+
-         | P.sel bits |  Y bits   |    X bits     |          X bits          |
-    +----+------------+-----------+---------------+--------------------------+
-    |Bank|          Whole part (16 bits)          | Fractional part (16 bits)|
-    +----+----------------------------------------+--------------------------+
+Note that for short blits (in FL or SC modes) the begin and end of the blit
+may occur in the same cell. This situation also has to be supported proper,
+producing an appropriate merged mask.
 
 
-The source partition size has higher priority (only it affects the number of
-partition select bits, even if X/Y split is larger).
+Offset calculation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Block Blitter (BB) mode performs a source increment after each cell fetched,
-while Scaled Blitter (SC) and Line (LI) modes perform a source increment after
-each pixel.
+Source offset calculation if necessary is done by Pointer X and Pointer Y, as
+described for each mode.
+
+Destination offset calculation is done using the Destination pointer in
+Block Blitter (BB), Filler (FL) and Scaled Blitter (SC) modes. In Line (LI)
+mode, Pointer X and Pointer Y is used to calculate destination.
+
+The destination pointer has no increment register: It always increments one
+cell after processing a cell of data.
+
+Neither source or destination may cross bank (64K cells) boundary during these
+calculations, they wrap around (as there are only 16 bits whole part for
+either of these pointers). Moreover, the partition settings affect how much of
+the higher bits of the pointers are discarded for the generation of offset,
+using the contents of the appropriate partition register instead (note that
+the partition register is OR combined, so may affect lower bits).
 
 
 Block Blitter (BB)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The Block Blitter normally produces a horizontal strip of sequentially read
-data beginning at an arbitrary position. The source data may only begin at
-block boundary (the fractional part of the source offset is ignored), however
-the blit may have an arbitrary length in pixels.
+The Block Blitter produces a horizontal strip of sequentially read data
+beginning at an arbitrary position for each row. Source data is fetched by
+Pointer X. The source data may only begin at cell boundary (the fractional
+part of Pointer X is ignored), and the blit's row length is specified in cell
+units (the fractional part of Count is ignored).
+
+Pointer X increment is not used. The increment is one cell if VMR is clear,
+0xFFFF cells (or one cell decrement) if VMR is set.
 
 Preparing the source data requires a memory of the previous data to be able
 to shift it according to the destination start pointer's fractional part. For
@@ -191,23 +190,8 @@ out). The data from each source cell is prepared as follows: ::
               |
               V
     +-------------------+
-    | Px. barrel rotate | Barrel rotates each pixel by the given count
+    |  Pixel order swap | If VMR is enabled (Mirroring)
     +-------------------+
-              |
-              V
-    +-------------------+
-    |   Pixel AND mask  | Applies the Pixel AND mask on each pixel
-    +-------------------+
-              |
-              V
-    +-------------------+
-    | Pixel order swap  | If VMR is enabled (Mirroring)
-    +-------------------+
-              |
-              V
-    +----+----+----+----+
-    |  Transformed src. |
-    +----+----+----+----+
               |
               +------------+ Shift to align with destination
                            V
@@ -217,42 +201,75 @@ out). The data from each source cell is prepared as follows: ::
               |
               V
     +----+----+----+----+
-    |    Data to blit   |
+    |    Data to blit   | Aligned with the destination cells
     +----+----+----+----+
 
 
 Filler (FL)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The Filler normally produces a horizontal line of an arbitrary length (in
-pixels) of an uniform source pattern.
+The Filler produces a horizontal line of an arbitrary length of an uniform
+source pattern for each row. The destination post-add, and count post-add
+registers are used (both the whole and fractional parts), making half-triangle
+blitting possible (for polygon blits).
+
+The source data is fetched from the pattern (provided in the Start trigger
+register). The pattern is rotated left 4 bits or 8 bits (1 pixel) depending on
+the targeted display mode on row transitions, providing support for dithering
+fills.
+
+Note that the pattern is not rotated in any manner to align it with the
+destination fraction: it always aligns with half-cell boundary.
+
+The Pointer X and Pointer Y registers are not used.
 
 The source data is prepared as follows: ::
 
 
     +----+----+
-    | Pattern | 16 bit line pattern
+    | Pattern | 16 bit line pattern, expanded to 32 bit cells
     +----+----+
          |
          +---------+
          V         V
     +----+----+----+----+
-    |    Data to blit   |
+    |    Data to blit   | Aligned with the destination cells
     +----+----+----+----+
 
 
 Scaled blitter (SC)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The Scaled Blitter normally produces a horizontal strip of data beginning at
-an arbitrary position from evenly spaced out source pixels of arbitrary length
-in pixels.
+The Scaled Blitter produces a horizontal strip of data beginning at an
+arbitrary position from evenly spaced out source pixels of arbitrary length in
+pixels, for each row.
 
-This mode taps in the Block Blitter (BB) producing source cell data for it
-pixel by pixel using the whole and fractional source position and increment
-parameters.
+Source offset generation for each pixel operates as follows: ::
 
-The data is prepared as follows: ::
+
+    |<--- Source ---->|<- Source partition size ->|
+    |                 |                           |
+    |                 |           |<- X/Y split ->|
+    |                 |           |               |
+    |    +------------+-----------+---------------+--------------------------+
+    |    | P.sel bits |  Y bits   |    X bits     |          X bits          |
+    +----+------------+-----------+---------------+--------------------------+
+    |Bank|          Whole part (16 bits)          | Fractional part (16 bits)|
+    +----+----------------------------------------+--------------------------+
+
+
+The source partition size has higher priority (only it affects the number of
+partition select bits, even if X/Y split is larger).
+
+Note that the Partition select bits are OR combined on the whole part, so the
+contents of the Source partition select register may have effect within the
+Source partition size.
+
+The destination post-add, and count post-add registers are also used (both the
+whole and fractional parts), making half-triangle blitting possible (for
+polygon blits, or producing segments of an arbitrarily rotated sprite).
+
+The source data is prepared as follows: ::
 
 
     +----+ +----+ +----+ +----+
@@ -264,23 +281,39 @@ The data is prepared as follows: ::
       |    |    |    +-----+
       |    |    |    |
     +----+----+----+----+
-    |    Source data    | Aligned with the destination cells
+    |    Data to blit   | Aligned with the destination cells
     +----+----+----+----+
-              |
-              V
-    +-------------------+
-    |   Block Blitter   |
-    +-------------------+
 
 
 Line (LI)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The Line mode has no source, however it uses the source offset mechanism to
-produce destination pixels. Note that even the partitioning settings are
-reversed (so the source partition setting applies to the destination). The
-begin / middle / end mask is used for every pixel to select the destination
-pixel within the cell for the Destination combine major stage.
+The Line mode outputs a line specified by Pointer X and Pointer Y, and the
+Count register as pixel count for the line. The Row count is not used, neither
+any of the post-add registers (which are only valid for row transitions).
+
+Pixels to output are selected by Pointer X and Pointer Y, addressing in the
+destination. The destination bank and partition settings are used to produce
+the high part of this offset, otherwise it is generated in an identical manner
+to the Scaled Blitter's offset generation mechanism: ::
+
+
+    |<- Destination ->|<- Dest. partition size -->|
+    |                 |                           |
+    |                 |           |<- X/Y split ->|
+    |                 |           |               |
+    |    +------------+-----------+---------------+--------------------------+
+    |    | P.sel bits |  Y bits   |    X bits     |          X bits          |
+    +----+------------+-----------+---------------+--------------------------+
+    |Bank|          Whole part (16 bits)          | Fractional part (16 bits)|
+    +----+----------------------------------------+--------------------------+
+
+
+Note the OR combining of the Partition select on the whole part.
+
+For each selected pixel, a Begin / Middle / End mask is generated selecting
+that single pixel, and the Destination Combine stage is started with this
+input.
 
 The line pattern is used to produce the line's color. The pattern is rotated
 right one pixel (4 or 8 bits) after every two pixels output, always using the
@@ -307,8 +340,23 @@ This path is used if VRE is disabled (no reindexing). This case VDR is
 ignored. The data is blit as follows: ::
 
 
+    +----+----+----+----+
+    |    Data to blit   |
+    +----+----+----+----+
+              |
+              V
+    +-------------------+
+    | Px. barrel rotate | Barrel rotates each pixel by the given count
+    +-------------------+
+              |
+              V
+    +-------------------+
+    |   Pixel AND mask  | Applies the Pixel AND mask on each pixel
+    +-------------------+
+              |
+              V
     +----+----+----+----+  If VCK   +----+----+----+----+
-    |    Data to blit   |---------->|   Colorkey mask   |
+    |  Transformed data |---------->|   Colorkey mask   |
     +----+----+----+----+           +----+----+----+----+
               |                               |
               |         +----+----+----+----+ | +----+----+----+----+
@@ -327,7 +375,7 @@ ignored. The data is blit as follows: ::
              ~|~       ~A~                   ~~~
               V         |
       ---+----+----+----+----+---
-         | Target VRAM cell  |
+         | Target PRAM cell  |
       ---+----+----+----+----+---
 
 
@@ -335,13 +383,28 @@ Reindexing blit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This path is used if VRE is enabled (reindex mode). This case if VDR is also
-enabled, the path feeding in the target VRAM cell's data is also effective and
+enabled, the path feeding in the target PRAM cell's data is also effective and
 is used for providing the high bits (up to 5) for selecting a new pixel value
 from the reindex table. ::
 
 
+    +----+----+----+----+
+    |    Data to blit   |
+    +----+----+----+----+
+              |
+              V
+    +-------------------+
+    | Px. barrel rotate | Barrel rotates each pixel by the given count
+    +-------------------+
+              |
+              V
+    +-------------------+
+    |   Pixel AND mask  | Applies the Pixel AND mask on each pixel
+    +-------------------+
+              |
+              V
     +----+----+----+----+  If VCK   +----+----+----+----+
-    |    Data to blit   |---------->|   Colorkey mask   |
+    |  Transformed data |---------->|   Colorkey mask   |
     +----+----+----+----+           +----+----+----+----+
               |                               |
               |         +----+----+----+----+ | +----+----+----+----+
@@ -366,7 +429,7 @@ from the reindex table. ::
              ~|~       ~A~                   ~~~
               V         |
       ---+----+----+----+----+---
-         | Target VRAM cell  |
+         | Target PRAM cell  |
       ---+----+----+----+----+---
 
 
@@ -385,13 +448,16 @@ Finalizing the row
 ------------------------------------------------------------------------------
 
 
-When the row is complete, the original values of the source and destination
-pointers are incremented by the contents of the appropriate post-add
-registers, and are used to start the next row. These increments happen in all
-modes.
+When the row is complete, if the selected blit mode uses those, the original
+values (as they were before starting the row) of Pointer X and Pointer Y are
+incremented by the contents of the appropriate post-add registers, and are
+used to start the next row.
 
-Note that intermediate increments (described in "Source offset calculation")
-performed during the blit are all discarded.
+Note that intermediate increments performed during the output of the row are
+discarded.
+
+The Destination pointer and the Count are also incremented by the respective
+post-add in modes where these are appropriate.
 
 
 
@@ -497,12 +563,6 @@ implementation defined:
   write. This case due to the implementation defined length of the pipeline
   the source read may fetch not yet changed data.
 
-- If VMR is used with Scaled Blit and the count of pixels to blit is not a
-  multiple of 4 (8 bit mode) or 8 (4 bit mode), for the last source cell
-  pixels not filled may have an implementation defined content (typically
-  either zero or data left over from a previous operation). Note that this
-  data does not become visible unless VMR is set.
-
 - The exact location and order of accesses during the operation. Emulators are
   allowed to perform the entire accelerator operation in one pass, without
   considering other peripherals' operation (such as the Graphics Display
@@ -530,42 +590,43 @@ Following the performance (in main clock cycles) for each of the eight major
 stage combinations are provided. 'n' is the PRAM cell count which has to be
 written during the operation, 'p' is the count of pixels to render, 'r' is the
 number of rows to render. In the Accel. combine column only the 'n' member is
-shown where appropriate.
+shown where appropriate. Note that in Line mode the row count is unused, so
+there are no 'r' cycles.
 
 +------+------+-----+------------------------------------+-------------------+
 | Disp | Mode | VRE | Cycles                             | Accel. combine    |
 +======+======+=====+====================================+===================+
-| 4bit |  BB  | NO  | 20 + (r * 8) + (n * 6)             | n * 4             |
+| 4bit |  BB  | NO  | 20 + (r * 2) + (n * 6)             | n * 4             |
 +------+------+-----+------------------------------------+-------------------+
-| 4bit |  FL  | NO  | 20 + (r * 8) + (n * 4)             | n * 2             |
+| 4bit |  FL  | NO  | 20 + (r * 4) + (n * 4)             | n * 2             |
 +------+------+-----+------------------------------------+-------------------+
 | 4bit |  SC  | NO  | 20 + (r * 8) + (n * 4) + (p * 2)   | n * 2             |
 +------+------+-----+------------------------------------+-------------------+
-| 4bit |  LI  | NO  | 20 + (r * 8)           + (p * 4)   | \-                |
+| 4bit |  LI  | NO  | 20                     + (p * 4)   | \-                |
 +------+------+-----+------------------------------------+-------------------+
-| 4bit |  BB  | YES | 28 + (r * 8) + (n * 8) (*)         | n * 8 (*)         |
+| 4bit |  BB  | YES | 28 + (r * 2) + (n * 8) (*)         | n * 8 (*)         |
 +------+------+-----+------------------------------------+-------------------+
-| 4bit |  FL  | YES | 28 + (r * 8) + (n * 8) (*)         | n * 8 (*)         |
+| 4bit |  FL  | YES | 28 + (r * 4) + (n * 8) (*)         | n * 8 (*)         |
 +------+------+-----+------------------------------------+-------------------+
 | 4bit |  SC  | YES | 28 + (r * 8) + (n * 4) + (p * 2)   | n * 2             |
 +------+------+-----+------------------------------------+-------------------+
-| 4bit |  LI  | YES | 28 + (r * 8)           + (p * 4)   | \-                |
+| 4bit |  LI  | YES | 28                     + (p * 4)   | \-                |
 +------+------+-----+------------------------------------+-------------------+
-| 8bit |  BB  | NO  | 20 + (r * 8) + (n * 6)             | n * 4             |
+| 8bit |  BB  | NO  | 20 + (r * 2) + (n * 6)             | n * 4             |
 +------+------+-----+------------------------------------+-------------------+
-| 8bit |  FL  | NO  | 20 + (r * 8) + (n * 4)             | n * 2             |
+| 8bit |  FL  | NO  | 20 + (r * 4) + (n * 4)             | n * 2             |
 +------+------+-----+------------------------------------+-------------------+
 | 8bit |  SC  | NO  | 20 + (r * 8) + (n * 4) + (p * 2)   | n * 2             |
 +------+------+-----+------------------------------------+-------------------+
-| 8bit |  LI  | NO  | 20 + (r * 8)           + (p * 4)   | \-                |
+| 8bit |  LI  | NO  | 20                     + (p * 4)   | \-                |
 +------+------+-----+------------------------------------+-------------------+
-| 8bit |  BB  | YES | 28 + (r * 8) + (n * 6)             | n * 4             |
+| 8bit |  BB  | YES | 28 + (r * 2) + (n * 6)             | n * 4             |
 +------+------+-----+------------------------------------+-------------------+
-| 8bit |  FL  | YES | 28 + (r * 8) + (n * 4)             | n * 4 (*)         |
+| 8bit |  FL  | YES | 28 + (r * 4) + (n * 4)             | n * 4 (*)         |
 +------+------+-----+------------------------------------+-------------------+
 | 8bit |  SC  | YES | 28 + (r * 8) + (n * 4) + (p * 2)   | n * 2             |
 +------+------+-----+------------------------------------+-------------------+
-| 8bit |  LI  | YES | 28 + (r * 8)           + (p * 4)   | \-                |
+| 8bit |  LI  | YES | 28                     + (p * 4)   | \-                |
 +------+------+-----+------------------------------------+-------------------+
 
 Note that in 4 bit mode 8 reindexing accesses are necessary for processing
@@ -598,32 +659,59 @@ provided with bit 15 set as this is how they should be supplied to the FIFO.
 | \-     | in it mask writes to the respective positions in the Destination  |
 | 0x8001 | combine stage of the Accelerator.                                 |
 +--------+-------------------------------------------------------------------+
-| 0x8002 |                                                                   |
-| \-     | Unused                                                            |
-| 0x8003 |                                                                   |
-+--------+-------------------------------------------------------------------+
-|        | Source bank select.                                               |
-| 0x8004 |                                                                   |
-|        | - bit  4-15: Unused                                               |
-|        | - bit  0- 3: Bank select (selects a 64K cell bank of the PRAM)    |
-+--------+-------------------------------------------------------------------+
 |        | Destination bank select.                                          |
-| 0x8005 |                                                                   |
+| 0x8002 |                                                                   |
 |        | - bit  4-15: Unused                                               |
 |        | - bit  0- 3: Bank select (selects a 64K cell bank of the PRAM)    |
-+--------+-------------------------------------------------------------------+
-|        | Source partition select. OR combined with the whole part of the   |
-| 0x8006 | the source offset after it is masked with the partition size.     |
-|        |                                                                   |
 +--------+-------------------------------------------------------------------+
 |        | Destination partition select. OR combined with the whole part of  |
-| 0x8007 | the destination offset after it is masked with the partition      |
+| 0x8003 | the destination offset after it is masked with the partition      |
 |        | size.                                                             |
 +--------+-------------------------------------------------------------------+
+| 0x8004 | Destination post-add whole part. Not used for LI.                 |
++--------+-------------------------------------------------------------------+
+| 0x8005 | Destination post-add fractional part. Not used for BB and LI.     |
++--------+-------------------------------------------------------------------+
+| 0x8006 | Count post-add whole part. Not used for BB and LI.                |
++--------+-------------------------------------------------------------------+
+| 0x8007 | Count post-add fractional part. Not used for BB and LI.           |
++--------+-------------------------------------------------------------------+
+| 0x8008 | Pointer Y post-add whole part. Only used for SC.                  |
++--------+-------------------------------------------------------------------+
+| 0x8009 | Pointer Y post-add fractional part. Only used for SC.             |
++--------+-------------------------------------------------------------------+
+| 0x800A | Pointer X post-add whole part. Only used for BB and SC.           |
++--------+-------------------------------------------------------------------+
+| 0x800B | Pointer X post-add fractional part. Only used for SC.             |
++--------+-------------------------------------------------------------------+
+| 0x800C | Pointer Y increment whole part. Only used for SC and LI.          |
++--------+-------------------------------------------------------------------+
+| 0x800D | Pointer Y increment fractional part. Only used for SC and LI.     |
++--------+-------------------------------------------------------------------+
+| 0x800E | Pointer X increment whole part. Only used for SC and LI.          |
++--------+-------------------------------------------------------------------+
+| 0x800F | Pointer X increment fractional part. Only used for SC and LI.     |
++--------+-------------------------------------------------------------------+
+| 0x8010 | Pointer Y whole part. Only used for SC and LI.                    |
++--------+-------------------------------------------------------------------+
+| 0x8011 | Pointer Y fractional part. Only used for SC and LI.               |
++--------+-------------------------------------------------------------------+
+|        | Source bank select.                                               |
+| 0x8012 |                                                                   |
+|        | - bit  4-15: Unused                                               |
+|        | - bit  0- 3: Bank select (selects a 64K cell bank of the PRAM)    |
+|        |                                                                   |
+|        | Not used for FL and LI.                                           |
++--------+-------------------------------------------------------------------+
+|        | Source partition select. OR combined with the whole part of the   |
+| 0x8013 | the source offset after it is masked with the partition size.     |
+|        |                                                                   |
+|        | Not used for FL and LI.                                           |
++--------+-------------------------------------------------------------------+
 |        | Partitioning settings.                                            |
-| 0x8008 |                                                                   |
-|        | - bit 12-15: Source partition size                                |
-|        | - bit  8-11: X/Y split location (X size)                          |
+| 0x8014 |                                                                   |
+|        | - bit 12-15: Source partition size. Only for BB and SC.           |
+|        | - bit  8-11: X/Y split location (X size). Only for SC and LI.     |
 |        | - bit  4- 7: Destination partition size                           |
 |        | - bit  0- 3: Unused                                               |
 |        |                                                                   |
@@ -647,49 +735,16 @@ provided with bit 15 set as this is how they should be supplied to the FIFO.
 |        | - 14: 64 KWords (32K * 32 bit cells)                              |
 |        | - 15: 128 KWords (64K * 32 bit cells)                             |
 +--------+-------------------------------------------------------------------+
-|        | Substitution flags & Source barrel rotate.                        |
-| 0x8009 |                                                                   |
-|        | - bit    15: Load destination from Source X every row if set      |
-|        | - bit    14: Load destination from Source Y every row if set      |
-|        | - bit    13: Load count from Source Y every row if set            |
-|        | - bit  4-12: Unused                                               |
+|        | Blit control flags & Source barrel rotate.                        |
+| 0x8015 |                                                                   |
+|        | - bit  7-15: Unused                                               |
+|        | - bit  5- 6: (VMD) Selects blit mode                              |
+|        | - bit     4: (VBT) If set, 8 bit mode, if clear, 4 bit mode       |
 |        | - bit     3: (VCK) Colorkey enabled if set                        |
 |        | - bit  0- 2: Pixel barrel rotate right                            |
 |        |                                                                   |
 |        | In 4 bit mode only bits 0-1 are used of the Pixel barrel rotate   |
 |        | right.                                                            |
-|        |                                                                   |
-|        | The Load count (bit 13) flag does not change the limitations of   |
-|        | count. Bits 13 - 15 of Y fraction will be loaded into the low 3   |
-|        | bits of count, and bits 0 - 6 of Y whole will be loaded into bits |
-|        | 3 - 9 of count.                                                   |
-|        |                                                                   |
-|        | If both bit 15 and 14 is set, the destination is loaded from      |
-|        | Source Y.                                                         |
-|        |                                                                   |
-|        | The partition is not affected by bits 15 or 14, it is always      |
-|        | selected by the destination partition select register.            |
-+--------+-------------------------------------------------------------------+
-|        | Source AND mask and Colorkey.                                     |
-| 0x800A |                                                                   |
-|        | - bit  8-15: Pixel AND mask (only low 4 bits used in 4 bit mode)  |
-|        | - bit  0- 7: Colorkey (only low 4 bits used in 4 bit mode)        |
-+--------+-------------------------------------------------------------------+
-|        | Reindex bank select.                                              |
-| 0x800B |                                                                   |
-|        | - bit  5-15: Unused                                               |
-|        | - bit  0- 4: Reindex bank select                                  |
-+--------+-------------------------------------------------------------------+
-|        | Blit control flags.                                               |
-| 0x800C |                                                                   |
-|        | - bit    15: Unused                                               |
-|        | - bit    14: (VMR) Pixel order swap enabled if set (Mirroring)    |
-|        | - bit    13: (VDR) If bit 12 is set, Reindex using dest. if set   |
-|        | - bit    12: (VRE) Reindexing enabled if set                      |
-|        | - bit 10-11: (VMD) Selects blit mode                              |
-|        | - bit     9: (VBT) If set, 8 bit mode, if clear, 4 bit mode       |
-|        | - bit     8: Unused                                               |
-|        | - bit  0- 7: Pixel OR mask (only low 4 bits used in 4 bit mode)   |
 |        |                                                                   |
 |        | The blit modes:                                                   |
 |        |                                                                   |
@@ -698,62 +753,125 @@ provided with bit 15 set as this is how they should be supplied to the FIFO.
 |        | - 2: Scaled Blitter (SC)                                          |
 |        | - 3: Line (LI)                                                    |
 +--------+-------------------------------------------------------------------+
-| 0x800D | Count of rows to blit. Only bits 0 - 8 are used. If all these     |
-|        | bits are set zero, 512 rows are produced.                         |
+|        | Pixel AND mask & Colorkey.                                        |
+| 0x8016 |                                                                   |
+|        | - bit  8-15: Pixel AND mask (only low 4 bits used in 4 bit mode)  |
+|        | - bit  0- 7: Colorkey (only low 4 bits used in 4 bit mode)        |
 +--------+-------------------------------------------------------------------+
-|        | Count of 4 bit pixels to blit. Only bits 0 - 9 are used in 4 bit  |
-| 0x800E | mode and only bits 1 - 9 are used in 8 bit mode. Setting all the  |
-|        | used bits zero results in 1024 (4 bit) or 512 (8 bit) pixels.     |
+| 0x8017 | Count of rows to blit. Only bits 0 - 8 are used. If all these     |
+|        | bits are set zero, 512 rows are produced. Not used for LI.        |
 +--------+-------------------------------------------------------------------+
-|        | Start on write, Pattern for Filler (FL) & Line (LI). A write to   |
-| 0x800F | this location starts the accelerator operation.                   |
+|        | Count of cells / pixels to blit, whole part.                      |
+| 0x8018 |                                                                   |
+|        | Only bits 0 - 7 are used for producing 0 - 255 cells of output in |
+|        | BB, FL and SC modes. In LI mode all bits are used, defining the   |
+|        | count of pixels to produce.                                       |
++--------+-------------------------------------------------------------------+
+|        | Count of cells / pixels to blit, fractional part.                 |
+| 0x8019 |                                                                   |
+|        | Used in FL and SC modes for a pixel precise row length. Only the  |
+|        | high 2 bits are used for generating the row in 8 bit mode, only   |
+|        | the high 3 bits in 4 bit mode. Not used for BB and LI.            |
++--------+-------------------------------------------------------------------+
+| 0x801A | Source X whole part. Not used for FL.                             |
++--------+-------------------------------------------------------------------+
+| 0x801B | Source X fractional part. Not used for BB and FL.                 |
++--------+-------------------------------------------------------------------+
+| 0x801C | Destination whole part. Not used for LI.                          |
++--------+-------------------------------------------------------------------+
+| 0x801D | Destination fractional part. Not used for LI.                     |
++--------+-------------------------------------------------------------------+
+|        | Reindexing & Pixel OR mask.                                       |
+| 0x801E |                                                                   |
+|        | - bit    15: (VMR) Pixel order swap enabled if set (Mirroring)    |
+|        | - bit    14: (VDR) If bit 13 is set, Reindex using dest. if set   |
+|        | - bit    13: (VRE) Reindexing enabled if set                      |
+|        | - bit  8-12: Reindex bank select                                  |
+|        | - bit  0- 7: Pixel OR mask (only low 4 bits used in 4 bit mode)   |
 |        |                                                                   |
-|        | The pattern is rotated by 1 pixel to the right after every row,   |
-|        | useful for producing dithered fills.                              |
+|        | The VMR flag only has effect in BB mode.                          |
 +--------+-------------------------------------------------------------------+
-| 0x8010 | Source Y whole part                                               |
+| 0x801F | Start on write & Pattern for Filler (FL) & Line (LI). A write to  |
+|        | this location starts the accelerator operation.                   |
 +--------+-------------------------------------------------------------------+
-| 0x8011 | Source Y fractional part                                          |
-+--------+-------------------------------------------------------------------+
-| 0x8012 | Source Y increment whole part                                     |
-+--------+-------------------------------------------------------------------+
-| 0x8013 | Source Y increment fractional part                                |
-+--------+-------------------------------------------------------------------+
-| 0x8014 | Source Y post-add whole part                                      |
-+--------+-------------------------------------------------------------------+
-| 0x8015 | Source Y post-add fractional part                                 |
-+--------+-------------------------------------------------------------------+
-| 0x8016 | Source X whole part                                               |
-+--------+-------------------------------------------------------------------+
-| 0x8017 | Source X fractional part                                          |
-+--------+-------------------------------------------------------------------+
-| 0x8018 | Source X increment whole part                                     |
-+--------+-------------------------------------------------------------------+
-| 0x8019 | Source X increment fractional part                                |
-+--------+-------------------------------------------------------------------+
-| 0x801A | Source X post-add whole part                                      |
-+--------+-------------------------------------------------------------------+
-| 0x801B | Source X post-add fractional part                                 |
-+--------+-------------------------------------------------------------------+
-| 0x801C | Destination whole part                                            |
-+--------+-------------------------------------------------------------------+
-| 0x801D | Destination fractional part (only high 3 bits are used)           |
-+--------+-------------------------------------------------------------------+
-| 0x801E | Destination increment whole part                                  |
-+--------+-------------------------------------------------------------------+
-| 0x801F | Destination post-add whole part                                   |
-+--------+-------------------------------------------------------------------+
-
-The Destination increment normally should be set to one (1). Otherwise the
-Accelerator still performs the same way (also in calculating masks for begin,
-middle, and end cells), just the result goes in a different layout. Setting
-this to something else than one may be useful for example when blitting small
-tiles to cell boundaries (such as emulating a character mode), so a blit can
-be performed with less operations.
 
 Note that no interface register changes it's value during the course of an
 accelerator operation, so retriggering the accelerator performs the exact same
 blit.
+
+Register usage table, summarizing which of the registers each blit mode uses:
+
++--------+-----------------------------------------------+----+----+----+----+
+| Range  | Description                                   | BB | FL | SC | LI |
++========+===============================================+====+====+====+====+
+| 0x8000 | Peripheral RAM write mask, high               |  X |  X |  X |  X |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x8001 | Peripheral RAM write mask, low                |  X |  X |  X |  X |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x8002 | Destination bank select                       |  X |  X |  X |  X |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x8003 | Destination partition select                  |  X |  X |  X |  X |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x8004 | Destination post-add whole part               |  X |  X |  X |    |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x8005 | Destination post-add fractional part          |    |  X |  X |    |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x8006 | Count post-add whole part                     |    |  X |  X |    |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x8007 | Count post-add fractional part                |    |  X |  X |    |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x8008 | Pointer Y post-add whole part                 |    |    |  X |    |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x8009 | Pointer Y post-add fractional part            |    |    |  X |    |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x800A | Pointer X post-add whole part                 |  X |    |  X |    |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x800B | Pointer X post-add fractional part            |    |    |  X |    |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x800C | Pointer Y increment whole part                |    |    |  X |  X |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x800D | Pointer Y increment fractional part           |    |    |  X |  X |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x800E | Pointer X increment whole part                |    |    |  X |  X |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x800F | Pointer X increment fractional part           |    |    |  X |  X |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x8010 | Pointer Y whole part                          |    |    |  X |  X |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x8011 | Pointer Y fractional part                     |    |    |  X |  X |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x8012 | Source bank select                            |  X |    |  X |    |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x8013 | Source partition select                       |  X |    |  X |    |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x8014 | Partitioning settings                         |  X |  X |  X |  X |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x8015 | Blit control flags & Source barrel rotate     |  X |  X |  X |  X |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x8016 | Source AND mask & Colorkey                    |  X |  X |  X |  X |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x8017 | Count of rows to blit                         |  X |  X |  X |    |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x8018 | Count of cells / pixels to blit, whole part   |  X |  X |  X |  X |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x8019 | Count of cells / pixels to blit, fract. part  |    |  X |  X |    |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x801A | Source X whole part                           |  X |    |  X |  X |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x801B | Source X fractional part                      |    |    |  X |  X |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x801C | Destination whole part                        |  X |  X |  X |    |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x801D | Destination fractional part                   |  X |  X |  X |    |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x801E | Reindexing & Pixel OR mask                    |  X |  X |  X |  X |
++--------+-----------------------------------------------+----+----+----+----+
+| 0x801F | Start on write & Pattern                      |    |  X |    |  X |
++--------+-----------------------------------------------+----+----+----+----+
+
+The Start on write (0x801F) register is necessarily written for all blit modes
+to start the operation, however the Pattern written into it is only used for
+Filler and Line modes.
 
 The Reindex table:
 
@@ -786,4 +904,4 @@ The Reindex table:
 
 Note that the value order accords with the Big Endian scheme the system uses.
 
-In 4 bit mode the high 4 bits of each reidex value are left unused.
+In 4 bit mode the high 4 bits of each reidex value are unused for blits.

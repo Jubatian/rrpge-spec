@@ -240,67 +240,67 @@ The Accelerator registers:
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0x8000 | PRAM write mask high                                              |
+| 0x8000 | Peripheral RAM write mask, high                                   |
 +--------+-------------------------------------------------------------------+
-| 0x8001 | PRAM write mask low                                               |
+| 0x8001 | Peripheral RAM write mask, low                                    |
 +--------+-------------------------------------------------------------------+
-| 0x8002 | Unused                                                            |
+| 0x8002 | Destination bank select                                           |
 +--------+-------------------------------------------------------------------+
-| 0x8003 | Unused                                                            |
+| 0x8003 | Destination partition select                                      |
 +--------+-------------------------------------------------------------------+
-| 0x8004 | Source bank select                                                |
+| 0x8004 | Destination post-add whole part                                   |
 +--------+-------------------------------------------------------------------+
-| 0x8005 | Destination bank select                                           |
+| 0x8005 | Destination post-add fractional part                              |
 +--------+-------------------------------------------------------------------+
-| 0x8006 | Source partition select                                           |
+| 0x8006 | Count post-add whole part                                         |
 +--------+-------------------------------------------------------------------+
-| 0x8007 | Destination partition select                                      |
+| 0x8007 | Count post-add fractional part                                    |
 +--------+-------------------------------------------------------------------+
-| 0x8008 | Partitioning settings                                             |
+| 0x8008 | Pointer Y post-add whole part                                     |
 +--------+-------------------------------------------------------------------+
-| 0x8009 | Substitution flags & Source barrel rotate                         |
+| 0x8009 | Pointer Y post-add fractional part                                |
 +--------+-------------------------------------------------------------------+
-| 0x800A | Source AND mask and Colorkey                                      |
+| 0x800A | Pointer X post-add whole part                                     |
 +--------+-------------------------------------------------------------------+
-| 0x800B | Reindex bank select                                               |
+| 0x800B | Pointer X post-add fractional part                                |
 +--------+-------------------------------------------------------------------+
-| 0x800C | Blit control flags                                                |
+| 0x800C | Pointer Y increment whole part                                    |
 +--------+-------------------------------------------------------------------+
-| 0x800D | Count of rows to process                                          |
+| 0x800D | Pointer Y increment fractional part                               |
 +--------+-------------------------------------------------------------------+
-| 0x800E | Count of 4 bit pixels to process per row                          |
+| 0x800E | Pointer X increment whole part                                    |
 +--------+-------------------------------------------------------------------+
-| 0x800F | Pattern for Line & Filler mode & start trigger                    |
+| 0x800F | Pointer X increment fractional part                               |
 +--------+-------------------------------------------------------------------+
-| 0x8010 | Source Y whole                                                    |
+| 0x8010 | Pointer Y whole part                                              |
 +--------+-------------------------------------------------------------------+
-| 0x8011 | Source Y fraction                                                 |
+| 0x8011 | Pointer Y fractional part                                         |
 +--------+-------------------------------------------------------------------+
-| 0x8012 | Source Y increment whole                                          |
+| 0x8012 | Source bank select                                                |
 +--------+-------------------------------------------------------------------+
-| 0x8013 | Source Y increment fraction                                       |
+| 0x8013 | Source partition select                                           |
 +--------+-------------------------------------------------------------------+
-| 0x8014 | Source Y post-add whole                                           |
+| 0x8014 | Partitioning settings                                             |
 +--------+-------------------------------------------------------------------+
-| 0x8015 | Source Y post-add fraction                                        |
+| 0x8015 | Blit control flags & Source barrel rotate                         |
 +--------+-------------------------------------------------------------------+
-| 0x8016 | Source X whole                                                    |
+| 0x8016 | Source AND mask & Colorkey                                        |
 +--------+-------------------------------------------------------------------+
-| 0x8017 | Source X fraction                                                 |
+| 0x8017 | Count of rows to blit                                             |
 +--------+-------------------------------------------------------------------+
-| 0x8018 | Source X increment whole                                          |
+| 0x8018 | Count of cells / pixels to blit, whole part                       |
 +--------+-------------------------------------------------------------------+
-| 0x8019 | Source X increment fraction                                       |
+| 0x8019 | Count of cells / pixels to blit, fractional part                  |
 +--------+-------------------------------------------------------------------+
-| 0x801A | Source X post-add whole                                           |
+| 0x801A | Source X whole part                                               |
 +--------+-------------------------------------------------------------------+
-| 0x801B | Source X post-add fraction                                        |
+| 0x801B | Source X fractional part                                          |
 +--------+-------------------------------------------------------------------+
-| 0x801C | Destination whole                                                 |
+| 0x801C | Destination whole part                                            |
 +--------+-------------------------------------------------------------------+
-| 0x801D | Destination fraction                                              |
+| 0x801D | Destination fractional part                                       |
 +--------+-------------------------------------------------------------------+
-| 0x801E | Destination increment whole                                       |
+| 0x801E | Reindexing & Pixel OR mask                                        |
 +--------+-------------------------------------------------------------------+
-| 0x801F | Destination post-add whole                                        |
+| 0x801F | Start on write & Pattern                                          |
 +--------+-------------------------------------------------------------------+

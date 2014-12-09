@@ -1,3 +1,11 @@
+Version 00.014.000 (2014.12.09)
+ - Accelerator revision and simplifications, discarding many non-practical
+   setups which could complicate implementations.
+ - A more appropriate polygon blit support is introduced.
+ - Accelerator registers are re-ordered to fit better practical uses (such as
+   sprite and tile blits).
+
+
 Version 00.013.007 (2014.11.30)
  - Square root functions added to the math component in the User Library.
 
