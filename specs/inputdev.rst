@@ -43,10 +43,10 @@ The RRPGE system is capable to use the following types of input devices:
 
 - Pointing devices. Two major types are supported: Mice or similar devices
   which require an on-screen cursor for feeding back position information to
-  the user and typically have multiple buttons, and Touch screens which
-  operate on the concept of the user interacting with the display itself, thus
-  not requiring an on-screen cursor but typically having only a single press
-  information ("button").
+  the user and typically have multiple buttons, and Touch devices which
+  operate on the concept of the user interacting with the display itself or a
+  surface representing the display, not always requiring an on-screen cursor
+  but typically having only a single press information ("button").
 
 - Digital gamepads. These typically provide four buttons for directions, and
   typically four or more additional buttons. They have no capability for
@@ -106,7 +106,7 @@ device ID (or the fact that the device is absent). The 0x0411 "Drop device"
 kernel call may be used to drop out devices from this state indicating they
 are no longer used.
 
-When an used device is removed, the application might still be excepting it to
+When an used device is removed, the application might still be expecting it to
 function. A removed device however returns complete inactivity (just as a
 nonexistent device does) which is the intended behavior.
 
@@ -211,13 +211,17 @@ scrolling up (Y) or left (X). On a typical mouse Scroll wheel Y is available,
 and there are no scroll buttons. On some mice a horizontal scroll wheel, or
 buttons associated with left / right scroll are available.
 
+Device specific flags (returned by 0x0410: Get device properties):
+
+- bit 5: Set if a cursor should be displayed to track the device.
+
 
 0x1: Touch pointing device
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The touch pointing device assumes a touch display where no cursor is necessary
-to feed back to the user's actions. The device may support multi-touch which
-may be exploited through the "0x0425: Return area activity" kernel call.
+The touch pointing device assumes a touch display or surface representing the
+display. The device may support multi-touch which may be exploited through the
+"0x0425: Return area activity" kernel call.
 
 Hover activities may be returned if the physical device supports it. These
 indicate that the user did not actually press, but the respective analog
@@ -237,6 +241,8 @@ Digital input mapping:
 |      | 13    | Secondary touch hover activity (if supported)               |
 +------+-------+-------------------------------------------------------------+
 
+Other inputs may be available if the device has additional buttons.
+
 Analog input mapping:
 
 +-------+--------------------------------------------------------------------+
@@ -250,6 +256,16 @@ Analog input mapping:
 +-------+--------------------------------------------------------------------+
 | 3     | Secondary touch last position Y (0-399)                            |
 +-------+--------------------------------------------------------------------+
+| 4     | Primary touch pressure (0-0xFFFF)                                  |
++-------+--------------------------------------------------------------------+
+| 5     | Secondary touch pressure (0-0xFFFF)                                |
++-------+--------------------------------------------------------------------+
+
+Pressure information should be zero if there is no touch activity.
+
+Device specific flags (returned by 0x0410: Get device properties):
+
+- bit 5: Set if a cursor should be displayed to track the device.
 
 
 0x2: Digital gamepad
@@ -460,114 +476,23 @@ like used for banks 1 - 9.
 
 
 
-Digital input description symbols
+Get digital / analog input descriptor
 ------------------------------------------------------------------------------
 
 
-The kernel function 0x0412 "Get digital input description symbols" return the
-assignment of digital inputs to specific physical devices, typically the keys
-on a keyboard.
+The kernel functions 0x0412 and 0x0413 ("Get digital input descriptor" and
+"Get analog input descriptor") can be used to gather information about the
+controls provided by a device.
 
-The purpose of this function is twofold: for one, it provides information on
-whether the particular input is available (returning zero unless so), for an
-other, it may be use to assist users of the application to locate the physical
-inputs required to control the application.
+The purpose of these functions are twofold:
 
-For most keyboard keys simply the UTF-32 character code is returned. This way
-aware applications may even display some international characters if the
-keyboard is known to have such. Note that always the uppercase variant of the
-character should be returned by the host for this purpose unless separate keys
-are provided for the lowercase and uppercase variants of the character. Note
-that several keys map to certain ASCII control codes, these are also listed.
+- They can return whether the input is available or not: the application may
+  use this information to fine-tune it's controls, such as by not expecting
+  input from a non-existent point.
 
-Otherwise the following special codes are available:
-
-+--------------+-------------------------------------------------------------+
-| Code (32bit) | Description                                                 |
-+==============+=============================================================+
-| 0x00000000   | Input does not exist                                        |
-+--------------+-------------------------------------------------------------+
-| 0x00000008   | 'Backspace' key                                             |
-+--------------+-------------------------------------------------------------+
-| 0x00000009   | 'TAB' key                                                   |
-+--------------+-------------------------------------------------------------+
-| 0x0000000A   | Main 'Enter' key                                            |
-+--------------+-------------------------------------------------------------+
-| 0x0000001B   | 'ESC' key                                                   |
-+--------------+-------------------------------------------------------------+
-| 0x00000020   | 'Space' key                                                 |
-+--------------+-------------------------------------------------------------+
-| 0x0000007F   | 'Delete' key                                                |
-+--------------+-------------------------------------------------------------+
-| 0x8000000A   | Numeric pad 'Enter'                                         |
-+--------------+-------------------------------------------------------------+
-| 0x8000002A   | Numeric pad '*'                                             |
-+--------------+-------------------------------------------------------------+
-| 0x8000002B   | Numeric pad '+'                                             |
-+--------------+-------------------------------------------------------------+
-| 0x8000002C   | Numeric pad ',' (Del)                                       |
-+--------------+-------------------------------------------------------------+
-| 0x8000002D   | Numeric pad '-'                                             |
-+--------------+-------------------------------------------------------------+
-| 0x8000002F   | Numeric pad '/'                                             |
-+--------------+-------------------------------------------------------------+
-| 0x80000030   |                                                             |
-| \-           | Numeric pad '0' - '9'                                       |
-| 0x80000039   |                                                             |
-+--------------+-------------------------------------------------------------+
-| 0x80000081   |                                                             |
-| \-           | 'Fxx' function keys, typically 'F1' - 'F12'.                |
-| 0x8000008C   |                                                             |
-+--------------+-------------------------------------------------------------+
-| 0x80000090   | Up direction key                                            |
-+--------------+-------------------------------------------------------------+
-| 0x80000091   | Right direction key                                         |
-+--------------+-------------------------------------------------------------+
-| 0x80000092   | Down direction key                                          |
-+--------------+-------------------------------------------------------------+
-| 0x80000093   | Left direction key                                          |
-+--------------+-------------------------------------------------------------+
-| 0x80000094   | 'Insert' key                                                |
-+--------------+-------------------------------------------------------------+
-| 0x80000096   | 'Home' key                                                  |
-+--------------+-------------------------------------------------------------+
-| 0x80000097   | 'End' key                                                   |
-+--------------+-------------------------------------------------------------+
-| 0x80000098   | 'Page Up' key                                               |
-+--------------+-------------------------------------------------------------+
-| 0x80000099   | 'Page Down' key                                             |
-+--------------+-------------------------------------------------------------+
-| 0x8000009A   | Left 'Shift' key                                            |
-+--------------+-------------------------------------------------------------+
-| 0x8000009B   | Right 'Shift' key                                           |
-+--------------+-------------------------------------------------------------+
-| 0x8000009C   | Left 'Ctrl' key                                             |
-+--------------+-------------------------------------------------------------+
-| 0x8000009D   | Right 'Ctrl' key                                            |
-+--------------+-------------------------------------------------------------+
-| 0x8000009E   | Left 'Alt' key                                              |
-+--------------+-------------------------------------------------------------+
-| 0x8000009F   | Right 'Alt' key (Alt Gr)                                    |
-+--------------+-------------------------------------------------------------+
-| 0xFFFFFFFD   | Special keyboard control                                    |
-+--------------+-------------------------------------------------------------+
-| 0xFFFFFFFE   | Special other controller control                            |
-+--------------+-------------------------------------------------------------+
-| 0xFFFFFFFF   | Native control                                              |
-+--------------+-------------------------------------------------------------+
-
-The "Special keyboard control" code (0xFFFFFFFD) indicates a keyboard button
-which can not be identified (either for the limitations of the host or the
-specialty of the actual keyboard button).
-
-The "Special other controller control" code (0xFFFFFFFE) indicates a button or
-other mean of control on a non-keyboard device which is neither a native
-device. Native device is a device which physically matches to the device type
-it represents (for example a physical joystick serving a joystick type input
-device).
-
-The "Native control" indicates a control on the device itself if the device
-physically matches to the device type it represents (except for keyboard).
+- The textual representations may provide feedback for the user (if printed by
+  the application), so the user may easier find the appropriate buttons on his
+  device.
 
 
 

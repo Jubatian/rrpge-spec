@@ -86,7 +86,7 @@ Invalid parameters
 
 If the parameters passed to a kernel function are invalid in some manner (such
 as attempting to access application data above the application binary size)
-the kernel typically terminates the application. Exceptions from this rule are
+the kernel typically terminates the application. Expections from this rule are
 indicated for the appropriate functions.
 
 
@@ -220,7 +220,7 @@ Loads bytes from a file. The bytes are loaded in Big Endian order (so first
 loaded byte of the file will be the high byte of the first word of the
 target).
 
-The file name is excepted to be a zero terminated UTF-8 string.
+The file name is expected to be a zero terminated UTF-8 string.
 
 The kernel terminates the application if either parameter is invalid:
 
@@ -258,7 +258,7 @@ the source area).
 Note that the host should fail if the file is not sufficiently large already
 so the new data can be added without gaps.
 
-The file name is excepted to be a zero terminated UTF-8 string.
+The file name is expected to be a zero terminated UTF-8 string.
 
 The kernel terminates the application if either parameter is invalid:
 
@@ -320,7 +320,7 @@ See "file_io.rst" for further details.
 Moves (renames) a file, or deletes it. Deleting can be performed by setting
 the target name an empty string.
 
-The file names are excepted to be zero terminated UTF-8 strings.
+The file names are expected to be zero terminated UTF-8 strings.
 
 The kernel terminates the application if either parameter is invalid:
 
@@ -457,7 +457,7 @@ of the following fields:
 
 - bit 12-15: Input device type.
 - bit    11: Nonzero indicating the device is available.
-- bit  5-10: 0
+- bit  5-10: Device-specific flags (zero unless specified otherwise).
 - bit     4: Set if bits 0-3 contain a valid device ID.
 - bit  0- 3: Device ID which this device maps to.
 
@@ -477,7 +477,8 @@ use the device, so the device (if any) may come live. The kernel the same time
 updates the application state (0x070 - 0x07F, see "state.rst") according to
 the return.
 
-For more on the behavior and handling of input devices, see "inputdev.rst".
+For the layout of Device-specific flags and more on the behavior and handling
+of input devices, see "inputdev.rst".
 
 
 0x0411: Drop device
@@ -498,33 +499,75 @@ functions returning according to N/S).
 For more on the behavior and handling of input devices, see "inputdev.rst".
 
 
-0x0412: Get digital input description symbols
+0x0412: Get digital input descriptor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_inp_getdidesc
-- Cycles: 800
+- Cycles: 2400
 - Host:   Required.
 - N/S:    May always return 0 indicating the input does not exist.
 - Param1: Device to query (only low 4 bits used).
 - Param2: Input group to query.
 - Param3: Input to query within the group (only low 4 bits used).
-- Ret. C: High 16 bits of UTF-32 character.
-- Ret.X3: Low 16 bits of UTF-32 character.
+- Param4: Target offset in CPU Data memory to load the description into.
+- Param5: Size limit for the description in words.
+- Ret.X3: 0 if the input does not exist, 1 otherwise.
 
-Returns a descriptive symbol for the given input point of the given device, or
-the information that the input is not available. This function may assist
-users using their physical controllers within the application by providing
+Returns a description for the given input point of the given device, or the
+information that the input is not available. This function may assist users
+using their physical controllers within the application by providing
 information by which they may identify the appropriate controls on their
 hardware.
 
-The highest bit of the 32bit return value (bit 15 of C) if set identifies
-special codes for specific (non-keyboard, or special keys on a keyboard)
-devices.
+An UTF-8 description text is loaded into the target if the input exists (it
+may not terminate properly if truncated by size limit). Otherwise the target
+is not altered.
 
-A zero return indicates that the input does not exist.
+See "inputdev.rst" for more information.
 
-See "inputdev.rst" for the usage and the complete mapping of this return
-value.
+
+0x0413: Get analog input descriptor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- F.name: kc_inp_getaidesc
+- Cycles: 2400
+- Host:   Required.
+- N/S:    May always return 0 indicating the input does not exist.
+- Param1: Device to query (only low 4 bits used).
+- Param2: Analog input to query.
+- Param3: Target offset in CPU Data memory to load the description into.
+- Param4: Size limit for the description in words.
+- Ret.X3: 0 if the input does not exist, 1 otherwise.
+
+Returns a description for the given input point of the given device, or the
+information that the input is not available. This function may assist users
+using their physical controllers within the application by providing
+information by which they may identify the appropriate controls on their
+hardware.
+
+An UTF-8 description text is loaded into the target if the input exists (it
+may not terminate properly if truncated by size limit). Otherwise the target
+is not altered.
+
+See "inputdev.rst" for more information.
+
+
+0x0414: Get device name
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- F.name: kc_inp_getname
+- Cycles: 2400
+- Host:   Required.
+- N/S:    May always return 0 indicating the name does not exist.
+- Param1: Device to query (only low 4 bits used).
+- Param2: Target offset in CPU Data memory to load the name into.
+- Param3: Size limit for the name in words.
+- Ret.X3: 0 if the name does not exist, 1 otherwise.
+
+Returns a descriptive UTF-8 device name if possible (it may not terminate
+properly if truncated by size limit). Note that even an existing device may
+have no name information. If the name does not exist, the target is not
+altered.
 
 
 0x0422: Get digital inputs
@@ -933,7 +976,11 @@ abbreviations used in the table are:
 +--------+--------+---+---+---+------+---------------------------------------+
 | 0x0411 |    800 |   | O | 1 |      | kc_inp_dropdev                        |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0412 |    800 |   | O | 3 | C:X3 | kc_inp_getdidesc                      |
+| 0x0412 |   2400 |   | O | 5 |  X3  | kc_inp_getdidesc                      |
++--------+--------+---+---+---+------+---------------------------------------+
+| 0x0413 |   2400 |   | O | 4 |  X3  | kc_inp_getaidesc                      |
++--------+--------+---+---+---+------+---------------------------------------+
+| 0x0414 |   2400 |   | O | 3 |  X3  | kc_inp_getname                        |
 +--------+--------+---+---+---+------+---------------------------------------+
 | 0x0422 |    800 |   | O | 2 |  X3  | kc_inp_getdi                          |
 +--------+--------+---+---+---+------+---------------------------------------+
