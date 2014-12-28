@@ -104,15 +104,15 @@ locations are not meant to be accessed directly by applications.
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0xFAD8 | Current first non-occupied column on the bottom                   |
+| 0xFAC8 | Current first non-occupied column on the bottom                   |
 +--------+-------------------------------------------------------------------+
-| 0xFAD9 | Current first occupied column on the top                          |
+| 0xFAC9 | Current first occupied column on the top                          |
 +--------+-------------------------------------------------------------------+
-| 0xFADA | Count of columns to use                                           |
+| 0xFACA | Count of columns to use                                           |
 +--------+-------------------------------------------------------------------+
-| 0xFADB | First column to use                                               |
+| 0xFACB | First column to use                                               |
 +--------+-------------------------------------------------------------------+
-| 0xFADC | Occupation data dirty flag (bit 0 set if *not*(!) dirty)          |
+| 0xFACC | Occupation data dirty flag (bit 0 set if *not*(!) dirty)          |
 +--------+-------------------------------------------------------------------+
 
 All these locations are zero-initialized.
@@ -227,11 +227,11 @@ locations are not meant to be accessed directly by applications.
 | \-     | each display list row. Byte (8 bit) data.                         |
 | 0xF98F |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFADD | Occupation data dirty flag (bit 0 set if *not*(!) dirty)          |
+| 0xFACD | Occupation data dirty flag (bit 0 set if *not*(!) dirty)          |
 +--------+-------------------------------------------------------------------+
-| 0xFADE | Count of columns to use                                           |
+| 0xFACE | Count of columns to use                                           |
 +--------+-------------------------------------------------------------------+
-| 0xFADF | First column to use                                               |
+| 0xFACF | First column to use                                               |
 +--------+-------------------------------------------------------------------+
 
 All these locations are zero-initialized.

@@ -51,6 +51,9 @@ The absolute offset of it's first free slot at 0xFAEF is set 0xFAF2
 The frame end hook list is empty. The absolute offset of it's first free slot
 at 0xFAEE is set 0xFAE0 (indicating empty).
 
+The init hook list is empty. The absolute offset of it's first free slot at
+0xFADE is set 0xFAD0 (indicating empty).
+
 
 
 
@@ -74,6 +77,12 @@ The following table provides the initial fill data to be used for the range
 | Range  | Fill data                                                         |
 +========+===================================================================+
 | 0xF800 |                                                                   |
+| \-     | 0                                                                 |
+| 0xFADE |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0xFADF | 0xFAD0                                                            |
++--------+-------------------------------------------------------------------+
+| 0xFAE0 |                                                                   |
 | \-     | 0                                                                 |
 | 0xFAED |                                                                   |
 +--------+-------------------------------------------------------------------+

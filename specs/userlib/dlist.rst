@@ -95,25 +95,14 @@ locations are not meant to be accessed directly by applications.
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0xF990 | Current work surface 0, high                                      |
+| 0xFAD0 |                                                                   |
+| \-     | Init hooks (functions to call on init)                            |
+| 0xFADD |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xF991 | Current display surface 0, high                                   |
+| 0xFADE | Flip performed flag (bit 0 set after a flip, then cleared by      |
+|        | processing the frame hooks)                                       |
 +--------+-------------------------------------------------------------------+
-| 0xF992 | Current work surface 0, low                                       |
-+--------+-------------------------------------------------------------------+
-| 0xF993 | Current display surface 0, low                                    |
-+--------+-------------------------------------------------------------------+
-| 0xF994 |                                                                   |
-| \-     | Current work & display surface 1 (same structure like 0)          |
-| 0xF997 |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0xF998 |                                                                   |
-| \-     | Current work & display surface 2 (same structure like 0)          |
-| 0xF99B |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0xF99C |                                                                   |
-| \-     | Current work & display surface 3 (same structure like 0)          |
-| 0xF99F |                                                                   |
+| 0xFADF | Absolute offset of first free slot in init hooks                  |
 +--------+-------------------------------------------------------------------+
 | 0xFAE0 |                                                                   |
 | \-     | Frame end hooks (functions to call when frame ends)               |
@@ -125,10 +114,7 @@ locations are not meant to be accessed directly by applications.
 +--------+-------------------------------------------------------------------+
 | 0xFAF0 |                                                                   |
 | \-     | Page flip hooks (functions to call when flipping pages)           |
-| 0xFAFC |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0xFAFD | Flip performed flag (bit 0 set after a flip, then cleared by      |
-|        | processing the frame hooks)                                       |
+| 0xFAFD |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xFAFE | Current work display list definition & process flags              |
 +--------+-------------------------------------------------------------------+
@@ -160,8 +146,8 @@ aware of these.
 - Param2: Display list clear controls to fill in
 - Ret.X3: Current work display list (size and mode flags included)
 
-Sets up display for double buffering. The display list definitions provided
-are sanitized with us_dloff_clip.
+Sets up display for double buffering, also calling the init hooks. The display
+list definitions provided are sanitized with us_dloff_clip.
 
 The display lists themselves are not altered, so they should be set up as
 necessary before calling this.
@@ -214,6 +200,13 @@ Process Flags register).
 This function is optimized for fast return, simply providing the appropriate
 CPU RAM variable. The us_dbuf_init and us_dbuf_flip routines ensure that the
 variables have the correct content, and keep being correct.
+
+This function may be called from within a frame end hook. This case it only
+returns the current work display list (not attempting to call any frame hook).
+
+This function may be called without double buffering set up, to support
+writing double-buffering aware components (which only use it to wait for frame
+end when necessary).
 
 
 0xF060: Add page flip hook
@@ -272,42 +265,32 @@ Removes a function from the frame end hook list. If it does not exist in the
 list, no effect.
 
 
-0xF068: Set work & display surface pair
+0xF068: Add init hook
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- F.name: us_dbuf_setsurface
-- Cycles: 100
-- Param0: Surface to set (only low 2 bits used)
-- Param1: Display surface offset, high
-- Param2: Display surface offset, low
-- Param3: Work surface offset, high
-- Param4: Work surface offset, low
+- F.name: us_dbuf_addinithook
+- Cycles: 500
+- Param0: Function to add
 
-Sets one of the 4 surface pairs. The work & display surfaces are relative to
-the current layout (the passed work surface offsets will pair with the current
-work display list).
+Adds a function (no parameters, no return) to the init hook list. The hooks
+are processed in the order they were added. Re-adding a function moves it to
+the end of the list.
 
-Note that the offsets can be arbitrary, they don't even have to be actual
-offsets: any kind of value pair may be set which should be managed by double
-buffering.
+No effect if the init hook list is full.
 
-If the hooks added require properly set up surfaces, this function should be
-called before us_dbuf_init to set up the surfaces.
+The list of hooks in CPU RAM grows incrementally (lower locations filled
+first).
 
 
-0xF06A: Get work surface
+0xF06A: Remove init hook
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- F.name: us_dbuf_getsurface
-- Cycles: Waits for frame end (of previous flip), otherwise 50
-- Param0: Surface to query (only low 2 bits used)
-- Ret. C: Work surface offset, high
-- Ret.X3: Work surface offset, low
+- F.name: us_dbuf_reminithook
+- Cycles: 500
+- Param0: Function to remove
 
-First if necessary, it waits for the frame (in which the pages were last
-flipped) to end, also calling the frame hooks when this happens. The wait is
-performed by the Frame rate limiter flag (in the Display List Definition &
-Process Flags register).
+Removes a function from the init hook list. If it does not exist in the list,
+no effect.
 
 
 
@@ -763,7 +746,7 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | 0xF066 |           500 | 1 |      | us_dbuf_remframehook                   |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF068 |           100 | 5 |      | us_dbuf_setsurface                     |
+| 0xF068 |           500 | 1 |      | us_dbuf_addinithook                    |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF06A |            50 | 1 | C:X3 | us_dbuf_getsurface                     |
+| 0xF06A |           500 | 1 |      | us_dbuf_reminithook                    |
 +--------+---------------+---+------+----------------------------------------+

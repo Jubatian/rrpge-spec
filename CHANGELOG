@@ -9,6 +9,9 @@ Version 00.015.000 (2014.12.28)
    like 0x0412.
  - Pressure input introduced for touch devices (better support for digitizing
    pads and similar devices).
+ - User Library, double buffering (in dlist.rst) changed: us_dbuf_getsurface
+   and us_dbuf_setsurface are removed, introducing a set of initialization
+   hooks instead (also slightly altering CPU RAM layout).
 
 
 Version 00.014.000 (2014.12.09)
