@@ -44,15 +44,20 @@ The page flip hook list contains the following functions:
 
 - 0xF06C: us_sprite_reset
 - 0xF06E: us_smux_reset
+- 0xF0A4: us_dsurf_flip
 
-The absolute offset of it's first free slot at 0xFAEF is set 0xFAF2
-(indicating two functions loaded).
+The absolute offset of it's first free slot at 0xFAEF is set 0xFAF3
+(indicating three functions loaded).
 
 The frame end hook list is empty. The absolute offset of it's first free slot
 at 0xFAEE is set 0xFAE0 (indicating empty).
 
-The init hook list is empty. The absolute offset of it's first free slot at
-0xFADE is set 0xFAD0 (indicating empty).
+The init hook list contains the following functions:
+
+- 0xF0A2: us_dsurf_init
+
+The absolute offset of it's first free slot at 0xFADF is set 0xFAD1
+(indicating one function loaded).
 
 
 
@@ -61,7 +66,26 @@ Sprite manager initialization
 ------------------------------------------------------------------------------
 
 
-Sprite managers start out non-initialized, all associated locations set zero.
+Sprite managers start out uninitialized, all associated locations set zero.
+
+
+
+
+Destination surface initialization
+------------------------------------------------------------------------------
+
+
+Destination surfaces start out uninitialized, the flipflop at 0xFABF set zero.
+They are usable for single buffered surfaces in this state.
+
+The default surface (up_dsurf at 0xFAC0) is set up as follows:
+
+- PRAM write mask is all set (no masking).
+- Surface A and Surface B bank and partition selects are zero.
+- Width of destination is 80 cells.
+- Partition size is 15 (64K cells, full bank).
+
+This corresponds with the display surface defined in the initial display list.
 
 
 
@@ -78,9 +102,31 @@ The following table provides the initial fill data to be used for the range
 +========+===================================================================+
 | 0xF800 |                                                                   |
 | \-     | 0                                                                 |
+| 0xFABF |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0xFAC0 | 0xFFFF                                                            |
++--------+-------------------------------------------------------------------+
+| 0xFAC1 | 0xFFFF                                                            |
++--------+-------------------------------------------------------------------+
+| 0xFAC2 |                                                                   |
+| \-     | 0                                                                 |
+| 0xFAC5 |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0xFAC6 | 0x0050                                                            |
++--------+-------------------------------------------------------------------+
+| 0xFAC7 | 0x00F0                                                            |
++--------+-------------------------------------------------------------------+
+| 0xFAC8 |                                                                   |
+| \-     | 0                                                                 |
+| 0xFACF |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0xFAD0 | 0xF0A2                                                            |
++--------+-------------------------------------------------------------------+
+| 0xFAD1 |                                                                   |
+| \-     | 0                                                                 |
 | 0xFADE |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFADF | 0xFAD0                                                            |
+| 0xFADF | 0xFAD1                                                            |
 +--------+-------------------------------------------------------------------+
 | 0xFAE0 |                                                                   |
 | \-     | 0                                                                 |
@@ -88,13 +134,15 @@ The following table provides the initial fill data to be used for the range
 +--------+-------------------------------------------------------------------+
 | 0xFAEE | 0xFAE0                                                            |
 +--------+-------------------------------------------------------------------+
-| 0xFAEF | 0xFAF2                                                            |
+| 0xFAEF | 0xFAF3                                                            |
 +--------+-------------------------------------------------------------------+
 | 0xFAF0 | 0xF06C                                                            |
 +--------+-------------------------------------------------------------------+
 | 0xFAF1 | 0xF06E                                                            |
 +--------+-------------------------------------------------------------------+
-| 0xFAF2 |                                                                   |
+| 0xFAF2 | 0xF0A4                                                            |
++--------+-------------------------------------------------------------------+
+| 0xFAF3 |                                                                   |
 | \-     | 0                                                                 |
 | 0xFAFF |                                                                   |
 +--------+-------------------------------------------------------------------+

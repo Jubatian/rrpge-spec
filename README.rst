@@ -35,6 +35,7 @@ of software-art.
 Related projects
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+- RRPGE home: http://www.rrpge.org
 - RRPGE Assembler: https://www.github.com/Jubatian/rrpge-asm
 - RRPGE Emulator & Library: https://www.github.com/Jubatian/rrpge-libminimal
 - RRPGE User Library: https://www.github.com/Jubatian/rrpge-userlib
