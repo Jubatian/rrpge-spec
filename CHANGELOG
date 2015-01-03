@@ -1,3 +1,8 @@
+Version 00.015.001 ()
+ - A code page 437 compliant font binary added (fontdata.rst), to be used as
+   a tileset for basic text output.
+
+
 Version 00.015.000 (2014.12.29)
  - Device specific flags may be returned by kernel call 0x0410: Get device
    properties, currently suggesting whether a cursor should be displayed for
