@@ -90,6 +90,21 @@ This corresponds with the display surface defined in the initial display list.
 
 
 
+Tileset manager initialization
+------------------------------------------------------------------------------
+
+
+The tileset manager starts out uninitialized, so the FABC - FABE range set
+zero. The default tilesets however are initialized as follows:
+
+- 0xFAAC: Normal 4 bit font. Tile index layout 1, No colorkey.
+- 0xFAB0: Inverted 4 bit font. Tile index layout 5, Pixel AND mask colorkey.
+- 0xFAB4: Normal 8 bit font. Tile index layout 1, No colorkey.
+- 0xFAB8: Inverted 8 bit font. Tile index layout 5, Pixel AND mask colorkey.
+
+
+
+
 CPU RAM user library range fill map
 ------------------------------------------------------------------------------
 
@@ -101,6 +116,26 @@ The following table provides the initial fill data to be used for the range
 | Range  | Fill data                                                         |
 +========+===================================================================+
 | 0xF800 |                                                                   |
+| \-     | 0                                                                 |
+| 0xFAAB |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0xFAAC |                                                                   |
+| \-     | 0x020C, 0x000F, 0xC800, 0x0020                                    |
+| 0xFAAF |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0xFAB0 |                                                                   |
+| \-     | 0x020C, 0x000F, 0xC800, 0x01A2                                    |
+| 0xFAB3 |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0xFAB4 |                                                                   |
+| \-     | 0x040C, 0x000F, 0xC800, 0x0039                                    |
+| 0xFAB7 |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0xFAB8 |                                                                   |
+| \-     | 0x040C, 0x000F, 0xC800, 0x01BD                                    |
+| 0xFABB |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0xFABC |                                                                   |
 | \-     | 0                                                                 |
 | 0xFABF |                                                                   |
 +--------+-------------------------------------------------------------------+

@@ -85,10 +85,40 @@ File "dlist.rst"
 Low level display list management and double buffering support.
 
 
+File "dsurf.rst"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Destination surface structure for working with the Graphics Accelerator.
+
+
+File "fontdata.rst"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Code Page 437 compliant binary font in the Peripheral RAM (0xFC800 - 0xFDFFF).
+
+
 File "llmm.rst"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Low Level Memory Management functions.
+
+
+File "math.rst"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Mathematic functions.
+
+
+File "sprite.rst"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Display List based sprite system.
+
+
+File "tile.rst"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Tileset structure for working with the Graphics Accelerator.
 
 
 File "ulboot.rst"
@@ -288,4 +318,12 @@ formatted as a NOP. Not used handlers are filled with NOPs.
 | 0xF0A2 |            20 | 0 |      | us_dsurf_init           | dsurf.rst    |
 +--------+---------------+---+------+-------------------------+--------------+
 | 0xF0A4 |            25 | 0 |      | us_dsurf_flip           | dsurf.rst    |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xF0A6 |           100 | 6 |      | us_tile_set             | tile.rst     |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xF0A8 |           250 | 1 |      | us_tile_getacc          | tile.rst     |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xF0AA |           150 | 3 |      | us_tile_blit            | tile.rst     |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xF0AC |           150 | 2 |      | us_tile_blitb           | tile.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
