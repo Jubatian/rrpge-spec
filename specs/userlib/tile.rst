@@ -94,7 +94,7 @@ Functions
 ------------------------------------------------------------------------------
 
 
-0xF0A6: Set up tileset
+0xF0A8: Set up tileset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tile_set
@@ -109,7 +109,7 @@ Functions
 Sets up a tileset structure using the given parameters as-is.
 
 
-0xF0A8: Initialize accelerator for tile output
+0xF0AA: Initialize accelerator for tile output
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tile_getacc
@@ -135,7 +135,7 @@ The function also sets up the three associated CPU RAM locations (0xFABC,
 0xFABD, 0xFABE).
 
 
-0xF0AA: Blit tile at arbitrary location
+0xF0AC: Blit tile at arbitrary location
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tile_blit
@@ -153,7 +153,7 @@ The us_tile_getacc function has to be called before this to set up a tileset
 tileset).
 
 
-0xF0AC: Blit tile at boundary
+0xF0AE: Blit tile at boundary
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tile_blitb
@@ -168,6 +168,17 @@ The us_tile_getacc function has to be called before this to set up a tileset
 (however any number of blits may be performed after the call from the same
 tileset).
 
+
+0xF0B0: Get width and height of tiles
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- F.name: us_tile_getwh
+- Cycles: 60
+- Param0: Source tileset pointer (4 words)
+- Ret. C: Height in rows
+- Ret.X3: Width in cells
+
+Returns the width and height of a tileset.
 
 
 
@@ -186,11 +197,13 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | Addr.  | Cycles        | P |   R  | Name                                   |
 +========+===============+===+======+========================================+
-| 0xF0A6 |           100 | 6 |      | us_tile_set                            |
+| 0xF0A8 |           100 | 6 |      | us_tile_set                            |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF0A8 |           250 | 1 |      | us_tile_getacc                         |
+| 0xF0AA |           250 | 1 |      | us_tile_getacc                         |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF0AA |           150 | 3 |      | us_tile_blit                           |
+| 0xF0AC |           150 | 3 |      | us_tile_blit                           |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF0AC |           150 | 2 |      | us_tile_blitb                          |
+| 0xF0AE |           150 | 2 |      | us_tile_blitb                          |
++--------+---------------+---+------+----------------------------------------+
+| 0xF0B0 |            60 | 1 | C:X3 | us_tile_getwh                          |
 +--------+---------------+---+------+----------------------------------------+

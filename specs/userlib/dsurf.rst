@@ -155,7 +155,20 @@ both set to 64K cells. The work surface is used for setting up the bank and
 partition selects of the destination.
 
 
-0xF0A0: Set partitioning settings
+0xF0A0: Get width and partitioning settings
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- F.name: us_dsurf_getwp
+- Cycles: 50
+- Param0: Source surface pointer (8 words)
+- Ret. C: Width of surface in cells
+- Ret.X3: Partitioning setting (0 - 15)
+
+Returns the width in cell and the partitioning setting of the surface,
+reflecting the physical width and height of it.
+
+
+0xF0A2: Set partitioning settings
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dsurf_setaccpart
@@ -168,7 +181,7 @@ partitioning settings (using source partition size and X/Y split from that),
 and sets Accelerator register 0x8014 with the result.
 
 
-0xF0A2: Initialize surface manager
+0xF0A4: Initialize surface manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dsurf_init
@@ -186,7 +199,7 @@ Surface A should be paired with the Display List Definition 1 parameter of
 0xF042: "Initialize for double buffering".
 
 
-0xF0A4: Flip surfaces
+0xF0A6: Flip surfaces
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dsurf_flip
@@ -229,9 +242,11 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | 0xF09E |       180 + W | 1 | C:X3 | us_dsurf_getacc                        |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF0A0 |           100 | 2 |      | us_dsurf_setaccpart                    |
+| 0xF0A0 |            50 | 1 | C:X3 | us_dsurf_getwp                         |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF0A2 |            20 | 0 |      | us_dsurf_init                          |
+| 0xF0A2 |           100 | 2 |      | us_dsurf_setaccpart                    |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF0A4 |            25 | 0 |      | us_dsurf_flip                          |
+| 0xF0A4 |            20 | 0 |      | us_dsurf_init                          |
++--------+---------------+---+------+----------------------------------------+
+| 0xF0A6 |            25 | 0 |      | us_dsurf_flip                          |
 +--------+---------------+---+------+----------------------------------------+
