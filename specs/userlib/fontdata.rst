@@ -106,7 +106,8 @@ font in the Peripheral RAM.
 Normal 4 bit font
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-::
+Pseudocode: ::
+
     for (char = 0; char < 256; char ++){
      for (line = 0; line < 12; line ++){
       pram[b + (char * 12) + line].28 = font[(char * 12) + line].7
@@ -124,7 +125,8 @@ Normal 4 bit font
 Inverted 4 bit font
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-::
+Pseudocode: ::
+
     for (char = 0; char < 256; char ++){
      for (line = 0; line < 12; line ++){
       pram[b + (char * 12) + line].30 = !font[(char * 12) + line].7
@@ -142,7 +144,8 @@ Inverted 4 bit font
 Normal 8 bit font
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-::
+Pseudocode: ::
+
     for (char = 0; char < 256; char ++){
      for (line = 0; line < 12; line ++){
       pram[b + (char * 24) + (line * 2)    ].25 = font[(char * 12) + line].7
@@ -160,7 +163,8 @@ Normal 8 bit font
 Inverted 8 bit font
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-::
+Pseudocode: ::
+
     for (char = 0; char < 256; char ++){
      for (line = 0; line < 12; line ++){
       pram[b + (char * 24) + (line * 2)    ].29 = !font[(char * 12) + line].7
