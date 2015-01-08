@@ -169,10 +169,10 @@ The us_tile_getacc function has to be called before this to set up a tileset
 tileset).
 
 
-0xF0B0: Get width and height of tiles
+0xF0B0: Get height and width of tiles
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- F.name: us_tile_getwh
+- F.name: us_tile_gethw
 - Cycles: 60
 - Param0: Source tileset pointer (4 words)
 - Ret. C: Height in rows
@@ -205,5 +205,5 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | 0xF0AE |           150 | 2 |      | us_tile_blitb                          |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF0B0 |            60 | 1 | C:X3 | us_tile_getwh                          |
+| 0xF0B0 |            60 | 1 | C:X3 | us_tile_gethw                          |
 +--------+---------------+---+------+----------------------------------------+

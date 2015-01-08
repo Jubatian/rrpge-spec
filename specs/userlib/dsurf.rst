@@ -158,11 +158,11 @@ partition selects of the destination.
 0xF0A0: Get width and partitioning settings
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- F.name: us_dsurf_getwp
+- F.name: us_dsurf_getpw
 - Cycles: 50
 - Param0: Source surface pointer (8 words)
-- Ret. C: Width of surface in cells
-- Ret.X3: Partitioning setting (0 - 15)
+- Ret. C: Partitioning setting (0 - 15)
+- Ret.X3: Width of surface in cells
 
 Returns the width in cell and the partitioning setting of the surface,
 reflecting the physical width and height of it.
@@ -242,7 +242,7 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | 0xF09E |       180 + W | 1 | C:X3 | us_dsurf_getacc                        |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF0A0 |            50 | 1 | C:X3 | us_dsurf_getwp                         |
+| 0xF0A0 |            50 | 1 | C:X3 | us_dsurf_getpw                         |
 +--------+---------------+---+------+----------------------------------------+
 | 0xF0A2 |           100 | 2 |      | us_dsurf_setaccpart                    |
 +--------+---------------+---+------+----------------------------------------+
