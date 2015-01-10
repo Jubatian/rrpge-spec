@@ -118,7 +118,13 @@ Display List based sprite system.
 File "tile.rst"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Tileset structure for working with the Graphics Accelerator.
+Tileset structure and functions for working with the Graphics Accelerator.
+
+
+File "tmap.rst"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Tile map structure and functions for working with the Graphics Accelerator.
 
 
 File "ulboot.rst"
@@ -140,6 +146,7 @@ The abbreviations used in the table are as follows:
 - R: Return value registers used.
 - U: Cycles taken for processing one unit of data.
 - W: May wait for a specific event.
+- F: Additional callback cycles.
 
 The cycle counts are to be interpreted with function entry / exit overhead
 included, and are maximal counts. Cycle counts are omitted where they are not
@@ -330,4 +337,20 @@ formatted as a NOP. Not used handlers are filled with NOPs.
 | 0xF0AE |           150 | 2 |      | us_tile_blitb           | tile.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
 | 0xF0B0 |            60 | 1 | C:X3 | us_tile_gethw           | tile.rst     |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xF0B2 |           120 | 6 |      | us_tmap_set             | tmap.rst     |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xF0B4 |           130 | 9 |      | us_tmap_setfn           | tmap.rst     |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xF0B6 |   400 + W + F | 2 |      | us_tmap_getacc          | tmap.rst     |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xF0B8 |   410 + W + F | 4 |      | us_tmap_getaccxy        | tmap.rst     |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xF0BA |   420 + W + F | 5 |      | us_tmap_getaccxfy       | tmap.rst     |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xF0BC | 60U + 400 + F | 4 |      | us_tmap_blit            | tmap.rst     |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xF0BE |           170 | 3 |  X3  | us_tmap_gettile         | tmap.rst     |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xF0C0 |           180 | 4 |      | us_tmap_settile         | tmap.rst     |
 +--------+---------------+---+------+-------------------------+--------------+

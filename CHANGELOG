@@ -2,6 +2,8 @@ Version 00.015.002 ()
  - Destination surface got a function to retrieve width and partitioning
    (shifting some other functions upwards).
  - Tileset manager got a function to retrieve width and height.
+ - Tile map manager added to the User Library, for assisting working with tile
+   maps.
 
 
 Version 00.015.001 (2015.01.04)

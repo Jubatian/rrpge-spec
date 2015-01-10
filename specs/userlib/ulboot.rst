@@ -105,6 +105,16 @@ zero. The default tilesets however are initialized as follows:
 
 
 
+Tile map manager initialization
+------------------------------------------------------------------------------
+
+
+The tile map manager start out uninitialized, all associated locations set
+zero.
+
+
+
+
 CPU RAM user library range fill map
 ------------------------------------------------------------------------------
 
