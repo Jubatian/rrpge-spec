@@ -216,7 +216,31 @@ tile map dimension is a power of 2, the resulting tiles to blit are undefined.
 Uses PRAM pointer 3, which is not preserved.
 
 
-0xF0BE: Get tile index
+0xF0BE: Get height and width of tile map
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- F.name: us_tmap_gethw
+- Cycles: 40
+- Param0: Tile map pointer
+- Ret. C: Height in tiles
+- Ret.X3: Width in tiles
+
+Returns the width and height of the tile map.
+
+
+0xF0C0: Get height and width of tiles
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- F.name: us_tmap_gettilehw
+- Cycles: 25 + Tileset Height:Width request function call
+- Param0: Tile map pointer
+- Ret. C: Height in rows
+- Ret.X3: Width in cells
+
+Returns the width and height of the tileset used by the tile map.
+
+
+0xF0C2: Get tile index
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tmap_gettile
@@ -232,7 +256,7 @@ taken modulo the appropriate tile map dimensions.
 Uses PRAM pointer 3, which is not preserved.
 
 
-0xF0C0: Set tile index
+0xF0C4: Set tile index
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tmap_settile
@@ -246,6 +270,21 @@ Sets a tile index value on the tile map. The tile X and Y coordinates are
 taken modulo the appropriate tile map dimensions.
 
 Uses PRAM pointer 3, which is not preserved.
+
+
+0xF0C6: Setup PRAM pointer for tile map access
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- F.name: us_tmap_setptr
+- Cycles: 130
+- Param0: Tile map pointer
+- Param1: Target pointer (only low 2 bits used)
+- Ret. C: PRAM bit offset of tile map, high
+- Ret.X3: PRAM bit offset of tile map, low
+
+Sets up the target PRAM pointer for tile map accessing. The pointer is set up
+for 16 bit mode, incrementing, pointing at the start of the tile map.
+
 
 
 
@@ -279,7 +318,13 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | 0xF0BC | 60U + 400 + F | 4 |      | us_tmap_blit                           |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF0BE |           170 | 3 |  X3  | us_tmap_gettile                        |
+| 0xF0BE |            40 | 1 |      | us_tmap_gethw                          |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF0C0 |           180 | 4 |      | us_tmap_settile                        |
+| 0xF0C0 |        25 + F | 1 |      | us_tmap_gettilehw                      |
++--------+---------------+---+------+----------------------------------------+
+| 0xF0C2 |           170 | 3 |  X3  | us_tmap_gettile                        |
++--------+---------------+---+------+----------------------------------------+
+| 0xF0C4 |           180 | 4 |      | us_tmap_settile                        |
++--------+---------------+---+------+----------------------------------------+
+| 0xF0C6 |           130 | 2 | C:X3 | us_tmap_setptr                         |
 +--------+---------------+---+------+----------------------------------------+
