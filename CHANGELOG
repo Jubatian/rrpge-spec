@@ -1,3 +1,8 @@
+Version 00.015.003 ()
+ - Bug fixed in User Library Double Buffering Manager's initialization data,
+   selecting wrong destination surface functions for hooks (ulboot.rst).
+
+
 Version 00.015.002 (2015.01.10)
  - Destination surface got a function to retrieve width and partitioning
    (shifting some other functions upwards).
