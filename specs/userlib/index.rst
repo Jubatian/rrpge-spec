@@ -91,6 +91,12 @@ File "dsurf.rst"
 Destination surface structure for working with the Graphics Accelerator.
 
 
+File "fastmap.rst"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Fast scrolling tile mapper using the tile map manager from "tmap.rst".
+
+
 File "fontdata.rst"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -147,6 +153,7 @@ The abbreviations used in the table are as follows:
 - U: Cycles taken for processing one unit of data.
 - W: May wait for a specific event.
 - F: Additional callback cycles.
+- *: For cycle counts see function's description.
 
 The cycle counts are to be interpreted with function entry / exit overhead
 included, and are maximal counts. Cycle counts are omitted where they are not
@@ -359,4 +366,16 @@ formatted as a NOP. Not used handlers are filled with NOPs.
 | 0xF0C4 |           180 | 4 |      | us_tmap_settile         | tmap.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
 | 0xF0C6 |           130 | 2 | C:X3 | us_tmap_setptr          | tmap.rst     |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xF0C8 |           140 | 9 |      | us_fastmap_set          | fastmap.rst  |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xF0CA |            25 | 1 |      | us_fastmap_mark         | fastmap.rst  |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xF0CC |       200 + F | 1 | C:X3 | us_fastmap_gethw        | fastmap.rst  |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xF0CE |            30 | 1 | C:X3 | us_fastmap_getyx        | fastmap.rst  |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xF0D0 |       170 + F | 3 |      | us_fastmap_setdly       | fastmap.rst  |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xF0D2 |             * | 3 |      | us_fastmap_draw         | fastmap.rst  |
 +--------+---------------+---+------+-------------------------+--------------+
