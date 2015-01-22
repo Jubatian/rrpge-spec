@@ -28,7 +28,7 @@ is formed as follows:
 - Word3: Word offset of tile map start in PRAM, high
 - Word4: Word offset of tile map start in PRAM, low
 - Word5: Blit function of tileset
-- Word6: Acceletator init function of tileset
+- Word6: Accelerator init function of tileset
 - Word7: Height:Width request function of tileset
 
 For the functions, normally the us_tile_blit, us_tile_getacc and us_tile_gethw
@@ -121,7 +121,7 @@ Sets up a tile map structure using the given parameters as-is.
 Sets up for tile map blitting, using the given tile map and destination
 surface. The origin coordinates are set zero.
 
-This function calls the Tileset acceleator init function and the Tileset
+This function calls the Tileset accelerator init function and the Tileset
 Height:Width request function to generate contents for the appropriate fields
 in the CPU RAM.
 
@@ -195,9 +195,9 @@ The XPos (X position on destination) is calculated in cell units. If an X
 Origin fraction is set up, it is only applied to the Tile blit function,
 essentially only shifting the tile map towards the right.
 
-Note that no boundary checkings are done, the offset translation is performed
-as written, so if the destination width is not a multiple of the tile width,
-or the destination size does not match DestWidth * DestHeight, appropriate
+Note that no boundary checks are done, the offset translation is performed as
+written, so if the destination width is not a multiple of the tile width, or
+the destination size does not match DestWidth * DestHeight, appropriate
 artifacts will show. These should be anticipated when designing tile map
 related algorithms, such as by using power of 2 dimensions for an infinite
 scroller.
