@@ -1,4 +1,4 @@
-Version 00.015.003 ()
+Version 00.015.003 (2015.01.23)
  - Fast scrolling tile mapper added to the User Library.
  - Bug fixed in User Library Double Buffering Manager's initialization data,
    selecting wrong destination surface functions for hooks (ulboot.rst).

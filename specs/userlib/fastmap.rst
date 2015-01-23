@@ -271,6 +271,8 @@ filled at a 20 cycle per row rate.
 
 The render waits for frame end as necessary (using us_dbuf_getlist).
 
+PRAM pointers 2 and 3 are used and not preserved.
+
 
 
 
