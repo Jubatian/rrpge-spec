@@ -22,16 +22,16 @@ The structure is formed as follows:
 
 - Word0: Peripheral RAM Write mask, high (for accelerator register 0x8000)
 - Word1: Peripheral RAM Write mask, low (for accelerator register 0x8001)
-- Word2: Surface A bank select (for accelerator register 0x8002)
-- Word3: Surface B bank select (for accelerator register 0x8002)
-- Word4: Surface A partition select (for accelerator register 0x8003)
-- Word5: Surface B partition select (for accelerator register 0x8003)
-- Word6: Width of surface in cells (for accelerator register 0x8004)
-- Word7: Partition size (for accelerator register 0x8014)
+- Word2: Partition size (for accelerator register 0x8002)
+- Word3: Surface A bank select (for accelerator register 0x8002)
+- Word4: Surface B bank select (for accelerator register 0x8002)
+- Word5: Surface A partition select (for accelerator register 0x8003)
+- Word6: Surface B partition select (for accelerator register 0x8003)
+- Word7: Width of surface in cells (for accelerator register 0x8004)
 
 All of these except Partition size are used as-is, submitted to the
-Accelerator as they are. From Partition size only bits 4-7 have effect
-(setting the destination partition size).
+Accelerator as they are. From Partition size only bits 12-15 have effect
+(setting the destination partition size), OR combined with the bank select.
 
 Some CPU RAM locations are used as well:
 
@@ -139,7 +139,7 @@ us_dbuf_getlist), otherwise it returns immediately.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dsurf_getacc
-- Cycles: 180 + Wait for frame end
+- Cycles: 170 + Wait for frame end
 - Param0: Source surface pointer (8 words)
 - Ret. C: Bank of work surface
 - Ret.X3: Partition select of work surface
@@ -166,19 +166,6 @@ partition selects of the destination.
 
 Returns the width in cell and the partitioning setting of the surface,
 reflecting the physical width and height of it.
-
-
-0xE0A2: Set partitioning settings
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- F.name: us_dsurf_setaccpart
-- Cycles: 100
-- Param0: Source surface pointer (8 words)
-- Param1: Partitioning settings to combine with
-
-Combines the destination partition size from the surface with the desired
-partitioning settings (using source partition size and X/Y split from that),
-and sets Accelerator register 0x8014 with the result.
 
 
 0xE0A4: Initialize surface manager
@@ -240,11 +227,11 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | 0xE09C |        80 + W | 1 | C:X3 | us_dsurf_get                           |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE09E |       180 + W | 1 | C:X3 | us_dsurf_getacc                        |
+| 0xE09E |       170 + W | 1 | C:X3 | us_dsurf_getacc                        |
 +--------+---------------+---+------+----------------------------------------+
 | 0xE0A0 |            50 | 1 | C:X3 | us_dsurf_getpw                         |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0A2 |           100 | 2 |      | us_dsurf_setaccpart                    |
+| 0xE0A2 |               |   |      | <not used>                             |
 +--------+---------------+---+------+----------------------------------------+
 | 0xE0A4 |            20 | 0 |      | us_dsurf_init                          |
 +--------+---------------+---+------+----------------------------------------+

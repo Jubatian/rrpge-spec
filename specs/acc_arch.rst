@@ -659,14 +659,17 @@ provided with bit 15 set as this is how they should be supplied to the FIFO.
 | \-     | in it mask writes to the respective positions in the Destination  |
 | 0x8001 | combine stage of the Accelerator.                                 |
 +--------+-------------------------------------------------------------------+
-|        | Destination bank select.                                          |
+|        | Destination bank select & Partition size.                         |
 | 0x8002 |                                                                   |
-|        | - bit  4-15: Unused                                               |
+|        | - bit 12-15: Destination partition size                           |
+|        | - bit  4-11: Unused                                               |
 |        | - bit  0- 3: Bank select (selects a 64K cell bank of the PRAM)    |
+|        |                                                                   |
+|        | For the interpretation of Destination partition size, see 0x8014. |
 +--------+-------------------------------------------------------------------+
 |        | Destination partition select. OR combined with the whole part of  |
-| 0x8003 | the destination offset after it is masked with the partition      |
-|        | size.                                                             |
+| 0x8003 | the destination offset after that offset is masked with the       |
+|        | partition size.                                                   |
 +--------+-------------------------------------------------------------------+
 | 0x8004 | Destination post-add whole part. Not used for LI.                 |
 +--------+-------------------------------------------------------------------+
@@ -704,19 +707,19 @@ provided with bit 15 set as this is how they should be supplied to the FIFO.
 |        | Not used for FL and LI.                                           |
 +--------+-------------------------------------------------------------------+
 |        | Source partition select. OR combined with the whole part of the   |
-| 0x8013 | the source offset after it is masked with the partition size.     |
+| 0x8013 | the source offset after that offset is masked with the partition  |
+|        | size.                                                             |
 |        |                                                                   |
 |        | Not used for FL and LI.                                           |
 +--------+-------------------------------------------------------------------+
-|        | Partitioning settings.                                            |
+|        | Source partitioning settings.                                     |
 | 0x8014 |                                                                   |
 |        | - bit 12-15: Source partition size. Only for BB and SC.           |
 |        | - bit  8-11: X/Y split location (X size). Only for SC and LI.     |
-|        | - bit  4- 7: Destination partition size                           |
-|        | - bit  0- 3: Unused                                               |
+|        | - bit  0- 7: Unused                                               |
 |        |                                                                   |
-|        | The Source & Destination partition sizes and the X/Y split        |
-|        | location may specify the following sizes:                         |
+|        | The Source & Destination partition sizes (the latter in 0x8002)   |
+|        | and the X/Y split location may specify the following sizes:       |
 |        |                                                                   |
 |        | - 0:  4 Words (2 * 32 bit cells)                                  |
 |        | - 1:  8 Words (4 * 32 bit cells)                                  |
@@ -808,7 +811,7 @@ Register usage table, summarizing which of the registers each blit mode uses:
 +--------+-----------------------------------------------+----+----+----+----+
 | 0x8001 | Peripheral RAM write mask, low                |  X |  X |  X |  X |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x8002 | Destination bank select                       |  X |  X |  X |  X |
+| 0x8002 | Destination bank select & Partition size      |  X |  X |  X |  X |
 +--------+-----------------------------------------------+----+----+----+----+
 | 0x8003 | Destination partition select                  |  X |  X |  X |  X |
 +--------+-----------------------------------------------+----+----+----+----+
@@ -844,7 +847,7 @@ Register usage table, summarizing which of the registers each blit mode uses:
 +--------+-----------------------------------------------+----+----+----+----+
 | 0x8013 | Source partition select                       |  X |    |  X |    |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x8014 | Partitioning settings                         |  X |  X |  X |  X |
+| 0x8014 | Source partitioning settings                  |  X |    |  X |  X |
 +--------+-----------------------------------------------+----+----+----+----+
 | 0x8015 | Blit control flags & Source barrel rotate     |  X |  X |  X |  X |
 +--------+-----------------------------------------------+----+----+----+----+

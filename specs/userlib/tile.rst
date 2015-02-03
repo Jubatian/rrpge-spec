@@ -125,6 +125,7 @@ The following accelerator registers are covered:
 - 0x800A: Set to the tile width
 - 0x8012: Set to the PRAM bank of source
 - 0x8013: Zeroed (so assumes no source partitioning)
+- 0x8014: Set to 0xFF00 (no source partitioning)
 - 0x8015: Set according to the Blit configuration (using Block Blitter)
 - 0x8016: Set according to the Blit configuration
 - 0x8017: Set to the tile height
