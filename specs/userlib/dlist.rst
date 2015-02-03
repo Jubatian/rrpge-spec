@@ -37,7 +37,7 @@ See the "Display list definition & Process flags" register (0x0017) in
 "vid_arch.rst" for details on this format.
 
 
-0xF030: Convert from PRAM word offset
+0xE030: Convert from PRAM word offset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dloff_from
@@ -54,7 +54,7 @@ Low bits of offset in the return are clipped according to the way the Graphics
 Display Generator ignores those bits depending on display list size.
 
 
-0xF032: Convert to PRAM word offset
+0xE032: Convert to PRAM word offset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dloff_to
@@ -67,7 +67,7 @@ Low bits of the input offset are clipped first according to the way the
 Graphics Display Generator ignores those bits depending on display list size.
 
 
-0xF040: Sanitize display list offset
+0xE040: Sanitize display list offset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dloff_clip
@@ -136,7 +136,7 @@ out the application's architecture so the users of this component are also
 aware of these.
 
 
-0xF042: Initialize for double buffering
+0xE042: Initialize for double buffering
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dbuf_init
@@ -165,7 +165,7 @@ variables after the current mode flags (4 / 8 bit mode, double scan) are added
 to them.
 
 
-0xF050: Flip pages
+0xE050: Flip pages
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dbuf_flip
@@ -185,7 +185,7 @@ If necessary, the mode flags in the display list CPU RAM variables are updated
 according to the currently set display mode.
 
 
-0xF052: Get work display list
+0xE052: Get work display list
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dbuf_getlist
@@ -209,7 +209,7 @@ writing double-buffering aware components (which only use it to wait for frame
 end when necessary).
 
 
-0xF060: Add page flip hook
+0xE060: Add page flip hook
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dbuf_addfliphook
@@ -226,7 +226,7 @@ The list of hooks in CPU RAM grows incrementally (lower locations filled
 first).
 
 
-0xF062: Remove page flip hook
+0xE062: Remove page flip hook
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dbuf_remfliphook
@@ -237,7 +237,7 @@ Removes a function from the page flip hook list. If it does not exist in the
 list, no effect.
 
 
-0xF064: Add frame end hook
+0xE064: Add frame end hook
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dbuf_addframehook
@@ -254,7 +254,7 @@ The list of hooks in CPU RAM grows incrementally (lower locations filled
 first).
 
 
-0xF066: Remove frame end hook
+0xE066: Remove frame end hook
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dbuf_remframehook
@@ -265,7 +265,7 @@ Removes a function from the frame end hook list. If it does not exist in the
 list, no effect.
 
 
-0xF068: Add init hook
+0xE068: Add init hook
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dbuf_addinithook
@@ -282,7 +282,7 @@ The list of hooks in CPU RAM grows incrementally (lower locations filled
 first).
 
 
-0xF06A: Remove init hook
+0xE06A: Remove init hook
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dbuf_reminithook
@@ -312,7 +312,7 @@ us_dlist_setptr function to initialize pointers to walk them, so the
 definition of this function applies to all.
 
 
-0xF034: Set up PRAM pointers for list walking
+0xE034: Set up PRAM pointers for list walking
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dlist_setptr
@@ -337,7 +337,7 @@ results. The display list definition's offset part is sanitized as defined for
 us_dloff_clip.
 
 
-0xF036: Add graphics component to display list
+0xE036: Add graphics component to display list
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dlist_add
@@ -362,7 +362,7 @@ affected if the source falls entirely off-display.
 PRAM pointers 2 and 3 are used and not preserved.
 
 
-0xF038: Add graphics component at X:Y to list
+0xE038: Add graphics component at X:Y to list
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dlist_addxy
@@ -394,7 +394,7 @@ to add a shift source with this function is undefined.
 PRAM pointers 2 and 3 are used and not preserved.
 
 
-0xF03A: Add background pattern to display list
+0xE03A: Add background pattern to display list
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dlist_addbg
@@ -414,7 +414,7 @@ display list is not affected if the source falls entirely off-display.
 PRAM pointers 2 and 3 are used and not preserved.
 
 
-0xF03C: Add render command list to display list
+0xE03C: Add render command list to display list
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dlist_addlist
@@ -437,7 +437,7 @@ Big Endian order (high word first).
 PRAM pointers 1, 2 and 3 are used and not preserved.
 
 
-0xF03E: Clear display list
+0xE03E: Clear display list
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dlist_clear
@@ -465,7 +465,7 @@ functions, using the current Display List Definition & Process flags register
 contents (see register 0x0017 is "vid_arch.rst") for the respective parameter.
 
 
-0xF044: Set up PRAM pointers for list walking
+0xE044: Set up PRAM pointers for list walking
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dlist_sb_setptr
@@ -478,7 +478,7 @@ Wrapper for us_dlist_setptr using the current Display List Definition &
 Process flags register contents.
 
 
-0xF046: Add graphics component to display list
+0xE046: Add graphics component to display list
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dlist_sb_add
@@ -495,7 +495,7 @@ flags register contents.
 PRAM pointers 2 and 3 are used and not preserved.
 
 
-0xF048: Add graphics component at X:Y to list
+0xE048: Add graphics component at X:Y to list
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dlist_sb_addxy
@@ -513,7 +513,7 @@ flags register contents.
 PRAM pointers 2 and 3 are used and not preserved.
 
 
-0xF04A: Add background pattern to display list
+0xE04A: Add background pattern to display list
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dlist_sb_addbg
@@ -529,7 +529,7 @@ flags register contents.
 PRAM pointers 2 and 3 are used and not preserved.
 
 
-0xF04C: Add render command list to display list
+0xE04C: Add render command list to display list
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dlist_sb_addlist
@@ -546,7 +546,7 @@ Process flags register contents.
 PRAM pointers 1, 2 and 3 are used and not preserved.
 
 
-0xF04E: Clear display list
+0xE04E: Clear display list
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dlist_sb_clear
@@ -573,7 +573,7 @@ Due to the use of us_dbuf_getlist, the functions might stall if the frame of
 the page flip was not completed yet.
 
 
-0xF054: Set up PRAM pointers for list walking
+0xE054: Set up PRAM pointers for list walking
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dlist_db_setptr
@@ -586,7 +586,7 @@ Wrapper for us_dlist_setptr using the return of us_dbuf_getlist for display
 list definition & process flags.
 
 
-0xF056: Add graphics component to display list
+0xE056: Add graphics component to display list
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dlist_db_add
@@ -603,7 +603,7 @@ definition & process flags.
 PRAM pointers 2 and 3 are used and not preserved.
 
 
-0xF058: Add graphics component at X:Y to list
+0xE058: Add graphics component at X:Y to list
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dlist_db_addxy
@@ -621,7 +621,7 @@ list definition & process flags.
 PRAM pointers 2 and 3 are used and not preserved.
 
 
-0xF05A: Add background pattern to display list
+0xE05A: Add background pattern to display list
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dlist_db_addbg
@@ -637,7 +637,7 @@ list definition & process flags.
 PRAM pointers 2 and 3 are used and not preserved.
 
 
-0xF05C: Add render command list to display list
+0xE05C: Add render command list to display list
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dlist_db_addlist
@@ -654,7 +654,7 @@ list definition & process flags.
 PRAM pointers 1, 2 and 3 are used and not preserved.
 
 
-0xF05E: Clear display list
+0xE05E: Clear display list
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dlist_db_clear
@@ -690,63 +690,63 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | Addr.  | Cycles        | P |   R  | Name                                   |
 +========+===============+===+======+========================================+
-| 0xF030 |           100 | 3 |  X3  | us_dloff_from                          |
+| 0xE030 |           100 | 3 |  X3  | us_dloff_from                          |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF032 |           100 | 1 | C:X3 | us_dloff_to                            |
+| 0xE032 |           100 | 1 | C:X3 | us_dloff_to                            |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF034 |           230 | 3 |  X3  | us_dlist_setptr                        |
+| 0xE034 |           230 | 3 |  X3  | us_dlist_setptr                        |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF036 |     15U + 430 | 6 |      | us_dlist_add                           |
+| 0xE036 |     15U + 430 | 6 |      | us_dlist_add                           |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF038 |     15U + 530 | 7 |      | us_dlist_addxy                         |
+| 0xE038 |     15U + 530 | 7 |      | us_dlist_addxy                         |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF03A |     11U + 380 | 5 |      | us_dlist_addbg                         |
+| 0xE03A |     11U + 380 | 5 |      | us_dlist_addbg                         |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF03C |     19U + 500 | 6 |      | us_dlist_addlist                       |
+| 0xE03C |     19U + 500 | 6 |      | us_dlist_addlist                       |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF03E |     12U + 280 | 1 |      | us_dlist_clear                         |
+| 0xE03E |     12U + 280 | 1 |      | us_dlist_clear                         |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF040 |           100 | 1 |  X3  | us_dloff_clip                          |
+| 0xE040 |           100 | 1 |  X3  | us_dloff_clip                          |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF042 |             W | 3 |  X3  | us_dbuf_init                           |
+| 0xE042 |             W | 3 |  X3  | us_dbuf_init                           |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF044 |           250 | 2 |  X3  | us_dlist_sb_setptr                     |
+| 0xE044 |           250 | 2 |  X3  | us_dlist_sb_setptr                     |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF046 |     15U + 450 | 5 |      | us_dlist_sb_add                        |
+| 0xE046 |     15U + 450 | 5 |      | us_dlist_sb_add                        |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF048 |     15U + 550 | 6 |      | us_dlist_sb_addxy                      |
+| 0xE048 |     15U + 550 | 6 |      | us_dlist_sb_addxy                      |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF04A |     11U + 400 | 4 |      | us_dlist_sb_addbg                      |
+| 0xE04A |     11U + 400 | 4 |      | us_dlist_sb_addbg                      |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF04C |     19U + 520 | 5 |      | us_dlist_sb_addlist                    |
+| 0xE04C |     19U + 520 | 5 |      | us_dlist_sb_addlist                    |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF04E |     12U + 300 | 0 |      | us_dlist_sb_clear                      |
+| 0xE04E |     12U + 300 | 0 |      | us_dlist_sb_clear                      |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF050 |             W | 0 |      | us_dbuf_flip                           |
+| 0xE050 |             W | 0 |      | us_dbuf_flip                           |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF052 |             W | 0 |  X3  | us_dbuf_getlist                        |
+| 0xE052 |             W | 0 |  X3  | us_dbuf_getlist                        |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF054 |       270 + W | 2 |  X3  | us_dlist_db_setptr                     |
+| 0xE054 |       270 + W | 2 |  X3  | us_dlist_db_setptr                     |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF056 | 15U + 470 + W | 5 |      | us_dlist_db_add                        |
+| 0xE056 | 15U + 470 + W | 5 |      | us_dlist_db_add                        |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF058 | 15U + 570 + W | 6 |      | us_dlist_db_addxy                      |
+| 0xE058 | 15U + 570 + W | 6 |      | us_dlist_db_addxy                      |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF05A | 11U + 420 + W | 4 |      | us_dlist_db_addbg                      |
+| 0xE05A | 11U + 420 + W | 4 |      | us_dlist_db_addbg                      |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF05C | 19U + 540 + W | 5 |      | us_dlist_db_addlist                    |
+| 0xE05C | 19U + 540 + W | 5 |      | us_dlist_db_addlist                    |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF05E | 12U + 320 + W | 0 |      | us_dlist_db_clear                      |
+| 0xE05E | 12U + 320 + W | 0 |      | us_dlist_db_clear                      |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF060 |           500 | 1 |      | us_dbuf_addfliphook                    |
+| 0xE060 |           500 | 1 |      | us_dbuf_addfliphook                    |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF062 |           500 | 1 |      | us_dbuf_remfliphook                    |
+| 0xE062 |           500 | 1 |      | us_dbuf_remfliphook                    |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF064 |           500 | 1 |      | us_dbuf_addframehook                   |
+| 0xE064 |           500 | 1 |      | us_dbuf_addframehook                   |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF066 |           500 | 1 |      | us_dbuf_remframehook                   |
+| 0xE066 |           500 | 1 |      | us_dbuf_remframehook                   |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF068 |           500 | 1 |      | us_dbuf_addinithook                    |
+| 0xE068 |           500 | 1 |      | us_dbuf_addinithook                    |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF06A |           500 | 1 |      | us_dbuf_reminithook                    |
+| 0xE06A |           500 | 1 |      | us_dbuf_reminithook                    |
 +--------+---------------+---+------+----------------------------------------+

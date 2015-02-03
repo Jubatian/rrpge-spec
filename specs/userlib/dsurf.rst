@@ -53,7 +53,7 @@ Functions
 ------------------------------------------------------------------------------
 
 
-0xF094: Set up surface
+0xE094: Set up surface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dsurf_set
@@ -69,7 +69,7 @@ all set (so it is written normally to all bits). Surface A and B are set up to
 be identical, suitable for single buffered operation.
 
 
-0xF096: Set up surface pair
+0xE096: Set up surface pair
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dsurf_setdbuf
@@ -86,7 +86,7 @@ Sets up a destination surface structure. The Peripheral RAM write masks are
 all set (so it is written normally to all bits).
 
 
-0xF098: Set up surface with mask
+0xE098: Set up surface with mask
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dsurf_setm
@@ -103,7 +103,7 @@ Sets up a destination surface structure. Surface A and B are set up to be
 identical, suitable for single buffered operation.
 
 
-0xF09A: Set up surface pair with mask
+0xE09A: Set up surface pair with mask
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dsurf_setmdbuf
@@ -121,7 +121,7 @@ identical, suitable for single buffered operation.
 Sets up a destination surface structure, explicitly initializing all members.
 
 
-0xF09C: Get surface pointer
+0xE09C: Get surface pointer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dsurf_get
@@ -135,7 +135,7 @@ waits for frame end as needed if called in double buffered mode (by
 us_dbuf_getlist), otherwise it returns immediately.
 
 
-0xF09E: Get surface pointer and fill accelerator
+0xE09E: Get surface pointer and fill accelerator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dsurf_getacc
@@ -155,7 +155,7 @@ both set to 64K cells. The work surface is used for setting up the bank and
 partition selects of the destination.
 
 
-0xF0A0: Get width and partitioning settings
+0xE0A0: Get width and partitioning settings
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dsurf_getpw
@@ -168,7 +168,7 @@ Returns the width in cell and the partitioning setting of the surface,
 reflecting the physical width and height of it.
 
 
-0xF0A2: Set partitioning settings
+0xE0A2: Set partitioning settings
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dsurf_setaccpart
@@ -181,7 +181,7 @@ partitioning settings (using source partition size and X/Y split from that),
 and sets Accelerator register 0x8014 with the result.
 
 
-0xF0A4: Initialize surface manager
+0xE0A4: Initialize surface manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dsurf_init
@@ -196,10 +196,10 @@ Manager to assist in initializing double buffered constructs.
 Note that the Double Buffering Manager's initialization also calls the flip
 hooks, so after it's return, Surface A will be the display surface, so
 Surface A should be paired with the Display List Definition 1 parameter of
-0xF042: "Initialize for double buffering".
+0xE042: "Initialize for double buffering".
 
 
-0xF0A6: Flip surfaces
+0xE0A6: Flip surfaces
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dsurf_flip
@@ -230,23 +230,23 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | Addr.  | Cycles        | P |   R  | Name                                   |
 +========+===============+===+======+========================================+
-| 0xF094 |           100 | 5 |      | us_dsurf_set                           |
+| 0xE094 |           100 | 5 |      | us_dsurf_set                           |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF096 |           120 | 7 |      | us_dsurf_setdbuf                       |
+| 0xE096 |           120 | 7 |      | us_dsurf_setdbuf                       |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF098 |           120 | 7 |      | us_dsurf_setm                          |
+| 0xE098 |           120 | 7 |      | us_dsurf_setm                          |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF09A |           130 | 9 |      | us_dsurf_setmdbuf                      |
+| 0xE09A |           130 | 9 |      | us_dsurf_setmdbuf                      |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF09C |        80 + W | 1 | C:X3 | us_dsurf_get                           |
+| 0xE09C |        80 + W | 1 | C:X3 | us_dsurf_get                           |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF09E |       180 + W | 1 | C:X3 | us_dsurf_getacc                        |
+| 0xE09E |       180 + W | 1 | C:X3 | us_dsurf_getacc                        |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF0A0 |            50 | 1 | C:X3 | us_dsurf_getpw                         |
+| 0xE0A0 |            50 | 1 | C:X3 | us_dsurf_getpw                         |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF0A2 |           100 | 2 |      | us_dsurf_setaccpart                    |
+| 0xE0A2 |           100 | 2 |      | us_dsurf_setaccpart                    |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF0A4 |            20 | 0 |      | us_dsurf_init                          |
+| 0xE0A4 |            20 | 0 |      | us_dsurf_init                          |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF0A6 |            25 | 0 |      | us_dsurf_flip                          |
+| 0xE0A6 |            25 | 0 |      | us_dsurf_flip                          |
 +--------+---------------+---+------+----------------------------------------+

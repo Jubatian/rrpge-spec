@@ -1,3 +1,8 @@
+Version 00.016.000 ()
+ - User Library size increased from 4 KWords to 8 KWords, moving the entry
+   point table down to start at 0xE000.
+
+
 Version 00.015.003 (2015.01.23)
  - Fast scrolling tile mapper added to the User Library.
  - Bug fixed in User Library Double Buffering Manager's initialization data,

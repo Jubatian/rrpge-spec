@@ -42,9 +42,9 @@ The flip performed flag is cleared (zero).
 
 The page flip hook list contains the following functions:
 
-- 0xF06C: us_sprite_reset
-- 0xF06E: us_smux_reset
-- 0xF0A6: us_dsurf_flip
+- 0xE06C: us_sprite_reset
+- 0xE06E: us_smux_reset
+- 0xE0A6: us_dsurf_flip
 
 The absolute offset of it's first free slot at 0xFAEF is set 0xFAF3
 (indicating three functions loaded).
@@ -54,7 +54,7 @@ at 0xFAEE is set 0xFAE0 (indicating empty).
 
 The init hook list contains the following functions:
 
-- 0xF0A4: us_dsurf_init
+- 0xE0A4: us_dsurf_init
 
 The absolute offset of it's first free slot at 0xFADF is set 0xFAD1
 (indicating one function loaded).
@@ -165,7 +165,7 @@ The following table provides the initial fill data to be used for the range
 | \-     | 0                                                                 |
 | 0xFACF |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFAD0 | 0xF0A4                                                            |
+| 0xFAD0 | 0xE0A4                                                            |
 +--------+-------------------------------------------------------------------+
 | 0xFAD1 |                                                                   |
 | \-     | 0                                                                 |
@@ -181,11 +181,11 @@ The following table provides the initial fill data to be used for the range
 +--------+-------------------------------------------------------------------+
 | 0xFAEF | 0xFAF3                                                            |
 +--------+-------------------------------------------------------------------+
-| 0xFAF0 | 0xF06C                                                            |
+| 0xFAF0 | 0xE06C                                                            |
 +--------+-------------------------------------------------------------------+
-| 0xFAF1 | 0xF06E                                                            |
+| 0xFAF1 | 0xE06E                                                            |
 +--------+-------------------------------------------------------------------+
-| 0xFAF2 | 0xF0A6                                                            |
+| 0xFAF2 | 0xE0A6                                                            |
 +--------+-------------------------------------------------------------------+
 | 0xFAF3 |                                                                   |
 | \-     | 0                                                                 |

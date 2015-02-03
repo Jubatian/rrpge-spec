@@ -29,7 +29,7 @@ Functions
 ------------------------------------------------------------------------------
 
 
-0xF080: Sine of high precision angle
+0xE080: Sine of high precision angle
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_sin
@@ -43,7 +43,7 @@ the format the sine table provides it. Between the table entries coarse linear
 interpolation is used.
 
 
-0xF082: Cosine of high precision angle
+0xE082: Cosine of high precision angle
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_cos
@@ -57,7 +57,7 @@ the format the sine table provides it. Between the table entries coarse linear
 interpolation is used.
 
 
-0xF084: Sine & Cosine of high precision angle
+0xE084: Sine & Cosine of high precision angle
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_sincos
@@ -72,7 +72,7 @@ the format the sine table provides it. Between the table entries coarse linear
 interpolation is used.
 
 
-0xF086: Frequency of tone
+0xE086: Frequency of tone
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tfreq
@@ -89,7 +89,7 @@ the Musical logarithmic table (50 cycles), fractions are calculated using
 linear interpolation (140 cycles).
 
 
-0xF088: 32 bit multiply
+0xE088: 32 bit multiply
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_mul32
@@ -104,7 +104,7 @@ linear interpolation (140 cycles).
 Calculates C:X3 = (P0:P1) * (P2:P3)
 
 
-0xF08A: 32 bit divide
+0xE08A: 32 bit divide
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_div32
@@ -119,7 +119,7 @@ Calculates C:X3 = (P0:P1) * (P2:P3)
 Calculates C:X3 = (P0:P1) / (P2:P3). The result is 0 for division by zero.
 
 
-0xF08C: 16 bit reciprocal
+0xE08C: 16 bit reciprocal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_rec16
@@ -132,7 +132,7 @@ Calculates X3 = 0x10000 / P0. The result and the remainder are both 0 for
 division by zero or if the number is 1.
 
 
-0xF08E: 32 bit reciprocal
+0xE08E: 32 bit reciprocal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_rec32
@@ -151,7 +151,7 @@ Details on this algorithm may be found in the reference User Library
 implementation.
 
 
-0xF090: 16 bit square root
+0xE090: 16 bit square root
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_sqrt16
@@ -162,7 +162,7 @@ implementation.
 Calculates X3 = sqrt(P0).
 
 
-0xF092: 32 bit square root
+0xE092: 32 bit square root
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_sqrt32
@@ -191,23 +191,23 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | Addr.  | Cycles        | P |   R  | Name                                   |
 +========+===============+===+======+========================================+
-| 0xF080 |           100 | 1 |  X3  | us_sin                                 |
+| 0xE080 |           100 | 1 |  X3  | us_sin                                 |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF082 |           100 | 1 |  X3  | us_cos                                 |
+| 0xE082 |           100 | 1 |  X3  | us_cos                                 |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF084 |           220 | 1 | C:X3 | us_sincos                              |
+| 0xE084 |           220 | 1 | C:X3 | us_sincos                              |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF086 |      50 / 140 | 1 | C:X3 | us_tfreq                               |
+| 0xE086 |      50 / 140 | 1 | C:X3 | us_tfreq                               |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF088 |           100 | 4 | C:X3 | us_mul32                               |
+| 0xE088 |           100 | 4 | C:X3 | us_mul32                               |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF08A |           600 | 4 | C:X3 | us_div32                               |
+| 0xE08A |           600 | 4 | C:X3 | us_div32                               |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF08C |            70 | 1 | C:X3 | us_rec16                               |
+| 0xE08C |            70 | 1 | C:X3 | us_rec16                               |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF08E |           470 | 2 | C:X3 | us_rec32                               |
+| 0xE08E |           470 | 2 | C:X3 | us_rec32                               |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF090 |           260 | 1 |  X3  | us_sqrt16                              |
+| 0xE090 |           260 | 1 |  X3  | us_sqrt16                              |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF092 |           650 | 2 |  X3  | us_sqrt32                              |
+| 0xE092 |           650 | 2 |  X3  | us_sqrt32                              |
 +--------+---------------+---+------+----------------------------------------+

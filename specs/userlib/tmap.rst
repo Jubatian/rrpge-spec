@@ -76,7 +76,7 @@ Functions
 ------------------------------------------------------------------------------
 
 
-0xF0B2: Set up tile map
+0xE0B2: Set up tile map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tmap_set
@@ -92,7 +92,7 @@ Sets up a tile map structure using the given parameters as-is. For the
 functions, us_tile_blit, us_tile_getacc and us_tile_gethw are used.
 
 
-0xF0B4: Set up tile map with tileset functions
+0xE0B4: Set up tile map with tileset functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tmap_set
@@ -110,7 +110,7 @@ functions, us_tile_blit, us_tile_getacc and us_tile_gethw are used.
 Sets up a tile map structure using the given parameters as-is.
 
 
-0xF0B6: Accelerator setup
+0xE0B6: Accelerator setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tmap_getacc
@@ -132,7 +132,7 @@ even number which multiplied with width produces a smaller or equal result as
 the total cell count of the destination.
 
 
-0xF0B8: Accelerator setup with boundary origin
+0xE0B8: Accelerator setup with boundary origin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tmap_getaccxy
@@ -150,7 +150,7 @@ is faster). It may be used for vertical scrollers, or scrollers combined with
 Display list manipulation where full updates are necessary.
 
 
-0xF0BA: Accelerator setup with origin
+0xE0BA: Accelerator setup with origin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tmap_getaccxfy
@@ -169,7 +169,7 @@ destination cells this case to blit a tile), however this may be used for
 effects like parallax scrolling.
 
 
-0xF0BC: Blit tile map region
+0xE0BC: Blit tile map region
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tmap_blit
@@ -216,7 +216,7 @@ tile map dimension is a power of 2, the resulting tiles to blit are undefined.
 Uses PRAM pointer 3, which is not preserved.
 
 
-0xF0BE: Get height and width of tile map
+0xE0BE: Get height and width of tile map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tmap_gethw
@@ -228,7 +228,7 @@ Uses PRAM pointer 3, which is not preserved.
 Returns the width and height of the tile map.
 
 
-0xF0C0: Get height and width of tiles
+0xE0C0: Get height and width of tiles
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tmap_gettilehw
@@ -240,7 +240,7 @@ Returns the width and height of the tile map.
 Returns the width and height of the tileset used by the tile map.
 
 
-0xF0C2: Get tile index
+0xE0C2: Get tile index
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tmap_gettile
@@ -256,7 +256,7 @@ taken modulo the appropriate tile map dimensions.
 Uses PRAM pointer 3, which is not preserved.
 
 
-0xF0C4: Set tile index
+0xE0C4: Set tile index
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tmap_settile
@@ -272,7 +272,7 @@ taken modulo the appropriate tile map dimensions.
 Uses PRAM pointer 3, which is not preserved.
 
 
-0xF0C6: Setup PRAM pointer for tile map access
+0xE0C6: Setup PRAM pointer for tile map access
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tmap_setptr
@@ -306,25 +306,25 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | Addr.  | Cycles        | P |   R  | Name                                   |
 +========+===============+===+======+========================================+
-| 0xF0B2 |           120 | 6 |      | us_tmap_set                            |
+| 0xE0B2 |           120 | 6 |      | us_tmap_set                            |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF0B4 |           130 | 9 |      | us_tmap_setfn                          |
+| 0xE0B4 |           130 | 9 |      | us_tmap_setfn                          |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF0B6 |   400 + W + F | 2 |      | us_tmap_getacc                         |
+| 0xE0B6 |   400 + W + F | 2 |      | us_tmap_getacc                         |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF0B8 |   410 + W + F | 4 |      | us_tmap_getaccxy                       |
+| 0xE0B8 |   410 + W + F | 4 |      | us_tmap_getaccxy                       |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF0BA |   420 + W + F | 5 |      | us_tmap_getaccxfy                      |
+| 0xE0BA |   420 + W + F | 5 |      | us_tmap_getaccxfy                      |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF0BC | 60U + 400 + F | 4 |      | us_tmap_blit                           |
+| 0xE0BC | 60U + 400 + F | 4 |      | us_tmap_blit                           |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF0BE |            40 | 1 |      | us_tmap_gethw                          |
+| 0xE0BE |            40 | 1 |      | us_tmap_gethw                          |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF0C0 |        25 + F | 1 |      | us_tmap_gettilehw                      |
+| 0xE0C0 |        25 + F | 1 |      | us_tmap_gettilehw                      |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF0C2 |           170 | 3 |  X3  | us_tmap_gettile                        |
+| 0xE0C2 |           170 | 3 |  X3  | us_tmap_gettile                        |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF0C4 |           180 | 4 |      | us_tmap_settile                        |
+| 0xE0C4 |           180 | 4 |      | us_tmap_settile                        |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF0C6 |           130 | 2 | C:X3 | us_tmap_setptr                         |
+| 0xE0C6 |           130 | 2 | C:X3 | us_tmap_setptr                         |
 +--------+---------------+---+------+----------------------------------------+

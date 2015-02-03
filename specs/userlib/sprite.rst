@@ -118,7 +118,7 @@ locations are not meant to be accessed directly by applications.
 All these locations are zero-initialized.
 
 
-0xF06C: Reset display list occupation
+0xE06C: Reset display list occupation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_sprite_reset
@@ -133,7 +133,7 @@ functions were called between two calls to this function, it executes on a
 shortcut path (20 cycles).
 
 
-0xF070: Set sprite area bounds
+0xE070: Set sprite area bounds
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_sprite_setbounds
@@ -145,7 +145,7 @@ The parameters are directly loaded into the appropriate locations (0xFADA,
 0xFADB). Clears the dirty flag (indicating dirty).
 
 
-0xF074: Add graphics component to display list
+0xE074: Add graphics component to display list
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_sprite_add
@@ -167,7 +167,7 @@ If the two locations are equal when calling, no sprite is added.
 PRAM pointers 2 and 3 are used and not preserved.
 
 
-0xF078: Add graphics component at X:Y to list
+0xE078: Add graphics component at X:Y to list
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_sprite_addxy
@@ -185,7 +185,7 @@ us_dlist_db_addxy if the sprite can be added.
 PRAM pointers 2 and 3 are used and not preserved.
 
 
-0xF07C: Add render command list to display list
+0xE07C: Add render command list to display list
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_sprite_addlist
@@ -237,7 +237,7 @@ locations are not meant to be accessed directly by applications.
 All these locations are zero-initialized.
 
 
-0xF06E: Reset display list occupation
+0xE06E: Reset display list occupation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_smux_reset
@@ -252,7 +252,7 @@ manager functions were called between two calls to this function, it executes
 on a shortcut path (20 cycles).
 
 
-0xF072: Set sprite area bounds
+0xE072: Set sprite area bounds
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_smux_setbounds
@@ -264,7 +264,7 @@ The parameters are directly loaded into the appropriate locations (0xFADA,
 0xFADB). Clears the dirty flag (indicating dirty).
 
 
-0xF076: Add graphics component to display list
+0xE076: Add graphics component to display list
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_smux_add
@@ -285,7 +285,7 @@ sprite is skipped.
 PRAM pointer 3 is used and not preserved.
 
 
-0xF07A: Add graphics component at X:Y to list
+0xE07A: Add graphics component at X:Y to list
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_smux_addxy
@@ -303,7 +303,7 @@ us_dlist_addxy for rows on which the sprite can be added.
 PRAM pointer 3 is used and not preserved.
 
 
-0xF07E: Add render command list to display list
+0xE07E: Add render command list to display list
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_smux_addlist
@@ -339,23 +339,23 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | Addr.  | Cycles        | P |   R  | Name                                   |
 +========+===============+===+======+========================================+
-| 0xF06C |      20 / 100 | 0 |      | us_sprite_reset                        |
+| 0xE06C |      20 / 100 | 0 |      | us_sprite_reset                        |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF06E |     20 / 1800 | 0 |      | us_smux_reset                          |
+| 0xE06E |     20 / 1800 | 0 |      | us_smux_reset                          |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF070 |            40 | 2 |      | us_sprite_setbounds                    |
+| 0xE070 |            40 | 2 |      | us_sprite_setbounds                    |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF072 |            40 | 2 |      | us_smux_setbounds                      |
+| 0xE072 |            40 | 2 |      | us_smux_setbounds                      |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF074 | 15U + 510 + W | 5 |      | us_sprite_add                          |
+| 0xE074 | 15U + 510 + W | 5 |      | us_sprite_add                          |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF076 | 70U + 470 + W | 5 |      | us_smux_add                            |
+| 0xE076 | 70U + 470 + W | 5 |      | us_smux_add                            |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF078 | 15U + 610 + W | 6 |      | us_sprite_addxy                        |
+| 0xE078 | 15U + 610 + W | 6 |      | us_sprite_addxy                        |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF07A | 70U + 570 + W | 6 |      | us_smux_addxy                          |
+| 0xE07A | 70U + 570 + W | 6 |      | us_smux_addxy                          |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF07C | 19U + 580 + W | 5 |      | us_sprite_addlist                      |
+| 0xE07C | 19U + 580 + W | 5 |      | us_sprite_addlist                      |
 +--------+---------------+---+------+----------------------------------------+
-| 0xF07E | 75U + 540 + W | 5 |      | us_smux_addlist                        |
+| 0xE07E | 75U + 540 + W | 5 |      | us_smux_addlist                        |
 +--------+---------------+---+------+----------------------------------------+

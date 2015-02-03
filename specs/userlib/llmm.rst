@@ -31,7 +31,7 @@ PRAM pointer setup functions
 ------------------------------------------------------------------------------
 
 
-0xF000: 1 bit incrementing PRAM pointer setup
+0xE000: 1 bit incrementing PRAM pointer setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ptr_set1i
@@ -43,7 +43,7 @@ PRAM pointer setup functions
 - Ret. C: Points to the Read/Write without increment register of the pointer
 
 
-0xF002: 1 bit inc. on write PRAM pointer setup
+0xE002: 1 bit inc. on write PRAM pointer setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ptr_set1w
@@ -55,7 +55,7 @@ PRAM pointer setup functions
 - Ret. C: Points to the Read/Write without increment register of the pointer
 
 
-0xF004: 2 bit incrementing PRAM pointer setup
+0xE004: 2 bit incrementing PRAM pointer setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ptr_set2i
@@ -67,7 +67,7 @@ PRAM pointer setup functions
 - Ret. C: Points to the Read/Write without increment register of the pointer
 
 
-0xF006: 2 bit inc. on write PRAM pointer setup
+0xE006: 2 bit inc. on write PRAM pointer setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ptr_set2w
@@ -79,7 +79,7 @@ PRAM pointer setup functions
 - Ret. C: Points to the Read/Write without increment register of the pointer
 
 
-0xF008: 4 bit incrementing PRAM pointer setup
+0xE008: 4 bit incrementing PRAM pointer setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ptr_set4i
@@ -91,7 +91,7 @@ PRAM pointer setup functions
 - Ret. C: Points to the Read/Write without increment register of the pointer
 
 
-0xF00A: 4 bit inc. on write PRAM pointer setup
+0xE00A: 4 bit inc. on write PRAM pointer setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ptr_set4w
@@ -103,7 +103,7 @@ PRAM pointer setup functions
 - Ret. C: Points to the Read/Write without increment register of the pointer
 
 
-0xF00C: 8 bit incrementing PRAM pointer setup
+0xE00C: 8 bit incrementing PRAM pointer setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ptr_set8i
@@ -115,7 +115,7 @@ PRAM pointer setup functions
 - Ret. C: Points to the Read/Write without increment register of the pointer
 
 
-0xF00E: 8 bit inc. on write PRAM pointer setup
+0xE00E: 8 bit inc. on write PRAM pointer setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ptr_set8w
@@ -127,7 +127,7 @@ PRAM pointer setup functions
 - Ret. C: Points to the Read/Write without increment register of the pointer
 
 
-0xF010: 16 bit incrementing PRAM pointer setup
+0xE010: 16 bit incrementing PRAM pointer setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ptr_set16i
@@ -139,7 +139,7 @@ PRAM pointer setup functions
 - Ret. C: Points to the Read/Write without increment register of the pointer
 
 
-0xF012: 16 bit inc. on write PRAM pointer setup
+0xE012: 16 bit inc. on write PRAM pointer setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ptr_set16w
@@ -151,7 +151,7 @@ PRAM pointer setup functions
 - Ret. C: Points to the Read/Write without increment register of the pointer
 
 
-0xF018: Generic 16 bit PRAM pointer setup
+0xE018: Generic 16 bit PRAM pointer setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ptr_setgen16i
@@ -165,7 +165,7 @@ PRAM pointer setup functions
 - Ret. C: Points to the Read/Write without increment register of the pointer
 
 
-0xF01A: Generic 16 bit setup for inc. on write
+0xE01A: Generic 16 bit setup for inc. on write
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ptr_setgen16w
@@ -181,7 +181,7 @@ PRAM pointer setup functions
 Sets the pointer up for increment on write only mode.
 
 
-0xF01C: Generic PRAM pointer setup
+0xE01C: Generic PRAM pointer setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ptr_setgen
@@ -205,7 +205,7 @@ Copy functions
 ------------------------------------------------------------------------------
 
 
-0xF020: PRAM <= CPU RAM copy
+0xE020: PRAM <= CPU RAM copy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_copy_pfc
@@ -219,7 +219,7 @@ Copies data from CPU RAM into PRAM. Uses PRAM pointer 3 for this, which is not
 preserved (not restored after the copy).
 
 
-0xF022: CPU RAM <= PRAM copy
+0xE022: CPU RAM <= PRAM copy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_copy_cfp
@@ -233,7 +233,7 @@ Copies data from PRAM into CPU RAM. Uses PRAM pointer 3 for this, which is not
 preserved (not restored after the copy).
 
 
-0xF024: PRAM <= PRAM copy
+0xE024: PRAM <= PRAM copy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_copy_pfp
@@ -248,7 +248,7 @@ Copies data from PRAM into PRAM. Uses PRAM pointer 2 and 3 for this, which are
 not preserved (not restored after the copy).
 
 
-0xF026: CPU RAM <= CPU RAM copy
+0xE026: CPU RAM <= CPU RAM copy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_copy_cfc
@@ -260,7 +260,7 @@ not preserved (not restored after the copy).
 Copies data from CPU RAM into CPU RAM.
 
 
-0xF02C: Long PRAM <= PRAM copy
+0xE02C: Long PRAM <= PRAM copy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_copy_pfp_l
@@ -282,7 +282,7 @@ Fill (memory set) functions
 ------------------------------------------------------------------------------
 
 
-0xF028: PRAM set
+0xE028: PRAM set
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_set_p
@@ -296,7 +296,7 @@ Sets the given PRAM memory area to the given value. Uses PRAM pointer 3 for
 this, which is not preserved (not restored after the set).
 
 
-0xF02A: CPU RAM set
+0xE02A: CPU RAM set
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_set_c
@@ -308,7 +308,7 @@ this, which is not preserved (not restored after the set).
 Sets the given CPU RAM memory area to the given value.
 
 
-0xF02E: Long PRAM set
+0xE02E: Long PRAM set
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_set_p_l
@@ -341,51 +341,51 @@ included, and are maximal counts.
 +--------+-----------+---+------+--------------------------------------------+
 | Addr.  | Cycles    | P |   R  | Name                                       |
 +========+===========+===+======+============================================+
-| 0xF000 |       120 | 3 | C:X3 | us_ptr_set1i                               |
+| 0xE000 |       120 | 3 | C:X3 | us_ptr_set1i                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF002 |       120 | 3 | C:X3 | us_ptr_set1w                               |
+| 0xE002 |       120 | 3 | C:X3 | us_ptr_set1w                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF004 |       120 | 3 | C:X3 | us_ptr_set2i                               |
+| 0xE004 |       120 | 3 | C:X3 | us_ptr_set2i                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF006 |       120 | 3 | C:X3 | us_ptr_set2w                               |
+| 0xE006 |       120 | 3 | C:X3 | us_ptr_set2w                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF008 |       120 | 3 | C:X3 | us_ptr_set4i                               |
+| 0xE008 |       120 | 3 | C:X3 | us_ptr_set4i                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF00A |       120 | 3 | C:X3 | us_ptr_set4w                               |
+| 0xE00A |       120 | 3 | C:X3 | us_ptr_set4w                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF00C |       120 | 3 | C:X3 | us_ptr_set8i                               |
+| 0xE00C |       120 | 3 | C:X3 | us_ptr_set8i                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF00E |       120 | 3 | C:X3 | us_ptr_set8w                               |
+| 0xE00E |       120 | 3 | C:X3 | us_ptr_set8w                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF010 |       120 | 3 | C:X3 | us_ptr_set16i                              |
+| 0xE010 |       120 | 3 | C:X3 | us_ptr_set16i                              |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF012 |       120 | 3 | C:X3 | us_ptr_set16w                              |
+| 0xE012 |       120 | 3 | C:X3 | us_ptr_set16w                              |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF014 |           |   |      | <not used>                                 |
+| 0xE014 |           |   |      | <not used>                                 |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF016 |           |   |      | <not used>                                 |
+| 0xE016 |           |   |      | <not used>                                 |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF018 |       120 | 5 | C:X3 | us_ptr_setgen16i                           |
+| 0xE018 |       120 | 5 | C:X3 | us_ptr_setgen16i                           |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF01A |       120 | 5 | C:X3 | us_ptr_setgen16w                           |
+| 0xE01A |       120 | 5 | C:X3 | us_ptr_setgen16w                           |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF01C |       120 | 6 | C:X3 | us_ptr_setgen                              |
+| 0xE01C |       120 | 6 | C:X3 | us_ptr_setgen                              |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF01E |           |   |      | <not used>                                 |
+| 0xE01E |           |   |      | <not used>                                 |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF020 | 10U + 200 | 4 |      | us_copy_pfc                                |
+| 0xE020 | 10U + 200 | 4 |      | us_copy_pfc                                |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF022 | 10U + 200 | 4 |      | us_copy_cfp                                |
+| 0xE022 | 10U + 200 | 4 |      | us_copy_cfp                                |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF024 | 10U + 200 | 5 |      | us_copy_pfp                                |
+| 0xE024 | 10U + 200 | 5 |      | us_copy_pfp                                |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF026 | 10U + 200 | 3 |      | us_copy_cfc                                |
+| 0xE026 | 10U + 200 | 3 |      | us_copy_cfc                                |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF028 |  6U + 200 | 4 |      | us_set_p                                   |
+| 0xE028 |  6U + 200 | 4 |      | us_set_p                                   |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF02A |  6U + 200 | 3 |      | us_set_c                                   |
+| 0xE02A |  6U + 200 | 3 |      | us_set_c                                   |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF02C | 10U + 300 | 6 |      | us_copy_pfp_l                              |
+| 0xE02C | 10U + 300 | 6 |      | us_copy_pfp_l                              |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xF02E |  6U + 300 | 5 |      | us_set_p_l                                 |
+| 0xE02E |  6U + 300 | 5 |      | us_set_p_l                                 |
 +--------+-----------+---+------+--------------------------------------------+
