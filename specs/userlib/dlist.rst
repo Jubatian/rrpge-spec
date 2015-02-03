@@ -153,12 +153,11 @@ The display lists themselves are not altered, so they should be set up as
 necessary before calling this.
 
 Setting Display list definition 1 for display is treated as a page flip, the
-flip hooks are called after it (work and display surfaces however are not
-exchanged). Then the function waits for the end of the frame (unless already
-reached, using the frame rate limiter flag of the Display List Definition &
-Process flags register), sets display list clear controls by the provided
-value, finally transferring to us_dbus_getlist to process frame hooks and to
-return the work display list.
+flip hooks are called after it. Then the function waits for the end of the
+frame (unless already reached, using the frame rate limiter flag of the
+Display List Definition & Process flags register), sets display list clear
+controls by the provided value, finally transferring to us_dbus_getlist to
+process frame hooks and to return the work display list.
 
 The display list parameters are written out in the respective CPU RAM
 variables after the current mode flags (4 / 8 bit mode, double scan) are added
@@ -173,13 +172,11 @@ to them.
 
 First if necessary, it waits for the Graphics FIFO to be drained, so anything
 still processing for the current work display list may finish before flipping
-it in. Then the pages are flipped, work and display surfaces are exchanged
-(0xF990 - 0xF99F in CPU RAM), and the flip hooks are called, also setting the
-Flip performed flag (0xFAFD in CPU RAM).
+it in. Then the pages are flipped, and the flip hooks are called, also setting
+the Flip performed flag (0xFAFD in CPU RAM).
 
 Before starting the above described tasks, it may also call the frame hooks if
-calling us_dbuf_getlist or us_dbuf_getsurface was omitted after the last page
-flip.
+calling us_dbuf_getlist was omitted after the last page flip.
 
 If necessary, the mode flags in the display list CPU RAM variables are updated
 according to the currently set display mode.
