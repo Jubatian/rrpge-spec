@@ -133,8 +133,8 @@ PRAM pointer setup functions
 - F.name: us_ptr_set16i
 - Cycles: 120
 - Param0: Target pointer (only low 2 bits used)
-- Param1: Start word address, high
-- Param2: Start word address, low
+- Param1: Start bit(!) address, high
+- Param2: Start bit(!) address, low
 - Ret.X3: Points to the Read/Write register of the pointer
 - Ret. C: Points to the Read/Write without increment register of the pointer
 
@@ -145,16 +145,40 @@ PRAM pointer setup functions
 - F.name: us_ptr_set16w
 - Cycles: 120
 - Param0: Target pointer (only low 2 bits used)
+- Param1: Start bit(!) address, high
+- Param2: Start bit(!) address, low
+- Ret.X3: Points to the Read/Write register of the pointer
+- Ret. C: Points to the Read/Write without increment register of the pointer
+
+
+0xE014: Word incrementing PRAM pointer setup
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- F.name: us_ptr_setwi
+- Cycles: 120
+- Param0: Target pointer (only low 2 bits used)
 - Param1: Start word address, high
 - Param2: Start word address, low
 - Ret.X3: Points to the Read/Write register of the pointer
 - Ret. C: Points to the Read/Write without increment register of the pointer
 
 
-0xE018: Generic 16 bit PRAM pointer setup
+0xE016: Word inc. on write PRAM pointer setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- F.name: us_ptr_setgen16i
+- F.name: us_ptr_setww
+- Cycles: 120
+- Param0: Target pointer (only low 2 bits used)
+- Param1: Start word address, high
+- Param2: Start word address, low
+- Ret.X3: Points to the Read/Write register of the pointer
+- Ret. C: Points to the Read/Write without increment register of the pointer
+
+
+0xE018: Generic word PRAM pointer setup
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- F.name: us_ptr_setgenwi
 - Cycles: 120
 - Param0: Target pointer (only low 2 bits used)
 - Param1: Start word address, high
@@ -165,10 +189,10 @@ PRAM pointer setup functions
 - Ret. C: Points to the Read/Write without increment register of the pointer
 
 
-0xE01A: Generic 16 bit setup for inc. on write
+0xE01A: Generic word setup for inc. on write
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- F.name: us_ptr_setgen16w
+- F.name: us_ptr_setgenww
 - Cycles: 120
 - Param0: Target pointer (only low 2 bits used)
 - Param1: Start word address, high
@@ -361,13 +385,13 @@ included, and are maximal counts.
 +--------+-----------+---+------+--------------------------------------------+
 | 0xE012 |       120 | 3 | C:X3 | us_ptr_set16w                              |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xE014 |           |   |      | <not used>                                 |
+| 0xE014 |       120 | 3 | C:X3 | us_ptr_setwi                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xE016 |           |   |      | <not used>                                 |
+| 0xE016 |       120 | 3 | C:X3 | us_ptr_setww                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xE018 |       120 | 5 | C:X3 | us_ptr_setgen16i                           |
+| 0xE018 |       120 | 5 | C:X3 | us_ptr_setgenwi                            |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xE01A |       120 | 5 | C:X3 | us_ptr_setgen16w                           |
+| 0xE01A |       120 | 5 | C:X3 | us_ptr_setgenww                            |
 +--------+-----------+---+------+--------------------------------------------+
 | 0xE01C |       120 | 6 | C:X3 | us_ptr_setgen                              |
 +--------+-----------+---+------+--------------------------------------------+
