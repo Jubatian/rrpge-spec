@@ -168,7 +168,7 @@ Returns the width in cell and the partitioning setting of the surface,
 reflecting the physical width and height of it.
 
 
-0xE0A4: Initialize surface manager
+0xE0A2: Initialize surface manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dsurf_init
@@ -186,7 +186,7 @@ Surface A should be paired with the Display List Definition 1 parameter of
 0xE042: "Initialize for double buffering".
 
 
-0xE0A6: Flip surfaces
+0xE0A4: Flip surfaces
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_dsurf_flip
@@ -231,9 +231,7 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | 0xE0A0 |            50 | 1 | C:X3 | us_dsurf_getpw                         |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0A2 |               |   |      | <not used>                             |
+| 0xE0A2 |            20 | 0 |      | us_dsurf_init                          |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0A4 |            20 | 0 |      | us_dsurf_init                          |
-+--------+---------------+---+------+----------------------------------------+
-| 0xE0A6 |            25 | 0 |      | us_dsurf_flip                          |
+| 0xE0A4 |            25 | 0 |      | us_dsurf_flip                          |
 +--------+---------------+---+------+----------------------------------------+

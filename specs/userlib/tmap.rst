@@ -17,7 +17,7 @@ Introduction, data structures
 
 The tile map manager provides basic support for working with Graphics
 Accelerator based tile maps. Combined with a Destination surface and a Tileset
-it can be used to produce graphics directly.
+(tileset interface) it can be used to produce graphics directly.
 
 The tile map manager works with tile map structures (objects). The structure
 is formed as follows:
@@ -27,18 +27,8 @@ is formed as follows:
 - Word2: Height of tile map in tiles
 - Word3: Word offset of tile map start in PRAM, high
 - Word4: Word offset of tile map start in PRAM, low
-- Word5: Blit function of tileset
-- Word6: Accelerator init function of tileset
-- Word7: Height:Width request function of tileset
 
-For the functions, normally the us_tile_blit, us_tile_getacc and us_tile_gethw
-functions may be used from the tileset manager, however through those, using
-an identical interface, user-created tileset managers may also be used with
-the tile map manager. A blit function does not necessarily have to have a
-destination start offset fraction parameter, however then the
-us_tmap_getaccxfy function's X fraction parameter will have no effect.
-
-CPU RAM locations are used for supporting blitting (set by the us_tmap_getacc
+CPU RAM locations are used for supporting blitting (set by the us_tmap_acc
 and derivative functions):
 
 +--------+-------------------------------------------------------------------+
@@ -52,7 +42,7 @@ and derivative functions):
 +--------+-------------------------------------------------------------------+
 | 0xFAA3 | Word offset of tile map start in PRAM, low (memorized Word4).     |
 +--------+-------------------------------------------------------------------+
-| 0xFAA4 | Blit function of tileset (memorized Word5).                       |
+| 0xFAA4 | Tileset structure pointer (memorized Word0).                      |
 +--------+-------------------------------------------------------------------+
 | 0xFAA5 | Destination width (cells).                                        |
 +--------+-------------------------------------------------------------------+
@@ -76,45 +66,26 @@ Functions
 ------------------------------------------------------------------------------
 
 
-0xE0B2: Set up tile map
+0xE0B6: Set up tile map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- F.name: us_tmap_set
-- Cycles: 120
+- F.name: us_tmap_new
+- Cycles: 80
 - Param0: Target tile map pointer (8 words)
-- Param1: Tileset to use (tileset structure pointer)
+- Param1: Tileset to use (tileset interface structure pointer)
 - Param2: Width of tile map in tiles
 - Param3: Height of tile map in tiles
 - Param4: Word offset of tile map in PRAM, high
 - Param5: Word offset of tile map in PRAM, low
-
-Sets up a tile map structure using the given parameters as-is. For the
-functions, us_tile_blit, us_tile_getacc and us_tile_gethw are used.
-
-
-0xE0B4: Set up tile map with tileset functions
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- F.name: us_tmap_set
-- Cycles: 130
-- Param0: Target tile map pointer (8 words)
-- Param1: Tileset to use (tileset structure pointer)
-- Param2: Width of tile map in tiles
-- Param3: Height of tile map in tiles
-- Param4: Word offset of tile map in PRAM, high
-- Param5: Word offset of tile map in PRAM, low
-- Param6: Tileset blit function
-- Param7: Tileset accelerator init function
-- Param8: Tileset Height:Width request function
 
 Sets up a tile map structure using the given parameters as-is.
 
 
-0xE0B6: Accelerator setup
+0xE0B8: Accelerator setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- F.name: us_tmap_getacc
-- Cycles: 400 + Wait for frame end + Function calls
+- F.name: us_tmap_acc
+- Cycles: 380 + Wait for frame end + Function calls
 - Param0: Source tile map pointer
 - Param1: Destination surface pointer
 
@@ -132,11 +103,11 @@ even number which multiplied with width produces a smaller or equal result as
 the total cell count of the destination.
 
 
-0xE0B8: Accelerator setup with boundary origin
+0xE0BA: Accelerator setup with boundary origin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- F.name: us_tmap_getaccxy
-- Cycles: 410 + Wait for frame end + Function calls
+- F.name: us_tmap_accxy
+- Cycles: 390 + Wait for frame end + Function calls
 - Param0: Source tile map pointer
 - Param1: Destination surface pointer
 - Param2: X origin (cells)
@@ -150,11 +121,11 @@ is faster). It may be used for vertical scrollers, or scrollers combined with
 Display list manipulation where full updates are necessary.
 
 
-0xE0BA: Accelerator setup with origin
+0xE0BC: Accelerator setup with origin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- F.name: us_tmap_getaccxfy
-- Cycles: 410 + Wait for frame end + Function calls
+- F.name: us_tmap_accxfy
+- Cycles: 400 + Wait for frame end + Function calls
 - Param0: Source tile map pointer
 - Param1: Destination surface pointer
 - Param2: X origin (cells)
@@ -169,15 +140,16 @@ destination cells this case to blit a tile), however this may be used for
 effects like parallax scrolling.
 
 
-0xE0BC: Blit tile map region
+0xE0BE: Blit tile map region
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tmap_blit
 - Cycles: 400 + 60 / tile + Tile blit function calls
-- Param0: Top-left tile X
-- Param1: Top-left tile Y
-- Param2: Width in tiles
-- Param3: Height in tiles
+- Param0: Source tile map pointer
+- Param1: Top-left tile X
+- Param2: Top-left tile Y
+- Param3: Width in tiles
+- Param4: Height in tiles
 
 Outputs a tile map region on the destination, supporting both destination and
 tile map wrapping.
@@ -216,7 +188,7 @@ tile map dimension is a power of 2, the resulting tiles to blit are undefined.
 Uses PRAM pointer 3, which is not preserved.
 
 
-0xE0BE: Get height and width of tile map
+0xE0C0: Get height and width of tile map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tmap_gethw
@@ -228,7 +200,7 @@ Uses PRAM pointer 3, which is not preserved.
 Returns the width and height of the tile map.
 
 
-0xE0C0: Get height and width of tiles
+0xE0C2: Get height and width of tiles
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tmap_gettilehw
@@ -240,7 +212,7 @@ Returns the width and height of the tile map.
 Returns the width and height of the tileset used by the tile map.
 
 
-0xE0C2: Get tile index
+0xE0C4: Get tile index
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tmap_gettile
@@ -256,7 +228,7 @@ taken modulo the appropriate tile map dimensions.
 Uses PRAM pointer 3, which is not preserved.
 
 
-0xE0C4: Set tile index
+0xE0C6: Set tile index
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tmap_settile
@@ -272,7 +244,7 @@ taken modulo the appropriate tile map dimensions.
 Uses PRAM pointer 3, which is not preserved.
 
 
-0xE0C6: Setup PRAM pointer for tile map access
+0xE0C8: Setup PRAM pointer for tile map access
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tmap_setptr
@@ -306,25 +278,23 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | Addr.  | Cycles        | P |   R  | Name                                   |
 +========+===============+===+======+========================================+
-| 0xE0B2 |           120 | 6 |      | us_tmap_set                            |
+| 0xE0B6 |            80 | 6 |      | us_tmap_new                            |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0B4 |           130 | 9 |      | us_tmap_setfn                          |
+| 0xE0B8 |   380 + W + F | 2 |      | us_tmap_acc                            |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0B6 |   400 + W + F | 2 |      | us_tmap_getacc                         |
+| 0xE0BA |   390 + W + F | 4 |      | us_tmap_accxy                          |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0B8 |   410 + W + F | 4 |      | us_tmap_getaccxy                       |
+| 0xE0BC |   400 + W + F | 5 |      | us_tmap_accxfy                         |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0BA |   420 + W + F | 5 |      | us_tmap_getaccxfy                      |
+| 0xE0BE | 60U + 400 + F | 5 |      | us_tmap_blit                           |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0BC | 60U + 400 + F | 4 |      | us_tmap_blit                           |
+| 0xE0C0 |            40 | 1 | C:X3 | us_tmap_gethw                          |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0BE |            40 | 1 |      | us_tmap_gethw                          |
+| 0xE0C2 |        25 + F | 1 | C:X3 | us_tmap_gettilehw                      |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0C0 |        25 + F | 1 |      | us_tmap_gettilehw                      |
+| 0xE0C4 |           170 | 3 |  X3  | us_tmap_gettile                        |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0C2 |           170 | 3 |  X3  | us_tmap_gettile                        |
+| 0xE0C6 |           180 | 4 |      | us_tmap_settile                        |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0C4 |           180 | 4 |      | us_tmap_settile                        |
-+--------+---------------+---+------+----------------------------------------+
-| 0xE0C6 |           130 | 2 | C:X3 | us_tmap_setptr                         |
+| 0xE0C8 |           130 | 2 | C:X3 | us_tmap_setptr                         |
 +--------+---------------+---+------+----------------------------------------+

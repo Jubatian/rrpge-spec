@@ -1,6 +1,8 @@
 Version 00.016.000 ()
  - User Library size increased from 4 KWords to 8 KWords, moving the entry
    point table down to start at 0xE000.
+ - New object-oriented concepts in the User Library, notably at the
+   realization of interfaces (tileset interface redesign).
  - Accelerator destination partition size moved from 0x8014 to 0x8002, into
    the destination bank select, to completely separate source and destination
    configurations. Registers are renamed accordingly.

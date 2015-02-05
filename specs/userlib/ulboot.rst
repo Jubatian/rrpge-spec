@@ -44,7 +44,7 @@ The page flip hook list contains the following functions:
 
 - 0xE06C: us_sprite_reset
 - 0xE06E: us_smux_reset
-- 0xE0A6: us_dsurf_flip
+- 0xE0A4: us_dsurf_flip
 
 The absolute offset of it's first free slot at 0xFAEF is set 0xFAF3
 (indicating three functions loaded).
@@ -54,7 +54,7 @@ at 0xFAEE is set 0xFAE0 (indicating empty).
 
 The init hook list contains the following functions:
 
-- 0xE0A4: us_dsurf_init
+- 0xE0A2: us_dsurf_init
 
 The absolute offset of it's first free slot at 0xFADF is set 0xFAD1
 (indicating one function loaded).
@@ -97,10 +97,10 @@ Tileset manager initialization
 The tileset manager starts out uninitialized, so the FABC - FABE range set
 zero. The default tilesets however are initialized as follows:
 
-- 0xFAAC: Normal 4 bit font. Tile index layout 1, No colorkey.
-- 0xFAB0: Inverted 4 bit font. Tile index layout 5, Pixel AND mask colorkey.
-- 0xFAB4: Normal 8 bit font. Tile index layout 1, No colorkey.
-- 0xFAB8: Inverted 8 bit font. Tile index layout 5, Pixel AND mask colorkey.
+- 0xFA90: Normal 4 bit font. Tile index layout 1, No colorkey.
+- 0xFA98: Inverted 4 bit font. Tile index layout 5, Pixel AND mask colorkey.
+- 0xFAAC: Normal 8 bit font. Tile index layout 1, No colorkey.
+- 0xFAB4: Inverted 8 bit font. Tile index layout 5, Pixel AND mask colorkey.
 
 
 
@@ -127,22 +127,26 @@ The following table provides the initial fill data to be used for the range
 +========+===================================================================+
 | 0xF800 |                                                                   |
 | \-     | 0                                                                 |
+| 0xFA8F |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0xFA90 |                                                                   |
+| \-     | 0xE0B2, 0xE0B4, 0xE0B0, 0x0001, 0x000C, 0x000F, 0xC800, 0x0020    |
+| 0xFA97 |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0xFA98 |                                                                   |
+| \-     | 0xE0B2, 0xE0B4, 0xE0B0, 0x0001, 0x000C, 0x000F, 0xC800, 0x01AA    |
+| 0xFA9F |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0xFAA0 |                                                                   |
+| \-     | 0                                                                 |
 | 0xFAAB |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xFAAC |                                                                   |
-| \-     | 0x020C, 0x000F, 0xC800, 0x0020                                    |
-| 0xFAAF |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0xFAB0 |                                                                   |
-| \-     | 0x020C, 0x000F, 0xC800, 0x01AA                                    |
+| \-     | 0xE0B2, 0xE0B4, 0xE0B0, 0x0002, 0x000C, 0x000F, 0xC800, 0x0031    |
 | 0xFAB3 |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xFAB4 |                                                                   |
-| \-     | 0x040C, 0x000F, 0xC800, 0x0031                                    |
-| 0xFAB7 |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0xFAB8 |                                                                   |
-| \-     | 0x040C, 0x000F, 0xC800, 0x01BD                                    |
+| \-     | 0xE0B2, 0xE0B4, 0xE0B0, 0x0002, 0x000C, 0x000F, 0xC800, 0x01BD    |
 | 0xFABB |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xFABC |                                                                   |
@@ -157,7 +161,7 @@ The following table provides the initial fill data to be used for the range
 | \-     | 0                                                                 |
 | 0xFACF |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFAD0 | 0xE0A4                                                            |
+| 0xFAD0 | 0xE0A2                                                            |
 +--------+-------------------------------------------------------------------+
 | 0xFAD1 |                                                                   |
 | \-     | 0                                                                 |
@@ -177,7 +181,7 @@ The following table provides the initial fill data to be used for the range
 +--------+-------------------------------------------------------------------+
 | 0xFAF1 | 0xE06E                                                            |
 +--------+-------------------------------------------------------------------+
-| 0xFAF2 | 0xE0A6                                                            |
+| 0xFAF2 | 0xE0A4                                                            |
 +--------+-------------------------------------------------------------------+
 | 0xFAF3 |                                                                   |
 | \-     | 0                                                                 |

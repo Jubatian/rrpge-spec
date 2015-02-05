@@ -164,7 +164,7 @@ Functions
 ------------------------------------------------------------------------------
 
 
-0xE0C8: Set up fast scrolling tile map
+0xE0CA: Set up fast scrolling tile map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_fastmap_set
@@ -184,7 +184,7 @@ are used as-is, except for the full update request flag (one bit), which is
 set.
 
 
-0xE0CA: Mark fast scrolling tile map for update
+0xE0CC: Mark fast scrolling tile map for update
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_fastmap_mark
@@ -195,7 +195,7 @@ Marks the fast scrolling tile map for full update, which will happen next time
 when us_fastmap_draw is called.
 
 
-0xE0CC: Get visible dimensions
+0xE0CE: Get visible dimensions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_fastmap_gethw
@@ -211,7 +211,7 @@ unchanged. The returned dimensions are calculated according to the description
 at Basic operation.
 
 
-0xE0CE: Get current tile top-left coordinates
+0xE0D0: Get current tile top-left coordinates
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_fastmap_getyx
@@ -230,7 +230,7 @@ perform in one pass, otherwise the animation may flicker (the surface is
 single buffered).
 
 
-0xE0D0: Set display list Y parameters
+0xE0D2: Set display list Y parameters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_fastmap_setdly
@@ -245,7 +245,7 @@ request flag) if the new count of used rows grows larger so it needs more
 tiles to be rendered than before.
 
 
-0xE0D2: Render the fast scrolling tile map
+0xE0D4: Render the fast scrolling tile map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_fastmap_draw
@@ -293,15 +293,15 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | Addr.  | Cycles        | P |   R  | Name                                   |
 +========+===============+===+======+========================================+
-| 0xE0C8 |           140 | 9 |      | us_fastmap_set                         |
+| 0xE0CA |           140 | 9 |      | us_fastmap_set                         |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0CA |            25 | 1 |      | us_fastmap_mark                        |
+| 0xE0CC |            25 | 1 |      | us_fastmap_mark                        |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0CC |       200 + F | 1 | C:X3 | us_fastmap_gethw                       |
+| 0xE0CE |       200 + F | 1 | C:X3 | us_fastmap_gethw                       |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0CE |            30 | 1 | C:X3 | us_fastmap_getyx                       |
+| 0xE0D0 |            30 | 1 | C:X3 | us_fastmap_getyx                       |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0D0 |       170 + F | 3 |      | us_fastmap_setdly                      |
+| 0xE0D2 |       170 + F | 3 |      | us_fastmap_setdly                      |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0D2 |             * | 3 |      | us_fastmap_draw                        |
+| 0xE0D4 |             * | 3 |      | us_fastmap_draw                        |
 +--------+---------------+---+------+----------------------------------------+

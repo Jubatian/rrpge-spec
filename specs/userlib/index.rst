@@ -79,6 +79,13 @@ Description of component documents
 ------------------------------------------------------------------------------
 
 
+File "btile.rst"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Basic tileset implementation for the tileset interface, for working with the
+Graphics Accelerator.
+
+
 File "dlist.rst"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -103,6 +110,12 @@ File "fontdata.rst"
 Code Page 437 compliant binary font in the Peripheral RAM (0xFC800 - 0xFDFFF).
 
 
+File "iftile.rst"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Tileset interface, providing tile set support for tile mappers and similar.
+
+
 File "llmm.rst"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -119,12 +132,6 @@ File "sprite.rst"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Display List based sprite system.
-
-
-File "tile.rst"
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Tileset structure and functions for working with the Graphics Accelerator.
 
 
 File "tmap.rst"
@@ -329,53 +336,55 @@ formatted as a NOP. Not used handlers are filled with NOPs.
 +--------+---------------+---+------+-------------------------+--------------+
 | 0xE0A0 |            50 | 1 | C:X3 | us_dsurf_getpw          | dsurf.rst    |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0A2 |               |   |      | <not used>              |              |
+| 0xE0A2 |            20 | 0 |      | us_dsurf_init           | dsurf.rst    |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0A4 |            20 | 0 |      | us_dsurf_init           | dsurf.rst    |
+| 0xE0A4 |            25 | 0 |      | us_dsurf_flip           | dsurf.rst    |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0A6 |            25 | 0 |      | us_dsurf_flip           | dsurf.rst    |
+| 0xE0A6 |            50 | 4 |  X3  | us_tile_new             | iftile.rst   |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0A8 |           100 | 6 |      | us_tile_set             | tile.rst     |
+| 0xE0A8 |        20 + F | 1 |      | us_tile_acc             | iftile.rst   |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0AA |           250 | 1 |      | us_tile_getacc          | tile.rst     |
+| 0xE0AA |        15 + F | 4 |      | us_tile_blit            | iftile.rst   |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0AC |           150 | 3 |      | us_tile_blit            | tile.rst     |
+| 0xE0AC |        20 + F | 1 | C:X3 | us_tile_gethw           | iftile.rst   |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0AE |           150 | 2 |      | us_tile_blitb           | tile.rst     |
+| 0xE0AE |           110 | 6 |      | us_btile_new            | btile.rst    |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0B0 |            60 | 1 | C:X3 | us_tile_gethw           | tile.rst     |
+| 0xE0B0 |           200 | 1 |      | us_btile_acc            | btile.rst    |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0B2 |           120 | 6 |      | us_tmap_set             | tmap.rst     |
+| 0xE0B2 |           150 | 4 |      | us_btile_blit           | btile.rst    |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0B4 |           130 | 9 |      | us_tmap_setfn           | tmap.rst     |
+| 0xE0B4 |            30 | 1 | C:X3 | us_btile_gethw          | btile.rst    |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0B6 |   400 + W + F | 2 |      | us_tmap_getacc          | tmap.rst     |
+| 0xE0B6 |            80 | 6 |      | us_tmap_new             | tmap.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0B8 |   410 + W + F | 4 |      | us_tmap_getaccxy        | tmap.rst     |
+| 0xE0B8 |   380 + W + F | 2 |      | us_tmap_acc             | tmap.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0BA |   420 + W + F | 5 |      | us_tmap_getaccxfy       | tmap.rst     |
+| 0xE0BA |   390 + W + F | 4 |      | us_tmap_accxy           | tmap.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0BC | 60U + 400 + F | 4 |      | us_tmap_blit            | tmap.rst     |
+| 0xE0BC |   400 + W + F | 5 |      | us_tmap_accxfy          | tmap.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0BE |            40 | 1 |      | us_tmap_gethw           | tmap.rst     |
+| 0xE0BE | 60U + 400 + F | 5 |      | us_tmap_blit            | tmap.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0C0 |        25 + F | 1 |      | us_tmap_gettilehw       | tmap.rst     |
+| 0xE0C0 |            40 | 1 | C:X3 | us_tmap_gethw           | tmap.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0C2 |           170 | 3 |  X3  | us_tmap_gettile         | tmap.rst     |
+| 0xE0C2 |        25 + F | 1 | C:X3 | us_tmap_gettilehw       | tmap.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0C4 |           180 | 4 |      | us_tmap_settile         | tmap.rst     |
+| 0xE0C4 |           170 | 3 |  X3  | us_tmap_gettile         | tmap.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0C6 |           130 | 2 | C:X3 | us_tmap_setptr          | tmap.rst     |
+| 0xE0C6 |           180 | 4 |      | us_tmap_settile         | tmap.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0C8 |           140 | 9 |      | us_fastmap_set          | fastmap.rst  |
+| 0xE0C8 |           130 | 2 | C:X3 | us_tmap_setptr          | tmap.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0CA |            25 | 1 |      | us_fastmap_mark         | fastmap.rst  |
+| 0xE0CA |           140 | 9 |      | us_fastmap_set          | fastmap.rst  |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0CC |       200 + F | 1 | C:X3 | us_fastmap_gethw        | fastmap.rst  |
+| 0xE0CC |            25 | 1 |      | us_fastmap_mark         | fastmap.rst  |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0CE |            30 | 1 | C:X3 | us_fastmap_getyx        | fastmap.rst  |
+| 0xE0CE |       200 + F | 1 | C:X3 | us_fastmap_gethw        | fastmap.rst  |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0D0 |       170 + F | 3 |      | us_fastmap_setdly       | fastmap.rst  |
+| 0xE0D0 |            30 | 1 | C:X3 | us_fastmap_getyx        | fastmap.rst  |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0D2 |             * | 3 |      | us_fastmap_draw         | fastmap.rst  |
+| 0xE0D2 |       170 + F | 3 |      | us_fastmap_setdly       | fastmap.rst  |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xE0D4 |             * | 3 |      | us_fastmap_draw         | fastmap.rst  |
 +--------+---------------+---+------+-------------------------+--------------+
