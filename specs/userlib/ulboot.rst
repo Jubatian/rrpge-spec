@@ -97,8 +97,8 @@ Tileset manager initialization
 The tileset manager starts out uninitialized, so the FABC - FABE range set
 zero. The default tilesets however are initialized as follows:
 
-- 0xFA90: Normal 4 bit font. Tile index layout 1, No colorkey.
-- 0xFA98: Inverted 4 bit font. Tile index layout 5, Pixel AND mask colorkey.
+- 0xFA9C: Normal 4 bit font. Tile index layout 1, No colorkey.
+- 0xFAA4: Inverted 4 bit font. Tile index layout 5, Pixel AND mask colorkey.
 - 0xFAAC: Normal 8 bit font. Tile index layout 1, No colorkey.
 - 0xFAB4: Inverted 8 bit font. Tile index layout 5, Pixel AND mask colorkey.
 
@@ -127,18 +127,14 @@ The following table provides the initial fill data to be used for the range
 +========+===================================================================+
 | 0xF800 |                                                                   |
 | \-     | 0                                                                 |
-| 0xFA8F |                                                                   |
+| 0xFA9B |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFA90 |                                                                   |
+| 0xFA9C |                                                                   |
 | \-     | 0xE0B2, 0xE0B4, 0xE0B0, 0x0001, 0x000C, 0x000F, 0xC800, 0x0020    |
-| 0xFA97 |                                                                   |
+| 0xFAA3 |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFA98 |                                                                   |
+| 0xFAA4 |                                                                   |
 | \-     | 0xE0B2, 0xE0B4, 0xE0B0, 0x0001, 0x000C, 0x000F, 0xC800, 0x01AA    |
-| 0xFA9F |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0xFAA0 |                                                                   |
-| \-     | 0                                                                 |
 | 0xFAAB |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xFAAC |                                                                   |

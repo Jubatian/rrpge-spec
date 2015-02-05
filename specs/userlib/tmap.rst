@@ -34,29 +34,19 @@ and derivative functions):
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0xFAA0 | Width of tile map in tiles (memorized Word1).                     |
+| 0xFA95 | Destination width (cells).                                        |
 +--------+-------------------------------------------------------------------+
-| 0xFAA1 | Height of tile map in tiles (memorized Word2).                    |
+| 0xFA96 | Destination height.                                               |
 +--------+-------------------------------------------------------------------+
-| 0xFAA2 | Word offset of tile map start in PRAM, high (memorized Word3).    |
+| 0xFA97 | Tile width (cells).                                               |
 +--------+-------------------------------------------------------------------+
-| 0xFAA3 | Word offset of tile map start in PRAM, low (memorized Word4).     |
+| 0xFA98 | Tile height.                                                      |
 +--------+-------------------------------------------------------------------+
-| 0xFAA4 | Tileset structure pointer (memorized Word0).                      |
+| 0xFA99 | X origin fraction.                                                |
 +--------+-------------------------------------------------------------------+
-| 0xFAA5 | Destination width (cells).                                        |
+| 0xFA9A | X origin.                                                         |
 +--------+-------------------------------------------------------------------+
-| 0xFAA6 | Destination height.                                               |
-+--------+-------------------------------------------------------------------+
-| 0xFAA7 | Tile width (cells).                                               |
-+--------+-------------------------------------------------------------------+
-| 0xFAA8 | Tile height.                                                      |
-+--------+-------------------------------------------------------------------+
-| 0xFAA9 | X origin fraction.                                                |
-+--------+-------------------------------------------------------------------+
-| 0xFAAA | X origin.                                                         |
-+--------+-------------------------------------------------------------------+
-| 0xFAAB | Y origin.                                                         |
+| 0xFA9B | Y origin.                                                         |
 +--------+-------------------------------------------------------------------+
 
 
@@ -85,7 +75,7 @@ Sets up a tile map structure using the given parameters as-is.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tmap_acc
-- Cycles: 380 + Wait for frame end + Function calls
+- Cycles: 340 + Wait for frame end + Function calls
 - Param0: Source tile map pointer
 - Param1: Destination surface pointer
 
@@ -107,7 +97,7 @@ the total cell count of the destination.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tmap_accxy
-- Cycles: 390 + Wait for frame end + Function calls
+- Cycles: 350 + Wait for frame end + Function calls
 - Param0: Source tile map pointer
 - Param1: Destination surface pointer
 - Param2: X origin (cells)
@@ -125,7 +115,7 @@ Display list manipulation where full updates are necessary.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tmap_accxfy
-- Cycles: 400 + Wait for frame end + Function calls
+- Cycles: 360 + Wait for frame end + Function calls
 - Param0: Source tile map pointer
 - Param1: Destination surface pointer
 - Param2: X origin (cells)
@@ -144,7 +134,7 @@ effects like parallax scrolling.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tmap_blit
-- Cycles: 400 + 60 / tile + Tile blit function calls
+- Cycles: 440 + 60 / tile + Tile blit function calls
 - Param0: Source tile map pointer
 - Param1: Top-left tile X
 - Param2: Top-left tile Y
@@ -280,13 +270,13 @@ included, and are maximal counts.
 +========+===============+===+======+========================================+
 | 0xE0B6 |            80 | 6 |      | us_tmap_new                            |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0B8 |   380 + W + F | 2 |      | us_tmap_acc                            |
+| 0xE0B8 |   340 + W + F | 2 |      | us_tmap_acc                            |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0BA |   390 + W + F | 4 |      | us_tmap_accxy                          |
+| 0xE0BA |   350 + W + F | 4 |      | us_tmap_accxy                          |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0BC |   400 + W + F | 5 |      | us_tmap_accxfy                         |
+| 0xE0BC |   360 + W + F | 5 |      | us_tmap_accxfy                         |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0BE | 60U + 400 + F | 5 |      | us_tmap_blit                           |
+| 0xE0BE | 60U + 440 + F | 5 |      | us_tmap_blit                           |
 +--------+---------------+---+------+----------------------------------------+
 | 0xE0C0 |            40 | 1 | C:X3 | us_tmap_gethw                          |
 +--------+---------------+---+------+----------------------------------------+
