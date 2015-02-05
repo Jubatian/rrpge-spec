@@ -194,7 +194,7 @@ Returns the width and height of the tile map.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_tmap_gettilehw
-- Cycles: 25 + Tileset Height:Width request function call
+- Cycles: 20 + Tileset Height:Width request function call
 - Param0: Tile map pointer
 - Ret. C: Height in rows
 - Ret.X3: Width in cells
@@ -280,7 +280,7 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | 0xE0C0 |            40 | 1 | C:X3 | us_tmap_gethw                          |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0C2 |        25 + F | 1 | C:X3 | us_tmap_gettilehw                      |
+| 0xE0C2 |        20 + F | 1 | C:X3 | us_tmap_gettilehw                      |
 +--------+---------------+---+------+----------------------------------------+
 | 0xE0C4 |           170 | 3 |  X3  | us_tmap_gettile                        |
 +--------+---------------+---+------+----------------------------------------+

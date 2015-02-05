@@ -56,7 +56,7 @@ Functions
 0xE094: Set up surface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- F.name: us_dsurf_set
+- F.name: us_dsurf_new
 - Cycles: 100
 - Param0: Target surface pointer (8 words)
 - Param1: PRAM Bank (64K cell unit)
@@ -72,7 +72,7 @@ be identical, suitable for single buffered operation.
 0xE096: Set up surface pair
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- F.name: us_dsurf_setdbuf
+- F.name: us_dsurf_newdbuf
 - Cycles: 120
 - Param0: Target surface pointer (8 words)
 - Param1: Surface A PRAM Bank (64K cell unit)
@@ -89,7 +89,7 @@ all set (so it is written normally to all bits).
 0xE098: Set up surface with mask
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- F.name: us_dsurf_setm
+- F.name: us_dsurf_newm
 - Cycles: 120
 - Param0: Target surface pointer (8 words)
 - Param1: PRAM Write mask, high
@@ -106,7 +106,7 @@ identical, suitable for single buffered operation.
 0xE09A: Set up surface pair with mask
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- F.name: us_dsurf_setmdbuf
+- F.name: us_dsurf_newmdbuf
 - Cycles: 130
 - Param0: Target surface pointer (8 words)
 - Param1: PRAM Write mask, high
@@ -217,13 +217,13 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | Addr.  | Cycles        | P |   R  | Name                                   |
 +========+===============+===+======+========================================+
-| 0xE094 |           100 | 5 |      | us_dsurf_set                           |
+| 0xE094 |           100 | 5 |      | us_dsurf_new                           |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE096 |           120 | 7 |      | us_dsurf_setdbuf                       |
+| 0xE096 |           120 | 7 |      | us_dsurf_newdbuf                       |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE098 |           120 | 7 |      | us_dsurf_setm                          |
+| 0xE098 |           120 | 7 |      | us_dsurf_newm                          |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE09A |           130 | 9 |      | us_dsurf_setmdbuf                      |
+| 0xE09A |           130 | 9 |      | us_dsurf_newmdbuf                      |
 +--------+---------------+---+------+----------------------------------------+
 | 0xE09C |        80 + W | 1 | C:X3 | us_dsurf_get                           |
 +--------+---------------+---+------+----------------------------------------+

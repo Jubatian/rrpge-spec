@@ -167,7 +167,7 @@ Functions
 0xE0CA: Set up fast scrolling tile map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- F.name: us_fastmap_set
+- F.name: us_fastmap_new
 - Cycles: 140
 - Param0: Target fast scrolling tile map pointer (10 words)
 - Param1: Tile map to use (tile map structure pointer)
@@ -293,7 +293,7 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | Addr.  | Cycles        | P |   R  | Name                                   |
 +========+===============+===+======+========================================+
-| 0xE0CA |           140 | 9 |      | us_fastmap_set                         |
+| 0xE0CA |           140 | 9 |      | us_fastmap_new                         |
 +--------+---------------+---+------+----------------------------------------+
 | 0xE0CC |            25 | 1 |      | us_fastmap_mark                        |
 +--------+---------------+---+------+----------------------------------------+
