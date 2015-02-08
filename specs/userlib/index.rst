@@ -110,6 +110,20 @@ File "fontdata.rst"
 Code Page 437 compliant binary font in the Peripheral RAM (0xFC800 - 0xFDFFF).
 
 
+File "ifcharr.rst"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Character reader interface, providing support for reading characters from
+arbitrary source formats.
+
+
+File "ifcharw.rst"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Character writer interface, providing support for writing characters into
+arbitrary destination formats.
+
+
 File "iftile.rst"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -145,6 +159,12 @@ File "ulboot.rst"
 
 User Library boot state description: initial fill values to be provided for
 CPU RAM and PRAM locations.
+
+
+File "utf.rst"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Assistance functions for handling Unicode characters.
 
 
 
@@ -405,4 +425,12 @@ formatted as a NOP. Not used handlers are filled with NOPs.
 | 0xE0E4 |           110 | 5 |  X3  | us_cwr_new              | ifcharw.rst  |
 +--------+---------------+---+------+-------------------------+--------------+
 | 0xE0E6 |        20 + F | 1 |  X3  | us_cwr_nextsi           | ifcharw.rst  |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xE0E8 |      40 / 200 | 4 | C:X3 | us_utf32f8              | utf.rst      |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xE0EA |      50 / 120 | 2 | C:X3 | us_utf8f32              | utf.rst      |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xE0EC |            60 | 2 |  X3  | us_utf8len              | utf.rst      |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xE0EE |        40 / * | 4 |  X3  | us_idfutf32             | utf.rst      |
 +--------+---------------+---+------+-------------------------+--------------+
