@@ -93,6 +93,20 @@ Character readers for the character reader interface, for processing unicode
 data from various source buffers.
 
 
+File "charw.rst"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Character writers for the character writer interface, for processing unicode
+data into various target buffers.
+
+
+File "charwt.rst"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Tile based character writer implementing the character writer interface, for
+producing text on display surfaces.
+
+
 File "dlist.rst"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -500,4 +514,14 @@ formatted as a NOP. Not used handlers are filled with NOPs.
 | 0xE128 |     180 / 500 | 3 |      | us_cwr_putf8_setnc      | charw.rst    |
 +--------+---------------+---+------+-------------------------+--------------+
 | 0xE12A |           100 | 1 |  X3  | us_cwr_putf8_nextsi     | charw.rst    |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xE12C |       250 + F | 7 |      | us_cw_tile_new          | charwt.rst   |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xE12E |             S | 3 |      | us_cw_tile_setnc        | charwt.rst   |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xE130 |            50 | 3 |      | us_cw_tile_setst        | charwt.rst   |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xE132 |   200 + W + F | 1 |      | us_cw_tile_init         | charwt.rst   |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xE134 |           100 | 3 |      | us_cw_tile_setxy        | charwt.rst   |
 +--------+---------------+---+------+-------------------------+--------------+
