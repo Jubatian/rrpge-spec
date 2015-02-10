@@ -88,7 +88,7 @@ bytes, returns zero (for the UTF-32 input of zero, the return value is 1).
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_idfutf32
-- Cycles: 40 / *
+- Cycles: 40 / S
 - Param0: PRAM word pointer of conversion table, high
 - Param1: PRAM word pointer of conversion table, low
 - Param2: UTF-32 character, high
@@ -127,7 +127,7 @@ The abbreviations used in the table are as follows:
 
 - P: Count of parameters.
 - R: Return value registers used.
-- *: For cycle counts see function's description.
+- S: For cycle counts see function's description.
 
 The cycle counts are to be interpreted with function entry / exit overhead
 included, and are maximal counts.
@@ -141,5 +141,5 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | 0xE0EC |            60 | 2 |  X3  | us_utf8len                             |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0EE |        40 / * | 4 |  X3  | us_idfutf32                            |
+| 0xE0EE |        40 / S | 4 |  X3  | us_idfutf32                            |
 +--------+---------------+---+------+----------------------------------------+

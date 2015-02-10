@@ -125,15 +125,17 @@ The index is simply a word pointer into the CPU RAM.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_cr_cbyte_getnc
-- Cycles: 110 / 250
+- Cycles: 110 / 190
 - Param0: Character reader structure pointer
 - Ret. C: UTF-32 character value, high
 - Ret.X3: UTF-32 character value, low
 
 Implements us_cr_getnc in the character reader interface.
 
-If the next available character is an ASCII-7 character, takes 80 cycles,
-otherwise 220.
+If the next available character is an ASCII-7 character, takes 110 cycles,
+otherwise 190.
+
+Uses PRAM pointer 3, which is not preserved.
 
 
 0xE0F6: Byte, PRAM set up
@@ -179,17 +181,19 @@ The index is simply a 32 bit unit pointer into the selected PRAM bank.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_cr_pbyte_getnc
-- Cycles: 110 / 250
+- Cycles: 110 / 190
 - Param0: Character reader structure pointer
 - Ret. C: UTF-32 character value, high
 - Ret.X3: UTF-32 character value, low
 
 Implements us_cr_getnc in the character reader interface.
 
-If the next available character is an ASCII-7 character, takes 90 cycles,
-otherwise up to 230. Bank boundaries are not respected during reading (so
+If the next available character is an ASCII-7 character, takes 110 cycles,
+otherwise up to 190. Bank boundaries are not respected during reading (so
 reading may go past a bank boundary, affecting the currently selected bank
 even for the purpose of us_cr_pbyte_setsi).
+
+Uses PRAM pointer 3, which is not preserved.
 
 
 0xE0FE: UTF-8, CPU RAM set up
@@ -284,6 +288,8 @@ otherwise up to 540. Bank boundaries are not respected during reading (so
 reading may go past a bank boundary, affecting the currently selected bank
 even for the purpose of us_cr_pbyte_setsi).
 
+Uses PRAM pointer 3, which is not preserved.
+
 
 
 
@@ -306,7 +312,7 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | 0xE0F2 |            50 | 2 |      | us_cr_cbyte_setsi                      |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0F4 |     110 / 250 | 1 | C:X3 | us_cr_cbyte_getnc                      |
+| 0xE0F4 |     110 / 190 | 1 | C:X3 | us_cr_cbyte_getnc                      |
 +--------+---------------+---+------+----------------------------------------+
 | 0xE0F6 |           160 | 5 |      | us_cr_pbyte_new                        |
 +--------+---------------+---+------+----------------------------------------+
@@ -314,7 +320,7 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | 0xE0FA |            60 | 2 |      | us_cr_pbyte_setsi                      |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0FC |     110 / 250 | 1 | C:X3 | us_cr_pbyte_getnc                      |
+| 0xE0FC |     110 / 190 | 1 | C:X3 | us_cr_pbyte_getnc                      |
 +--------+---------------+---+------+----------------------------------------+
 | 0xE0FE |            90 | 2 |      | us_cr_cutf8_new                        |
 +--------+---------------+---+------+----------------------------------------+

@@ -187,7 +187,7 @@ The abbreviations used in the table are as follows:
 - U: Cycles taken for processing one unit of data.
 - W: May wait for a specific event.
 - F: Additional callback cycles.
-- *: For cycle counts see function's description.
+- S: For cycle counts see function's description.
 
 The cycle counts are to be interpreted with function entry / exit overhead
 included, and are maximal counts. Cycle counts are omitted where they are not
@@ -413,7 +413,7 @@ formatted as a NOP. Not used handlers are filled with NOPs.
 +--------+---------------+---+------+-------------------------+--------------+
 | 0xE0D2 |       170 + F | 3 |      | us_fastmap_setdly       | fastmap.rst  |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0D4 |             * | 3 |      | us_fastmap_draw         | fastmap.rst  |
+| 0xE0D4 |             S | 3 |      | us_fastmap_draw         | fastmap.rst  |
 +--------+---------------+---+------+-------------------------+--------------+
 | 0xE0D6 |            50 | 3 |  X3  | us_cr_new               | ifcharr.rst  |
 +--------+---------------+---+------+-------------------------+--------------+
@@ -439,7 +439,7 @@ formatted as a NOP. Not used handlers are filled with NOPs.
 +--------+---------------+---+------+-------------------------+--------------+
 | 0xE0EC |            60 | 2 |  X3  | us_utf8len              | utf.rst      |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0EE |        40 / * | 4 |  X3  | us_idfutf32             | utf.rst      |
+| 0xE0EE |        40 / S | 4 |  X3  | us_idfutf32             | utf.rst      |
 +--------+---------------+---+------+-------------------------+--------------+
 | 0xE0F0 |           110 | 4 |      | us_cr_cbyte_new         | charr.rst    |
 +--------+---------------+---+------+-------------------------+--------------+
@@ -473,7 +473,7 @@ formatted as a NOP. Not used handlers are filled with NOPs.
 +--------+---------------+---+------+-------------------------+--------------+
 | 0xE10E |           150 | 5 |      | us_cwr_cbyte_newz       | charw.rst    |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE110 |       180 / * | 3 |      | us_cwr_cbyte_setnc      | charw.rst    |
+| 0xE110 |       180 / S | 3 |      | us_cwr_cbyte_setnc      | charw.rst    |
 +--------+---------------+---+------+-------------------------+--------------+
 | 0xE112 |            80 | 1 |  X3  | us_cwr_cbyte_nextsi     | charw.rst    |
 +--------+---------------+---+------+-------------------------+--------------+
@@ -481,7 +481,7 @@ formatted as a NOP. Not used handlers are filled with NOPs.
 +--------+---------------+---+------+-------------------------+--------------+
 | 0xE116 |           170 | 6 |      | us_cwr_pbyte_newz       | charw.rst    |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE118 |       180 / * | 3 |      | us_cwr_pbyte_setnc      | charw.rst    |
+| 0xE118 |       180 / S | 3 |      | us_cwr_pbyte_setnc      | charw.rst    |
 +--------+---------------+---+------+-------------------------+--------------+
 | 0xE11A |           100 | 1 |  X3  | us_cwr_pbyte_nextsi     | charw.rst    |
 +--------+---------------+---+------+-------------------------+--------------+

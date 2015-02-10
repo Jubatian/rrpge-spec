@@ -143,7 +143,7 @@ structure is set up with one smaller index for terminator.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_cwr_cbyte_setnc
-- Cycles: 180 / *
+- Cycles: 180 / S
 - Param0: Character writer structure pointer
 - Param1: UTF-32 character value, high
 - Param2: UTF-32 character value, low
@@ -152,6 +152,8 @@ Implements us_cw_setnc in the character writer interface.
 
 If the character to write is an ASCII-7 character, takes 180 cycles, otherwise
 it depends on the table used (see us_idfutf32).
+
+Uses PRAM pointer 3, which is not preserved.
 
 
 0xE112: Byte, CPU RAM get next index
@@ -213,7 +215,7 @@ Uses PRAM pointer 3, which is not preserved.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_cwr_pbyte_setnc
-- Cycles: 180 / *
+- Cycles: 180 / S
 - Param0: Character writer structure pointer
 - Param1: UTF-32 character value, high
 - Param2: UTF-32 character value, low
@@ -379,6 +381,7 @@ The abbreviations used in the table are as follows:
 
 - P: Count of parameters.
 - R: Return value registers used.
+- S: For cycle counts see function's description.
 
 The cycle counts are to be interpreted with function entry / exit overhead
 included, and are maximal counts.
@@ -390,7 +393,7 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | 0xE10E |           150 | 5 |      | us_cwr_cbyte_newz                      |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE110 |       180 / * | 3 |      | us_cwr_cbyte_setnc                     |
+| 0xE110 |       180 / S | 3 |      | us_cwr_cbyte_setnc                     |
 +--------+---------------+---+------+----------------------------------------+
 | 0xE112 |            80 | 1 |  X3  | us_cwr_cbyte_nextsi                    |
 +--------+---------------+---+------+----------------------------------------+
@@ -398,7 +401,7 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | 0xE116 |           170 | 6 |      | us_cwr_pbyte_newz                      |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE118 |       180 / * | 3 |      | us_cwr_pbyte_setnc                     |
+| 0xE118 |       180 / S | 3 |      | us_cwr_pbyte_setnc                     |
 +--------+---------------+---+------+----------------------------------------+
 | 0xE11A |           100 | 1 |  X3  | us_cwr_pbyte_nextsi                    |
 +--------+---------------+---+------+----------------------------------------+

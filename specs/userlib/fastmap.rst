@@ -285,7 +285,7 @@ The abbreviations used in the table are as follows:
 - P: Count of parameters.
 - R: Return value registers used.
 - F: Additional callback cycles.
-- *: For cycle counts see function's description.
+- S: For cycle counts see function's description.
 
 The cycle counts are to be interpreted with function entry / exit overhead
 included, and are maximal counts.
@@ -303,5 +303,5 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | 0xE0D2 |       170 + F | 3 |      | us_fastmap_setdly                      |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0D4 |             * | 3 |      | us_fastmap_draw                        |
+| 0xE0D4 |             S | 3 |      | us_fastmap_draw                        |
 +--------+---------------+---+------+----------------------------------------+
