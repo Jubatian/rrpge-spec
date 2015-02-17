@@ -33,9 +33,10 @@ The object structure is as follows:
 - Word8: PRAM pointer (word) of conversion table, high
 - Word9: PRAM pointer (word) of conversion table, low
 - Word10: Color shift (low 4 bits effective only)
-- Word11: Current color (on high bits, low bits are zero)
-- Word12: Tileset object pointer
-- Word13: Destination surface object pointer
+- Word11: Default color (on high bits, low bits are zero)
+- Word12: Current color (on high bits, low bits are zero)
+- Word13: Tileset object pointer
+- Word14: Destination surface object pointer
 
 The Effective width of surface might not equal the true surface width as read
 from the destination surface object: it is the largest multiple of the font
@@ -54,7 +55,7 @@ Functions
 - F.name: us_cw_tile_new
 - Cycles: 250 + Tileset us_tile_gethw implementation
 - Param0: Character writer structure pointer
-- Param1: Initial color (appropriate low bits used)
+- Param1: Initial and Default color (appropriate low bits used)
 - Param2: Color shift (low 4 bits used)
 - Param3: Used tileset's object pointer (tileset interface descendant)
 - Param4: Used destination surface's object pointer
@@ -113,12 +114,13 @@ different timing with no us_tile_blit call.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_cw_tile_setst
-- Cycles: 50
+- Cycles: 60
 - Param0: Character writer structure pointer
 - Param1: Style attribute to set (only 'c' is accepted)
 - Param2: Value to set
 
-Implements us_cw_setst in the character writer interface.
+Implements us_cw_setst in the character writer interface. Parameter 2 may be
+omitted, which case the default color will be reset.
 
 Changes the output color of the text if the style attribute is 'c' (ASCII
 0x63). Otherwise does nothing.
@@ -174,7 +176,7 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | 0xE12E |             S | 3 |      | us_cw_tile_setnc                       |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE130 |            50 | 3 |      | us_cw_tile_setst                       |
+| 0xE130 |            60 | 3 |      | us_cw_tile_setst                       |
 +--------+---------------+---+------+----------------------------------------+
 | 0xE132 |   200 + W + F | 1 |      | us_cw_tile_init                        |
 +--------+---------------+---+------+----------------------------------------+

@@ -93,6 +93,10 @@ to this function. No return value is accepted from it.
 
 Calls the set output style function of the character writer.
 
+The Style value to set parameter may be omitted (Param2), which case the
+previous or a default style should be set for the passed attribute, depending
+on the implementation.
+
 The set output style function may be left unimplemented which case this
 function does nothing. Otherwise the implementation gets the parameters as-is,
 and no return value is accepted from it.
