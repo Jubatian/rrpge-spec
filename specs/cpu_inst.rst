@@ -152,8 +152,6 @@ ADD
 +---------------------+--------------------+
 | 0100 100r rraa aaaa | ADD C:adr, rx      |
 +---------------------+--------------------+
-| 1000 101- --aa aaaa | ADD SP, adr        |
-+---------------------+--------------------+
 
 Adds the source operand to the destination, and stores the result in the
 destination: ::
@@ -200,9 +198,9 @@ AND
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 0100 011r rraa aaaa | AND rx, adr        |
+| 1000 101r rraa aaaa | AND rx, adr        |
 +---------------------+--------------------+
-| 0100 010r rraa aaaa | AND adr, rx        |
+| 1000 100r rraa aaaa | AND adr, rx        |
 +---------------------+--------------------+
 
 Performs binary AND between the source and destination operands, and stores
@@ -220,13 +218,13 @@ ASR
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 0011 011r rraa aaaa | ASR rx, adr        |
+| 0011 001r rraa aaaa | ASR rx, adr        |
 +---------------------+--------------------+
-| 0011 010r rraa aaaa | ASR adr, rx        |
+| 0011 000r rraa aaaa | ASR adr, rx        |
 +---------------------+--------------------+
-| 0111 011r rraa aaaa | ASR C:rx, adr      |
+| 0111 001r rraa aaaa | ASR C:rx, adr      |
 +---------------------+--------------------+
-| 0111 010r rraa aaaa | ASR C:adr, rx      |
+| 0111 000r rraa aaaa | ASR C:adr, rx      |
 +---------------------+--------------------+
 
 Performs arithmetic right shift (replicating the high bit) on the destination
@@ -319,7 +317,7 @@ JFR
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 1000 1000 0eaa aaaa | JFR adr {...}      |
+| 0100 0100 0eaa aaaa | JFR adr {...}      |
 +---------------------+--------------------+
 
 Relative function call (subroutine entry). The target address is calculated by
@@ -387,7 +385,7 @@ JFA
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 1000 1001 0eaa aaaa | JFA adr {...}      |
+| 0100 0101 0eaa aaaa | JFA adr {...}      |
 +---------------------+--------------------+
 
 Absolute function call (subroutine entry). The target address is the operand.
@@ -403,7 +401,7 @@ JMR
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 1000 1100 --aa aaaa | JMR adr            |
+| 1000 0100 --aa aaaa | JMR adr            |
 +---------------------+--------------------+
 
 Relative jump. The target address is calculated by adding the operand to the
@@ -418,7 +416,7 @@ JMA
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 1000 1101 --aa aaaa | JMA adr            |
+| 1000 0101 --aa aaaa | JMA adr            |
 +---------------------+--------------------+
 
 Absolute jump. The target address is the operand.
@@ -432,7 +430,7 @@ JMS
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 1000 01ii iiii iiii | JMS simm10         |
+| 1000 11ii iiii iiii | JMS simm10         |
 +---------------------+--------------------+
 
 Short relative jump. The base of the jump is the address of the opcode, so an
@@ -448,7 +446,7 @@ JSV
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 1000 1000 1e-- ---- | JSV {...}          |
+| 0100 0100 1e-- ---- | JSV {...}          |
 +---------------------+--------------------+
 
 Supervisor call.
@@ -478,13 +476,13 @@ MAC
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 0011 001r rraa aaaa | MAC rx, adr        |
+| 0011 011r rraa aaaa | MAC rx, adr        |
 +---------------------+--------------------+
-| 0011 000r rraa aaaa | MAC adr, rx        |
+| 0011 010r rraa aaaa | MAC adr, rx        |
 +---------------------+--------------------+
-| 0111 001r rraa aaaa | MAC C:rx, adr      |
+| 0111 011r rraa aaaa | MAC C:rx, adr      |
 +---------------------+--------------------+
-| 0111 000r rraa aaaa | MAC C:adr, rx      |
+| 0111 010r rraa aaaa | MAC C:adr, rx      |
 +---------------------+--------------------+
 
 Multiply and accumulate. Multiplies the destination with the source operand,
@@ -508,13 +506,13 @@ MOV
 +---------------------+--------------------+
 | 0000 000r rraa aaaa | MOV adr, rx        |
 +---------------------+--------------------+
-| 0000 0110 nnaa aaaa | MOV xmn, adr       |
+| 0100 0010 nnaa aaaa | MOV xmn, adr       |
 +---------------------+--------------------+
-| 0000 0100 nnaa aaaa | MOV adr, xmn       |
+| 0100 0000 nnaa aaaa | MOV adr, xmn       |
 +---------------------+--------------------+
-| 0000 0111 nnaa aaaa | MOV xhn, adr       |
+| 0100 0011 nnaa aaaa | MOV xhn, adr       |
 +---------------------+--------------------+
-| 0000 0101 nnaa aaaa | MOV adr, xhn       |
+| 0100 0001 nnaa aaaa | MOV adr, xhn       |
 +---------------------+--------------------+
 | 1000 001- 00aa aaaa | MOV XM, adr        |
 +---------------------+--------------------+
@@ -548,13 +546,13 @@ MUL
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 0010 001r rraa aaaa | MUL rx, adr        |
+| 0010 011r rraa aaaa | MUL rx, adr        |
 +---------------------+--------------------+
-| 0010 000r rraa aaaa | MUL adr, rx        |
+| 0010 010r rraa aaaa | MUL adr, rx        |
 +---------------------+--------------------+
-| 0110 001r rraa aaaa | MUL C:rx, adr      |
+| 0110 011r rraa aaaa | MUL C:rx, adr      |
 +---------------------+--------------------+
-| 0110 000r rraa aaaa | MUL C:adr, rx      |
+| 0110 010r rraa aaaa | MUL C:adr, rx      |
 +---------------------+--------------------+
 
 Multiplies the destination with the source operand, and stores the result in
@@ -574,9 +572,9 @@ NEG
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 0110 011r rraa aaaa | NEG rx, adr        |
+| 0110 001r rraa aaaa | NEG rx, adr        |
 +---------------------+--------------------+
-| 0110 010r rraa aaaa | NEG adr, rx        |
+| 0110 000r rraa aaaa | NEG adr, rx        |
 +---------------------+--------------------+
 
 2's complement negates the source operand, and stores the result in the
@@ -608,9 +606,9 @@ NOT
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 0010 011r rraa aaaa | NOT rx, adr        |
+| 0010 001r rraa aaaa | NOT rx, adr        |
 +---------------------+--------------------+
-| 0010 010r rraa aaaa | NOT adr, rx        |
+| 0010 000r rraa aaaa | NOT adr, rx        |
 +---------------------+--------------------+
 
 Performs a binary NOT on the source operand, and stores the result in the
@@ -628,9 +626,9 @@ OR
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 0100 001r rraa aaaa | OR rx, adr         |
+| 0001 001r rraa aaaa | OR rx, adr         |
 +---------------------+--------------------+
-| 0100 000r rraa aaaa | OR adr, rx         |
+| 0001 000r rraa aaaa | OR adr, rx         |
 +---------------------+--------------------+
 
 Performs binary OR between the source and destination operands, and stores the
@@ -648,7 +646,7 @@ RFN
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 1000 1001 1--- ---- | RFN                |
+| 0100 0101 1--- ---- | RFN                |
 +---------------------+--------------------+
 
 Returns from function or subroutine.
@@ -692,13 +690,13 @@ SHL
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 0010 101r rraa aaaa | SHL rx, adr        |
+| 0010 111r rraa aaaa | SHL rx, adr        |
 +---------------------+--------------------+
-| 0010 100r rraa aaaa | SHL adr, rx        |
+| 0010 110r rraa aaaa | SHL adr, rx        |
 +---------------------+--------------------+
-| 0110 101r rraa aaaa | SHL C:rx, adr      |
+| 0110 111r rraa aaaa | SHL C:rx, adr      |
 +---------------------+--------------------+
-| 0110 100r rraa aaaa | SHL C:adr, rx      |
+| 0110 110r rraa aaaa | SHL C:adr, rx      |
 +---------------------+--------------------+
 
 Left shifts the destination operand using the lower 4 bits of the source as
@@ -728,13 +726,13 @@ SHR
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 0010 111r rraa aaaa | SHR rx, adr        |
+| 0010 101r rraa aaaa | SHR rx, adr        |
 +---------------------+--------------------+
-| 0010 110r rraa aaaa | SHR adr, rx        |
+| 0010 100r rraa aaaa | SHR adr, rx        |
 +---------------------+--------------------+
-| 0110 111r rraa aaaa | SHR C:rx, adr      |
+| 0110 101r rraa aaaa | SHR C:rx, adr      |
 +---------------------+--------------------+
-| 0110 110r rraa aaaa | SHR C:adr, rx      |
+| 0110 100r rraa aaaa | SHR C:adr, rx      |
 +---------------------+--------------------+
 
 Right shifts the destination operand using the lower 4 bits of the source as
@@ -764,13 +762,13 @@ SLC
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 0011 101r rraa aaaa | SLC rx, adr        |
+| 0011 111r rraa aaaa | SLC rx, adr        |
 +---------------------+--------------------+
-| 0011 100r rraa aaaa | SLC adr, rx        |
+| 0011 110r rraa aaaa | SLC adr, rx        |
 +---------------------+--------------------+
-| 0111 101r rraa aaaa | SLC C:rx, adr      |
+| 0111 111r rraa aaaa | SLC C:rx, adr      |
 +---------------------+--------------------+
-| 0111 100r rraa aaaa | SLC C:adr, rx      |
+| 0111 110r rraa aaaa | SLC C:adr, rx      |
 +---------------------+--------------------+
 
 Left shifts the destination operand using the lower 4 bits of the source as
@@ -804,13 +802,13 @@ SRC
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 0011 111r rraa aaaa | SRC rx, adr        |
+| 0011 101r rraa aaaa | SRC rx, adr        |
 +---------------------+--------------------+
-| 0011 110r rraa aaaa | SRC adr, rx        |
+| 0011 100r rraa aaaa | SRC adr, rx        |
 +---------------------+--------------------+
-| 0111 111r rraa aaaa | SRC C:rx, adr      |
+| 0111 101r rraa aaaa | SRC C:rx, adr      |
 +---------------------+--------------------+
-| 0111 110r rraa aaaa | SRC C:adr, rx      |
+| 0111 100r rraa aaaa | SRC C:adr, rx      |
 +---------------------+--------------------+
 
 Right shifts the destination operand using the lower 4 bits of the source as
@@ -851,8 +849,6 @@ SUB
 | 0100 111r rraa aaaa | SUB C:rx, adr      |
 +---------------------+--------------------+
 | 0100 110r rraa aaaa | SUB C:adr, rx      |
-+---------------------+--------------------+
-| 1000 111- --aa aaaa | SUB SP, adr        |
 +---------------------+--------------------+
 
 Subtracts the source operand from the destination, and stores the result in
@@ -908,9 +904,7 @@ XCH
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 0010 001r rraa aaaa | XCH rx, adr        |
-+---------------------+--------------------+
-| 0010 000r rraa aaaa | XCH adr, rx        |
+| 0000 010r rraa aaaa | XCH adr, rx        |
 +---------------------+--------------------+
 
 Exchanges the value of it's operands. This happens as first loading both
@@ -929,9 +923,7 @@ XEQ
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 1011 001r rraa aaaa | XEQ rx, adr        |
-+---------------------+--------------------+
-| 1011 000r rraa aaaa | XEQ adr, rx        |
+| 1011 100r rraa aaaa | XEQ adr, rx        |
 +---------------------+--------------------+
 
 Skips the next instruction if the value of the operands are equal.
@@ -949,8 +941,6 @@ XNE
 +=====================+====================+
 | 1011 101r rraa aaaa | XNE rx, adr        |
 +---------------------+--------------------+
-| 1011 100r rraa aaaa | XNE adr, rx        |
-+---------------------+--------------------+
 
 Skips the next instruction if the value of the operands are not equal.
 
@@ -965,9 +955,9 @@ XOR
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 0110 001r rraa aaaa | XOR rx, adr        |
+| 0101 001r rraa aaaa | XOR rx, adr        |
 +---------------------+--------------------+
-| 0110 000r rraa aaaa | XOR adr, rx        |
+| 0101 000r rraa aaaa | XOR adr, rx        |
 +---------------------+--------------------+
 
 Performs binary exclusive OR between the source and destination operands, and
@@ -1035,24 +1025,23 @@ layout. The columns group by the highest two bits (bit 15 and bit 14) and bit
 +----+---------+---------+----------+----------+---------+---------+---------+
 |    | 00....0 | 00....1 | 01....0  | 01....1  | 10....0 | 10....1 | 11..... |
 +====+=========+=========+==========+==========+=========+=========+=========+
-|    || MOV    || MOV    || OR      || OR      || MOV    || MOV    |         |
-|0000|| adr, rx|| rx, adr|| adr, rx || rx, adr || adr, XM|| XM, adr|   NOP   |
-|    |         |         |          |          || adr, XH|| XH, adr|         |
+|    || MOV    || MOV    || MOV     || MOV     || MOV    || MOV    |         |
+|0000|| adr, rx|| rx, adr|| adr, xmn|| xmn, adr|| adr, XM|| XM, adr|   NOP   |
+|    |         |         || adr, xhn|| xhn, adr|| adr, XH|| XH, adr|         |
 |    |         |         |          |          || adr, SP|| SP, adr|         |
 +----+---------+---------+----------+----------+---------+---------+         |
-|    || MOV    || MOV    || AND     || AND     |                   |         |
-|0001|| adr,xmn|| xmn,adr|| adr, rx || rx, adr |    JMS simm10     |         |
-|    || adr,xhn|| xhn,adr|          |          |                   |         |
+|    || XCH    |         || JFR     |          || JMR    |         |         |
+|0001|| adr, rx|         || JFA     |          || JMA    |         |         |
+|    |         |         || JSV     |          |         |         |         |
+|    |         |         || RFN     |          |         |         |         |
 +----+---------+---------+----------+----------+---------+---------+         |
-|    || ADD    || ADD    || ADD     || ADD     || JFR    || ADD    |         |
-|0010|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|| JFA    || SP, adr|         |
-|    |         |         |          |          || JSV    |         |         |
-|    |         |         |          |          || RFN    |         |         |
+|    || ADD    || ADD    || ADD     || ADD     || AND    || AND    |         |
+|0010|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|| adr, rx|| rx, adr|         |
 +----+---------+---------+----------+----------+---------+---------+         |
-|    || SUB    || SUB    || SUB     || SUB     || JMR    || SUB    |         |
-|0011|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|| JMA    || SP, adr|         |
-+----+---------+---------+----------+----------+---------+---------+         |
-|    || XCH    || XCH    || XOR     || XOR     |                   |         |
+|    || SUB    || SUB    || SUB     || SUB     |     JMS simm10    |         |
+|0011|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|                   |         |
++----+---------+---------+----------+----------+-------------------+         |
+|    || OR     || OR     || XOR     || XOR     |                   |         |
 |0100|| adr, rx|| rx, adr|| adr, rx || rx, adr |     Supervisor    |         |
 +----+---------+---------+----------+----------+                   |         |
 |    || DIV    || DIV    || DIV     || DIV     |                   |         |
@@ -1064,28 +1053,28 @@ layout. The columns group by the highest two bits (bit 15 and bit 14) and bit
 |    || SBC    || SBC    || SBC     || SBC     |                   |         |
 |0111|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|                   |         |
 +----+---------+---------+----------+----------+-------------------+         |
-|    || MUL    || MUL    || MUL     || MUL     |                   |         |
-|1000|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|   BTC adr, imm4   |         |
-+----+---------+---------+----------+----------+-------------------+         |
 |    || NOT    || NOT    || NEG     || NEG     |                   |         |
-|1001|| adr, rx|| rx, adr|| adr, rx || rx, adr |   XBC adr, imm4   |         |
+|1000|| adr, rx|| rx, adr|| adr, rx || rx, adr |   BTC adr, imm4   |         |
 +----+---------+---------+----------+----------+-------------------+         |
-|    || SHL    || SHL    || SHL     || SHL     |                   |         |
-|1010|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|   BTS adr, imm4   |         |
+|    || MUL    || MUL    || MUL     || MUL     |                   |         |
+|1001|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|   XBC adr, imm4   |         |
 +----+---------+---------+----------+----------+-------------------+         |
 |    || SHR    || SHR    || SHR     || SHR     |                   |         |
+|1010|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|   BTS adr, imm4   |         |
++----+---------+---------+----------+----------+-------------------+         |
+|    || SHL    || SHL    || SHL     || SHL     |                   |         |
 |1011|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|   XBS adr, imm4   |         |
 +----+---------+---------+----------+----------+---------+---------+         |
-|    || MAC    || MAC    || MAC     || MAC     || XEQ    || XEQ    |         |
-|1100|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|| adr, rx|| rx, adr|         |
+|    || ASR    || ASR    || ASR     || ASR     |         |         |         |
+|1100|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|         |         |         |
 +----+---------+---------+----------+----------+---------+---------+         |
-|    || ASR    || ASR    || ASR     || ASR     || XSG    || XSG    |         |
+|    || MAC    || MAC    || MAC     || MAC     || XSG    || XSG    |         |
 |1101|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|| adr, rx|| rx, adr|         |
 +----+---------+---------+----------+----------+---------+---------+         |
-|    || SLC    || SLC    || SLC     || SLC     || XNE    || XNE    |         |
+|    || SRC    || SRC    || SRC     || SRC     || XEQ    || XNE    |         |
 |1110|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|| adr, rx|| rx, adr|         |
 +----+---------+---------+----------+----------+---------+---------+         |
-|    || SRC    || SRC    || SRC     || SRC     || XUG    || XUG    |         |
+|    || SLC    || SLC    || SLC     || SLC     || XUG    || XUG    |         |
 |1111|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|| adr, rx|| rx, adr|         |
 +----+---------+---------+----------+----------+---------+---------+---------+
 
