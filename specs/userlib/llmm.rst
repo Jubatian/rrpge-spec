@@ -40,7 +40,6 @@ PRAM pointer setup functions
 - Param1: Start bit address, high
 - Param2: Start bit address, low
 - Ret.X3: Points to the Read/Write register of the pointer
-- Ret. C: Points to the Read/Write without increment register of the pointer
 
 
 0xE002: 1 bit inc. on write PRAM pointer setup
@@ -52,7 +51,6 @@ PRAM pointer setup functions
 - Param1: Start bit address, high
 - Param2: Start bit address, low
 - Ret.X3: Points to the Read/Write register of the pointer
-- Ret. C: Points to the Read/Write without increment register of the pointer
 
 
 0xE004: 2 bit incrementing PRAM pointer setup
@@ -64,7 +62,6 @@ PRAM pointer setup functions
 - Param1: Start bit(!) address, high
 - Param2: Start bit(!) address, low
 - Ret.X3: Points to the Read/Write register of the pointer
-- Ret. C: Points to the Read/Write without increment register of the pointer
 
 
 0xE006: 2 bit inc. on write PRAM pointer setup
@@ -76,7 +73,6 @@ PRAM pointer setup functions
 - Param1: Start bit(!) address, high
 - Param2: Start bit(!) address, low
 - Ret.X3: Points to the Read/Write register of the pointer
-- Ret. C: Points to the Read/Write without increment register of the pointer
 
 
 0xE008: 4 bit incrementing PRAM pointer setup
@@ -88,7 +84,6 @@ PRAM pointer setup functions
 - Param1: Start bit(!) address, high
 - Param2: Start bit(!) address, low
 - Ret.X3: Points to the Read/Write register of the pointer
-- Ret. C: Points to the Read/Write without increment register of the pointer
 
 
 0xE00A: 4 bit inc. on write PRAM pointer setup
@@ -100,7 +95,6 @@ PRAM pointer setup functions
 - Param1: Start bit(!) address, high
 - Param2: Start bit(!) address, low
 - Ret.X3: Points to the Read/Write register of the pointer
-- Ret. C: Points to the Read/Write without increment register of the pointer
 
 
 0xE00C: 8 bit incrementing PRAM pointer setup
@@ -112,7 +106,6 @@ PRAM pointer setup functions
 - Param1: Start bit(!) address, high
 - Param2: Start bit(!) address, low
 - Ret.X3: Points to the Read/Write register of the pointer
-- Ret. C: Points to the Read/Write without increment register of the pointer
 
 
 0xE00E: 8 bit inc. on write PRAM pointer setup
@@ -124,7 +117,6 @@ PRAM pointer setup functions
 - Param1: Start bit(!) address, high
 - Param2: Start bit(!) address, low
 - Ret.X3: Points to the Read/Write register of the pointer
-- Ret. C: Points to the Read/Write without increment register of the pointer
 
 
 0xE010: 16 bit incrementing PRAM pointer setup
@@ -136,7 +128,6 @@ PRAM pointer setup functions
 - Param1: Start bit(!) address, high
 - Param2: Start bit(!) address, low
 - Ret.X3: Points to the Read/Write register of the pointer
-- Ret. C: Points to the Read/Write without increment register of the pointer
 
 
 0xE012: 16 bit inc. on write PRAM pointer setup
@@ -148,7 +139,6 @@ PRAM pointer setup functions
 - Param1: Start bit(!) address, high
 - Param2: Start bit(!) address, low
 - Ret.X3: Points to the Read/Write register of the pointer
-- Ret. C: Points to the Read/Write without increment register of the pointer
 
 
 0xE014: Word incrementing PRAM pointer setup
@@ -160,7 +150,6 @@ PRAM pointer setup functions
 - Param1: Start word address, high
 - Param2: Start word address, low
 - Ret.X3: Points to the Read/Write register of the pointer
-- Ret. C: Points to the Read/Write without increment register of the pointer
 
 
 0xE016: Word inc. on write PRAM pointer setup
@@ -172,7 +161,6 @@ PRAM pointer setup functions
 - Param1: Start word address, high
 - Param2: Start word address, low
 - Ret.X3: Points to the Read/Write register of the pointer
-- Ret. C: Points to the Read/Write without increment register of the pointer
 
 
 0xE018: Generic word PRAM pointer setup
@@ -186,7 +174,6 @@ PRAM pointer setup functions
 - Param3: Increment high (in word units)
 - Param4: Increment low (in word units)
 - Ret.X3: Points to the Read/Write register of the pointer
-- Ret. C: Points to the Read/Write without increment register of the pointer
 
 
 0xE01A: Generic word setup for inc. on write
@@ -200,7 +187,6 @@ PRAM pointer setup functions
 - Param3: Increment high (in word units)
 - Param4: Increment low (in word units)
 - Ret.X3: Points to the Read/Write register of the pointer
-- Ret. C: Points to the Read/Write without increment register of the pointer
 
 Sets the pointer up for increment on write only mode.
 
@@ -217,7 +203,6 @@ Sets the pointer up for increment on write only mode.
 - Param4: Increment low (in bit units)
 - Param5: Data unit size & Increment on write only flag
 - Ret.X3: Points to the Read/Write register of the pointer
-- Ret. C: Points to the Read/Write without increment register of the pointer
 
 Param5 must be formatted according to the Data unit size register of the
 pointers.
@@ -365,35 +350,35 @@ included, and are maximal counts.
 +--------+-----------+---+------+--------------------------------------------+
 | Addr.  | Cycles    | P |   R  | Name                                       |
 +========+===========+===+======+============================================+
-| 0xE000 |       120 | 3 | C:X3 | us_ptr_set1i                               |
+| 0xE000 |       120 | 3 |  X3  | us_ptr_set1i                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xE002 |       120 | 3 | C:X3 | us_ptr_set1w                               |
+| 0xE002 |       120 | 3 |  X3  | us_ptr_set1w                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xE004 |       120 | 3 | C:X3 | us_ptr_set2i                               |
+| 0xE004 |       120 | 3 |  X3  | us_ptr_set2i                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xE006 |       120 | 3 | C:X3 | us_ptr_set2w                               |
+| 0xE006 |       120 | 3 |  X3  | us_ptr_set2w                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xE008 |       120 | 3 | C:X3 | us_ptr_set4i                               |
+| 0xE008 |       120 | 3 |  X3  | us_ptr_set4i                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xE00A |       120 | 3 | C:X3 | us_ptr_set4w                               |
+| 0xE00A |       120 | 3 |  X3  | us_ptr_set4w                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xE00C |       120 | 3 | C:X3 | us_ptr_set8i                               |
+| 0xE00C |       120 | 3 |  X3  | us_ptr_set8i                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xE00E |       120 | 3 | C:X3 | us_ptr_set8w                               |
+| 0xE00E |       120 | 3 |  X3  | us_ptr_set8w                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xE010 |       120 | 3 | C:X3 | us_ptr_set16i                              |
+| 0xE010 |       120 | 3 |  X3  | us_ptr_set16i                              |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xE012 |       120 | 3 | C:X3 | us_ptr_set16w                              |
+| 0xE012 |       120 | 3 |  X3  | us_ptr_set16w                              |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xE014 |       120 | 3 | C:X3 | us_ptr_setwi                               |
+| 0xE014 |       120 | 3 |  X3  | us_ptr_setwi                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xE016 |       120 | 3 | C:X3 | us_ptr_setww                               |
+| 0xE016 |       120 | 3 |  X3  | us_ptr_setww                               |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xE018 |       120 | 5 | C:X3 | us_ptr_setgenwi                            |
+| 0xE018 |       120 | 5 |  X3  | us_ptr_setgenwi                            |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xE01A |       120 | 5 | C:X3 | us_ptr_setgenww                            |
+| 0xE01A |       120 | 5 |  X3  | us_ptr_setgenww                            |
 +--------+-----------+---+------+--------------------------------------------+
-| 0xE01C |       120 | 6 | C:X3 | us_ptr_setgen                              |
+| 0xE01C |       120 | 6 |  X3  | us_ptr_setgen                              |
 +--------+-----------+---+------+--------------------------------------------+
 | 0xE01E |           |   |      | <not used>                                 |
 +--------+-----------+---+------+--------------------------------------------+

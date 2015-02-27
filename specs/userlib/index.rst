@@ -65,8 +65,7 @@ follows:
 - 32 bit parameters are passed high word first.
 - 16 bit return value is generated into X3.
 - 32 bit return value is generated into C:X3 (C: High part, X3: Low part).
-- Registers C and X3 are not preserved (even if the function does not generate
-  a return value).
+- Registers C and X3 are zeroed unless the function produces a return in them.
 - Registers A, B, D, X0, X1, X2, XM and XH are always preserved.
 - XM3 (Pointer mode 3) must be set Incrementing 16 bits (mode 0x6).
 
@@ -215,35 +214,35 @@ formatted as a NOP. Not used handlers are filled with NOPs.
 +--------+---------------+---+------+-------------------------+--------------+
 | Addr.  | Cycles        | P |   R  | Name                    | Document     |
 +========+===============+===+======+=========================+==============+
-| 0xE000 |           120 | 3 | C:X3 | us_ptr_set1i            | llmm.rst     |
+| 0xE000 |           120 | 3 |  X3  | us_ptr_set1i            | llmm.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE002 |           120 | 3 | C:X3 | us_ptr_set1w            | llmm.rst     |
+| 0xE002 |           120 | 3 |  X3  | us_ptr_set1w            | llmm.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE004 |           120 | 3 | C:X3 | us_ptr_set2i            | llmm.rst     |
+| 0xE004 |           120 | 3 |  X3  | us_ptr_set2i            | llmm.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE006 |           120 | 3 | C:X3 | us_ptr_set2w            | llmm.rst     |
+| 0xE006 |           120 | 3 |  X3  | us_ptr_set2w            | llmm.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE008 |           120 | 3 | C:X3 | us_ptr_set4i            | llmm.rst     |
+| 0xE008 |           120 | 3 |  X3  | us_ptr_set4i            | llmm.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE00A |           120 | 3 | C:X3 | us_ptr_set4w            | llmm.rst     |
+| 0xE00A |           120 | 3 |  X3  | us_ptr_set4w            | llmm.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE00C |           120 | 3 | C:X3 | us_ptr_set8i            | llmm.rst     |
+| 0xE00C |           120 | 3 |  X3  | us_ptr_set8i            | llmm.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE00E |           120 | 3 | C:X3 | us_ptr_set8w            | llmm.rst     |
+| 0xE00E |           120 | 3 |  X3  | us_ptr_set8w            | llmm.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE010 |           120 | 3 | C:X3 | us_ptr_set16i           | llmm.rst     |
+| 0xE010 |           120 | 3 |  X3  | us_ptr_set16i           | llmm.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE012 |           120 | 3 | C:X3 | us_ptr_set16w           | llmm.rst     |
+| 0xE012 |           120 | 3 |  X3  | us_ptr_set16w           | llmm.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE014 |           120 | 3 | C:X3 | us_ptr_setwi            | llmm.rst     |
+| 0xE014 |           120 | 3 |  X3  | us_ptr_setwi            | llmm.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE016 |           120 | 3 | C:X3 | us_ptr_setww            | llmm.rst     |
+| 0xE016 |           120 | 3 |  X3  | us_ptr_setww            | llmm.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE018 |           120 | 5 | C:X3 | us_ptr_setgenwi         | llmm.rst     |
+| 0xE018 |           120 | 5 |  X3  | us_ptr_setgenwi         | llmm.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE01A |           120 | 5 | C:X3 | us_ptr_setgenww         | llmm.rst     |
+| 0xE01A |           120 | 5 |  X3  | us_ptr_setgenww         | llmm.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE01C |           120 | 6 | C:X3 | us_ptr_setgen           | llmm.rst     |
+| 0xE01C |           120 | 6 |  X3  | us_ptr_setgen           | llmm.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
 | 0xE01E |               |   |      | <not used>              |              |
 +--------+---------------+---+------+-------------------------+--------------+

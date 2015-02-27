@@ -4,8 +4,10 @@ Version 00.016.000 ()
  - New object-oriented concepts in the User Library, notably at the
    realization of interfaces (tileset interface redesign), also changing the
    names of some functions ("new" functions introduced).
+ - Calling convention modified: C and X3 are zeroed unless a return value is
+   produced in either.
  - Two new pointer setup functions for 16 bit PRAM pointers, also changing the
-   naming conventions.
+   naming conventions. Pointer setup functions no longer produce return in C.
  - Accelerator destination partition size moved from 0x8014 to 0x8002, into
    the destination bank select, to completely separate source and destination
    configurations. Registers are renamed accordingly.
