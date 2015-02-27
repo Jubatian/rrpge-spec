@@ -421,13 +421,22 @@ JMR
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 1000 0100 --aa aaaa | JMR adr            |
+| 1000 0100 00aa aaaa | JMR adr            |
++---------------------+--------------------+
+| 1000 0100 01aa aaaa | JMR B, adr         |
++---------------------+--------------------+
+| 1000 0100 10aa aaaa | JMR C, adr         |
++---------------------+--------------------+
+| 1000 0100 11aa aaaa | JMR D, adr         |
 +---------------------+--------------------+
 
 Relative jump. The target address is calculated by adding the operand to the
 current PC which points to the JMR instruction.
 
-Timing (cycles): 5 + ai
+If a register (B, C or D) is specified, it receives the value of PC pointing
+after the jump opcode: this may be used to implement small subroutines.
+
+Timing (cycles): 6 + ai
 
 
 JMA
@@ -436,12 +445,21 @@ JMA
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 1000 0101 --aa aaaa | JMA adr            |
+| 1000 0101 00aa aaaa | JMA adr            |
++---------------------+--------------------+
+| 1000 0101 01aa aaaa | JMA B, adr         |
++---------------------+--------------------+
+| 1000 0101 10aa aaaa | JMA C, adr         |
++---------------------+--------------------+
+| 1000 0101 11aa aaaa | JMA D, adr         |
 +---------------------+--------------------+
 
 Absolute jump. The target address is the operand.
 
-Timing (cycles): 5 + ai
+If a register (B, C or D) is specified, it receives the value of PC pointing
+after the jump opcode: this may be used to implement small subroutines.
+
+Timing (cycles): 6 + ai
 
 
 JMS
@@ -734,15 +752,20 @@ RFN
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 0100 0101 1--- ---- | RFN                |
+| 0100 0101 10aa aaaa | RFN x3, adr        |
++---------------------+--------------------+
+| 0100 0101 11aa aaaa | RFN c:x3, adr      |
 +---------------------+--------------------+
 
-Returns from function or subroutine.
+Returns from function or subroutine. Loads a return value in x3, optionally
+also clearing (to zero) carry. To omit returning a value, x3 may be used as
+adr. Note: adr is evaulated before performing the return, so stack relative
+sources use the appropriate stack frame.
 
-For the associated mechanisms, check the JFL opcode and the "Stack Management"
+For the associated mechanisms, check the JFR opcode and the "Stack Management"
 section in "cpu_arch.rst".
 
-Timing (cycles): 6
+Timing (cycles): 9 + ai + wc
 
 
 SBC
@@ -1013,6 +1036,8 @@ XEQ
 +=====================+====================+
 | 1011 100r rraa aaaa | XEQ adr, rx        |
 +---------------------+--------------------+
+| 1000 0001 01aa aaaa | XEQ adr, SP        |
++---------------------+--------------------+
 
 Skips the next instruction if the value of the operands are equal.
 
@@ -1029,8 +1054,27 @@ XNE
 +=====================+====================+
 | 1011 101r rraa aaaa | XNE rx, adr        |
 +---------------------+--------------------+
+| 1000 0011 01aa aaaa | XNE SP, adr        |
++---------------------+--------------------+
 
 Skips the next instruction if the value of the operands are not equal.
+
+For more information on the skip mechanism, check XBC.
+
+Timing (cycles): 4 + ai (no skip) / 5 + ai (skip)
+
+
+XNS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
++---------------------+--------------------+
+| Binary              | Mnemonic           |
++=====================+====================+
+| 1011 001r rraa aaaa | XNS rx, adr        |
++---------------------+--------------------+
+
+Skips the next instruction if the value of the first operand has neither bit
+set from the second operand (rx AND adr produces zero).
 
 For more information on the skip mechanism, check XBC.
 
@@ -1078,6 +1122,23 @@ For more information on the skip mechanism, check XBC.
 Timing (cycles): 4 + ai (no skip) / 5 + ai (skip)
 
 
+XST
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
++---------------------+--------------------+
+| Binary              | Mnemonic           |
++=====================+====================+
+| 1011 000r rraa aaaa | XST adr, rx        |
++---------------------+--------------------+
+
+Skips the next instruction if the value of the first operand has any bit set
+from the second operand (adr AND rx produces nonzero).
+
+For more information on the skip mechanism, check XBC.
+
+Timing (cycles): 4 + ai (no skip) / 5 + ai (skip)
+
+
 XUG
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -1087,6 +1148,10 @@ XUG
 | 1011 111r rraa aaaa | XUG rx, adr        |
 +---------------------+--------------------+
 | 1011 110r rraa aaaa | XUG adr, rx        |
++---------------------+--------------------+
+| 1000 0011 00aa aaaa | XUG SP, adr        |
++---------------------+--------------------+
+| 1000 0001 00aa aaaa | XUG adr, SP        |
 +---------------------+--------------------+
 
 Skips the next instruction if the value of the first operand is unsigned
@@ -1116,7 +1181,7 @@ layout. The columns group by the highest two bits (bit 15 and bit 14) and bit
 |    || MOV    || MOV    || MOV     || MOV     || MOV    || MOV    |         |
 |0000|| adr, rx|| rx, adr|| adr, xmn|| xmn, adr|| adr, XM|| XM, adr|   NOP   |
 |    |         |         || adr, xhn|| xhn, adr|| adr, XH|| XH, adr|         |
-|    |         |         |          |          || adr, SP|| SP, adr|         |
+|    |         |         |          |          || SP ops || SP ops |         |
 +----+---------+---------+----------+----------+---------+---------+         |
 |    || XCH    || MOV    || JFR     || MOV     || JMR    || MOV    |         |
 |0001|| adr, rx|| rx, imx|| JFA     || rx, imx || JMA    || rx, imx|         |
@@ -1153,8 +1218,8 @@ layout. The columns group by the highest two bits (bit 15 and bit 14) and bit
 |    || SHL    || SHL    || SHL     || SHL     |                   |         |
 |1011|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|   XBS adr, imm4   |         |
 +----+---------+---------+----------+----------+---------+---------+         |
-|    || ASR    || ASR    || ASR     || ASR     |         |         |         |
-|1100|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|         |         |         |
+|    || ASR    || ASR    || ASR     || ASR     || XST    || XNS    |         |
+|1100|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|| adr, rx|| rx, adr|         |
 +----+---------+---------+----------+----------+---------+---------+         |
 |    || MAC    || MAC    || MAC     || MAC     || XSG    || XSG    |         |
 |1101|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|| adr, rx|| rx, adr|         |
