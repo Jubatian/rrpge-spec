@@ -11,6 +11,8 @@ Version 00.016.000 ()
    configurations. Registers are renamed accordingly.
  - Reordered instruction set along with removing the "ADD sp, adr" and the
    "SUB sp, adr" instructions. Otherwise source compatibility is retained.
+ - Added special immediate encodings for register loads (MOV), function
+   parameters and SP loads, reducing binary size.
 
 
 Version 00.015.003 (2015.01.23)

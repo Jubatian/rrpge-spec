@@ -3,7 +3,7 @@ RRPGE CPU instruction set
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
-:Copyright: 2013 - 2014, GNU GPLv3 (version 3 of the GNU General Public
+:Copyright: 2013 - 2015, GNU GPLv3 (version 3 of the GNU General Public
             License) extended as RRPGEvt (temporary version of the RRPGE
             License): see LICENSE.GPLv3 and LICENSE.RRPGEvt in the project
             root.
@@ -332,10 +332,10 @@ the caller's stack.
 
 After the function call opcode (including the additional opcode word if it was
 necessary by the addressing mode) up to 16 parameters may follow which are
-pushed on the called function's stack. The parameter opcode format is as
-follows: ::
+pushed on the called function's stack. The parameter opcode format is normally
+formed as follows: ::
 
-    ---- ---- -eaa aaaa
+    --00 00-- -eaa aaaa
     (Normally first two bits should be 11 for making these NOPs)
 
 The 'e' bit (also found in the function's opcode) marks the last parameter if
@@ -351,10 +351,10 @@ be formatted as NOPs to prevent this producing ill effects.
 
 An example call with 3 parameters: ::
 
-    0: JFL func {10, [20], [X0]}
+    0: JFR func {10, [20], [X0]}
 
-    0: 1000 1000 0010 0000 -- JFL opcode with imm16 address
-    1: 1100 ffff ffff ffff -- Address (low 12 bits effective) of function
+    0: 0100 0100 0010 00ff -- JFR opcode with imm16 address
+    1: 11ff ffff ffff ffff -- Address (relative) of function
     2: 1100 0000 0000 1010 -- Parameter 10 decimal as imm4 addressing mode
     3: 1100 0000 0010 1000 -- Parameter [20], first byte
     4: 1100 0000 0001 0100 -- Second byte
@@ -375,6 +375,26 @@ An example call with 3 parameters: ::
     |             | <- SP
     +-------------+
     | (...)       |
+
+The function parameters may encode extended immediates, thus allowing for a
+larger range of immediates to be encoded within a single instruction word. The
+supported parameter encodings are as follows:
+
++---------------------+------------------------------------------------------+
+| Binary              | Effect                                               |
++=====================+======================================================+
+| --00 00-- -eaa aaaa | Normal address parameter                             |
++---------------------+------------------------------------------------------+
+| --00 01-j jeii iiii | jjii iiii jjii iiii (Examples: 0x5A5A; 0x4444)       |
++---------------------+------------------------------------------------------+
+| --00 1jjj jeii iiii | 1111 11jj jjii iiii (Examples: 0xFC12; 0xFFFD)       |
++---------------------+------------------------------------------------------+
+| --01 0jjj jeii iiii | jjjj iiii ii00 0000 (Examples: 0x8000; 0x96C0)       |
++---------------------+------------------------------------------------------+
+| --01 1jjj jeii iiii | jjjj iiii ii11 1111 (Examples: 0x803F; 0x96FF)       |
++---------------------+------------------------------------------------------+
+| --1j jjjj jeii iiii | 0000 jjjj jjii iiii (Examples: 0x0125; 0x0FED)       |
++---------------------+------------------------------------------------------+
 
 Timing (cycles): 9 + ai; 4 + ai / parameter
 
@@ -506,6 +526,8 @@ MOV
 +---------------------+--------------------+
 | 0000 000r rraa aaaa | MOV adr, rx        |
 +---------------------+--------------------+
+| 0000 011r rrxx xxxx | MOV rx, imx        |
++---------------------+--------------------+
 | 0100 0010 nnaa aaaa | MOV xmn, adr       |
 +---------------------+--------------------+
 | 0100 0000 nnaa aaaa | MOV adr, xmn       |
@@ -514,17 +536,25 @@ MOV
 +---------------------+--------------------+
 | 0100 0001 nnaa aaaa | MOV adr, xhn       |
 +---------------------+--------------------+
-| 1000 001- 00aa aaaa | MOV XM, adr        |
+| 0100 011r rrxx xxxx | MOV rx, imx        |
 +---------------------+--------------------+
-| 1000 000- 00aa aaaa | MOV adr, XM        |
+| 1000 0010 00aa aaaa | MOV XM, adr        |
 +---------------------+--------------------+
-| 1000 001- 01aa aaaa | MOV XH, adr        |
+| 1000 0000 00aa aaaa | MOV adr, XM        |
 +---------------------+--------------------+
-| 1000 000- 01aa aaaa | MOV adr, XH        |
+| 1000 0010 01aa aaaa | MOV XH, adr        |
 +---------------------+--------------------+
-| 1000 001- 1-aa aaaa | MOV SP, adr        |
+| 1000 0000 01aa aaaa | MOV adr, XH        |
 +---------------------+--------------------+
-| 1000 000- 1-aa aaaa | MOV adr, SP        |
+| 1000 0010 1-aa aaaa | MOV SP, adr        |
++---------------------+--------------------+
+| 1000 0000 1-aa aaaa | MOV adr, SP        |
++---------------------+--------------------+
+| 1000 0011 1iii iiii | MOV SP, imm7       |
++---------------------+--------------------+
+| 1000 0001 1iii iiii | MOV imm7, SP (NOP) |
++---------------------+--------------------+
+| 1100 011r rrxx xxxx | MOV rx, imx        |
 +---------------------+--------------------+
 
 Moves from source to target.
@@ -536,6 +566,64 @@ are set zero.
 When the destination is a 4bit part of the XM (xmn) or XH (xhn) register, the
 destination (the appropriate part of XM or XH) will receive the low 4 bits of
 the source.
+
+The "MOV rx, imx" variants are used to load special immediate values into a
+register in one instruction word. These instructions lay out as follows:
+
++---------------------+------------------------------------------------------+
+| Binary              | Effect                                               |
++=====================+======================================================+
+| 0000 011r rrpq iiii | MOV rx, 0xppiq (Nybble is 0 or 0xF depending on p/q) |
++---------------------+------------------------------------------------------+
+| 0100 011r rrpq iiii | MOV rx, 0xpiqq (Nybble is 0 or 0xF depending on p/q) |
++---------------------+------------------------------------------------------+
+| 1100 011r rr0q iiii | MOV rx, 0xiqqq (Nybble is 0 or 0xF depending on q)   |
++---------------------+------------------------------------------------------+
+| 1100 011r rr10 iiii | MOV rx, 0x001i (Loads 16 - 31)                       |
++---------------------+------------------------------------------------------+
+| 1100 011r rr11 tttt | MOV rx, table[i] (Loads from a table of immediates)  |
++---------------------+------------------------------------------------------+
+
+The table of immediates for "MOV rx, table[i]" is populated as follows:
+
++-------+-------------+---------+
+| Entry | Hexadecimal | Decimal |
++=======+=============+=========+
+| 0     | 0x0280      | 640     |
++-------+-------------+---------+
+| 1     | 0x0028      | 40      |
++-------+-------------+---------+
+| 2     | 0x0064      | 100     |
++-------+-------------+---------+
+| 3     | 0x0078      | 120     |
++-------+-------------+---------+
+| 4     | 0x03E8      | 1000    |
++-------+-------------+---------+
+| 5     | 0x00C8      | 200     |
++-------+-------------+---------+
+| 6     | 0x2710      | 10000   |
++-------+-------------+---------+
+| 7     | 0x0118      | 280     |
++-------+-------------+---------+
+| 8     | 0x0140      | 320     |
++-------+-------------+---------+
+| 9     | 0x0168      | 360     |
++-------+-------------+---------+
+| 10    | 0x0190      | 400     |
++-------+-------------+---------+
+| 11    | 0x01B8      | 440     |
++-------+-------------+---------+
+| 12    | 0x01E0      | 480     |
++-------+-------------+---------+
+| 13    | 0x0208      | 520     |
++-------+-------------+---------+
+| 14    | 0x0230      | 560     |
++-------+-------------+---------+
+| 15    | 0x0258      | 600     |
++-------+-------------+---------+
+
+The "MOV SP, imm7" instruction allows loading values 0 - 127 in the Stack
+Pointer in one instruction word.
 
 Timing (cycles): 3 + ai
 
@@ -1030,8 +1118,8 @@ layout. The columns group by the highest two bits (bit 15 and bit 14) and bit
 |    |         |         || adr, xhn|| xhn, adr|| adr, XH|| XH, adr|         |
 |    |         |         |          |          || adr, SP|| SP, adr|         |
 +----+---------+---------+----------+----------+---------+---------+         |
-|    || XCH    |         || JFR     |          || JMR    |         |         |
-|0001|| adr, rx|         || JFA     |          || JMA    |         |         |
+|    || XCH    || MOV    || JFR     || MOV     || JMR    || MOV    |         |
+|0001|| adr, rx|| rx, imx|| JFA     || rx, imx || JMA    || rx, imx|         |
 |    |         |         || JSV     |          |         |         |         |
 |    |         |         || RFN     |          |         |         |         |
 +----+---------+---------+----------+----------+---------+---------+         |
