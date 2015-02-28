@@ -591,54 +591,34 @@ register in one instruction word. These instructions lay out as follows:
 +---------------------+------------------------------------------------------+
 | Binary              | Effect                                               |
 +=====================+======================================================+
-| 0000 011r rrpq iiii | MOV rx, 0xppiq (Nybble is 0 or 0xF depending on p/q) |
+| 0000 011r rr00 iiii | MOV rx, table0[i] (Loads from a table of immediates) |
 +---------------------+------------------------------------------------------+
-| 0100 011r rrpq iiii | MOV rx, 0xpiqq (Nybble is 0 or 0xF depending on p/q) |
+| 0000 011r rr01 iiii | MOV rx, 0x001i (Loads 16 - 31)                       |
 +---------------------+------------------------------------------------------+
-| 1100 011r rr0q iiii | MOV rx, 0xiqqq (Nybble is 0 or 0xF depending on q)   |
+| 0000 011r rr10 iiii | MOV rx, 0x002i (Loads 32 - 47)                       |
 +---------------------+------------------------------------------------------+
-| 1100 011r rr10 iiii | MOV rx, 0x001i (Loads 16 - 31)                       |
+| 0000 011r rr11 iiii | MOV rx, 0x003i (Loads 48 - 63)                       |
 +---------------------+------------------------------------------------------+
-| 1100 011r rr11 tttt | MOV rx, table[i] (Loads from a table of immediates)  |
+| 0100 011r rrii iiii | MOV rx, 0000 0000 01ii iiii (Loads 64 - 127)         |
++---------------------+------------------------------------------------------+
+| 1100 011r rrii iiii | MOV rx, table1[i] (Loads from a table of immediates) |
 +---------------------+------------------------------------------------------+
 
-The table of immediates for "MOV rx, table[i]" is populated as follows:
+The values in table0 (16 words) are as follows: ::
 
-+-------+-------------+---------+
-| Entry | Hexadecimal | Decimal |
-+=======+=============+=========+
-| 0     | 0x0280      | 640     |
-+-------+-------------+---------+
-| 1     | 0x0028      | 40      |
-+-------+-------------+---------+
-| 2     | 0x0064      | 100     |
-+-------+-------------+---------+
-| 3     | 0x0078      | 120     |
-+-------+-------------+---------+
-| 4     | 0x03E8      | 1000    |
-+-------+-------------+---------+
-| 5     | 0x00C8      | 200     |
-+-------+-------------+---------+
-| 6     | 0x2710      | 10000   |
-+-------+-------------+---------+
-| 7     | 0x0118      | 280     |
-+-------+-------------+---------+
-| 8     | 0x0140      | 320     |
-+-------+-------------+---------+
-| 9     | 0x0168      | 360     |
-+-------+-------------+---------+
-| 10    | 0x0190      | 400     |
-+-------+-------------+---------+
-| 11    | 0x01B8      | 440     |
-+-------+-------------+---------+
-| 12    | 0x01E0      | 480     |
-+-------+-------------+---------+
-| 13    | 0x0208      | 520     |
-+-------+-------------+---------+
-| 14    | 0x0230      | 560     |
-+-------+-------------+---------+
-| 15    | 0x0258      | 600     |
-+-------+-------------+---------+
+    0x0280U, 0xFF0FU, 0xF0FFU, 0x0180U, 0x0300U, 0x01C0U, 0x0F00U, 0x0118U,
+    0x0140U, 0x0168U, 0x0190U, 0x01B8U, 0x01E0U, 0x0208U, 0x0230U, 0x0258U
+
+The values in table1 (64 words) are as follows: ::
+
+    0x0080U, 0x0088U, 0x0090U, 0x0098U, 0x0010U, 0x0020U, 0x0040U, 0x0080U,
+    0x0100U, 0x0200U, 0x0400U, 0x0800U, 0x1000U, 0x2000U, 0x4000U, 0x8000U,
+    0x00A0U, 0x00A8U, 0x00B0U, 0x00B8U, 0xFFEFU, 0xFFDFU, 0xFFBFU, 0xFF7FU,
+    0xFEFFU, 0xFDFFU, 0xFBFFU, 0xF7FFU, 0xEFFFU, 0xDFFFU, 0xBFFFU, 0x7FFFU,
+    0x00C0U, 0x00C8U, 0x00D0U, 0x00D8U, 0xFFE0U, 0xFFC0U, 0xFF80U, 0xFF00U,
+    0xFE00U, 0xFC00U, 0xF800U, 0xF000U, 0xE000U, 0xC000U, 0x8000U, 0x0000U,
+    0x00E0U, 0x00E8U, 0x00F0U, 0x00F8U, 0x001FU, 0x003FU, 0x007FU, 0x00FFU,
+    0x01FFU, 0x03FFU, 0x07FFU, 0x0FFFU, 0x1FFFU, 0x3FFFU, 0x7FFFU, 0xFFFFU
 
 The "MOV SP, imm7" instruction allows loading values 0 - 127 in the Stack
 Pointer in one instruction word.
