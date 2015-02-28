@@ -3,7 +3,7 @@ RRPGE input device management
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
-:Copyright: 2013 - 2014, GNU GPLv3 (version 3 of the GNU General Public
+:Copyright: 2013 - 2015, GNU GPLv3 (version 3 of the GNU General Public
             License) extended as RRPGEvt (temporary version of the RRPGE
             License): see LICENSE.GPLv3 and LICENSE.RRPGEvt in the project
             root.
@@ -20,7 +20,7 @@ types, providing the application developer a simple interface to work with the
 diversity of physical devices it may encounter.
 
 The input peripherals are accessible through kernel functions (see the
-"Kernel functions, Input devices (0x0400 - 0x04FF)" section in "kcall.rst" for
+"Kernel functions, Input devices (0x10 - 0x1E)" section in "kcall.rst" for
 further information).
 
 Moreover the application specifies it's device requirements in it's
@@ -99,7 +99,7 @@ Devices may be plugged in and out in an RRPGE application's lifetime
 The system is capable to support this adequately, even without the awareness
 of the application.
 
-When the 0x0410 "Get device properties" kernel call is called, the kernel also
+When the 0x10 "Get device properties" kernel call is called, the kernel also
 populates the appropriate field in the application state (see "state.rst")
 with the return value. This indicates the type of the device at the given
 device ID (or the fact that the device is absent). The 0x0411 "Drop device"
@@ -140,7 +140,7 @@ Application side
 If an application needs an input device of a particular type, it should use
 the device with the lowest ID which matches (it should be the best).
 
-To make an application hotplug aware, it simply needs to call the 0x0410 "Get
+To make an application hotplug aware, it simply needs to call the 0x10 "Get
 device properties" kernel call regularly for the devices it uses. This way it
 can detect the absence of a previously used device, and may act accordingly.
 
@@ -165,7 +165,7 @@ analog input mappings.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The mouse pointing device provides a normal computer mouse requiring a cursor
-presented for the user to assist tracking it's position. The "0x0425: Return
+presented for the user to assist tracking it's position. The "0x19: Return
 area activity" kernel call should be activated by any button click with the
 pointer on the queried area.
 
@@ -211,7 +211,7 @@ scrolling up (Y) or left (X). On a typical mouse Scroll wheel Y is available,
 and there are no scroll buttons. On some mice a horizontal scroll wheel, or
 buttons associated with left / right scroll are available.
 
-Device specific flags (returned by 0x0410: Get device properties):
+Device specific flags (returned by 0x10: Get device properties):
 
 - bit 5: Set if a cursor should be displayed to track the device.
 
@@ -221,7 +221,7 @@ Device specific flags (returned by 0x0410: Get device properties):
 
 The touch pointing device assumes a touch display or surface representing the
 display. The device may support multi-touch which may be exploited through the
-"0x0425: Return area activity" kernel call.
+"0x19: Return area activity" kernel call.
 
 Hover activities may be returned if the physical device supports it. These
 indicate that the user did not actually press, but the respective analog
@@ -263,7 +263,7 @@ Analog input mapping:
 
 Pressure information should be zero if there is no touch activity.
 
-Device specific flags (returned by 0x0410: Get device properties):
+Device specific flags (returned by 0x10: Get device properties):
 
 - bit 5: Set if a cursor should be displayed to track the device.
 
@@ -342,7 +342,7 @@ Analog input mapping:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The text input device is special in that it is accessible through a separate
-kernel call (0x0424: "Pop text input FIFO"). It provides no digital or analog
+kernel call (0x18: "Pop text input FIFO"). It provides no digital or analog
 inputs. It may typically be backed by a keyboard, but other physical devices
 might be possible.
 
@@ -377,7 +377,7 @@ QWERTY layout as below (only the alphanumeric portion shown): ::
     +----------------------------------------------------------------...
 
 If necessary, the actual labeling of the keys may be requestable using the
-0x0412 "Get digital input description symbols" kernel call.
+0x12 "Get digital input description symbols" kernel call.
 
 The first input bank is a combined button state, provided for easing some
 typical keyboard uses, and to make it possible to support these uses with
@@ -480,9 +480,9 @@ Get digital / analog input descriptor
 ------------------------------------------------------------------------------
 
 
-The kernel functions 0x0412 and 0x0413 ("Get digital input descriptor" and
-"Get analog input descriptor") can be used to gather information about the
-controls provided by a device.
+The kernel functions 0x12 and 0x13 ("Get digital input descriptor" and "Get
+analog input descriptor") can be used to gather information about the controls
+provided by a device.
 
 The purpose of these functions are twofold:
 
@@ -501,7 +501,7 @@ Text input control codes
 ------------------------------------------------------------------------------
 
 
-The kernel function 0x0424 "Pop text input FIFO" returns the next character or
+The kernel function 0x18 "Pop text input FIFO" returns the next character or
 control code in the text input buffer if any.
 
 Normally the input is an UTF-32 character, however special control codes also

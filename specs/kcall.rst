@@ -3,7 +3,7 @@ RRPGE kernel calls
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
-:Copyright: 2013 - 2014, GNU GPLv3 (version 3 of the GNU General Public
+:Copyright: 2013 - 2015, GNU GPLv3 (version 3 of the GNU General Public
             License) extended as RRPGEvt (temporary version of the RRPGE
             License): see LICENSE.GPLv3 and LICENSE.RRPGEvt in the project
             root.
@@ -17,32 +17,27 @@ Introduction, the role and layout of the kernel calls
 
 The kernel calls are the main interface by which an RRPGE application can
 communicate with the host system, or perform certain more or less host
-specific actions. Moreover kernel calls are in place to support the tight
-user mode - supervisor mode separation of the RRPGE CPU, such as to provide
-means for switching in and out memory banks from the CPU's address space.
+specific actions.
 
 Other important aspects of the kernel are detailed in the "kernel.rst"
 documentation.
 
 The kernel call interface is implemented using the "JSV" opcode of the RRPGE
-CPU (see "JSV" in "cpu_inst.rst"). The first parameter of the call selects the
-kernel function to execute while further parameters may be passed to the
-function itself. Note that there is no kernel function which would accept a
-variable amount of parameters, so all functions have to be called with the
-appropriate count of parameters as specified in their descriptions.
+CPU (see "JSV" in "cpu_inst.rst"). The imm6 operand of the call selects the
+kernel function to execute. Note that there is no kernel function which would
+accept a variable amount of parameters, so all functions have to be called
+with the appropriate count of parameters as specified in their descriptions.
 
-The layout of the kernel functions (by the value of the first parameter
-selecting it) are as follows:
+The layout of the kernel functions (by the imm6 operand of JSV) are as
+follows:
 
-- 0x0000-0x00FF: Memory management (empty)
-- 0x0100-0x01FF: Storage & File management
-- 0x0200-0x02FF: Audio (empty)
-- 0x0300-0x03FF: Video
-- 0x0400-0x04FF: Input devices
-- 0x0500-0x05FF: Delay
-- 0x0600-0x06FF: User information management
-- 0x0700-0x07FF: Networking
-- 0x0800-0x08FF: Kernel task management
+- 0x00 - 0x07: Storage & File management
+- 0x08 - 0x0F: Video
+- 0x10 - 0x1E: Input devices
+- 0x1F - 0x1F: Delay
+- 0x20 - 0x27: User information management
+- 0x28 - 0x2D: Networking
+- 0x2E - 0x2F: Kernel task management
 
 
 Kernel tasks
@@ -61,7 +56,7 @@ application supports waiting for the termination of the initiated tasks.
 
 At least up to 16 tasks may be started simultaneously. If the application
 needs more, it has to discard previous completed tasks by the "Discard task"
-function (0x0801) provided in the Kernel task management group.
+function (0x2F) provided in the Kernel task management group.
 
 Kernel tasks typically operate from or into CPU Data memory areas. If the
 memory area is a target, it's state is undefined until the completion of the
@@ -73,7 +68,7 @@ otherwise specified, is undefined.
 Unsupported functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-When calling an unsupported function (that is the first parameter is some
+When calling an unsupported function (that is the imm6 operand of JSV is some
 value not listed in this specification) the kernel is normally required to
 terminate the application.
 
@@ -95,7 +90,7 @@ Notes on extensions
 
 If necessary for implementing a given host, or to provide extra features for
 some specific target applications, the kernel may be expanded with additional
-functions. The preferred range for this is 0x8000 or above.
+functions. The preferred range for this is 0x30 - 0x3F.
 
 Relying on this extension normally can't break any conforming application as
 they would only terminate calling any unspecified functions. However the
@@ -109,10 +104,10 @@ for two specific purposes:
 
 - To provide an user interface on a specific RRPGE host using native RRPGE
   applications, such as supportive parts of an operating system of a hardware
-  implementation. The preferred range for this is 0x8000 - 0x8FFF.
+  implementation.
 
 - To experiment with new functionality which may later be included in the
-  main RRPGE specification. The preferred range for this is 0x9000 or above.
+  main RRPGE specification.
 
 For the first type the recommended style of implementation is to hide all the
 extended functionality when running external RRPGE applications (that is
@@ -164,30 +159,21 @@ return data, it takes pointers to memory areas it should fill.
 
 
 
-Kernel functions, Memory management (0x0000 - 0x00FF)
+Kernel functions, Storage & File management (0x00 - 0x07)
 ------------------------------------------------------------------------------
 
 
-(No kernel function in this group)
-
-
-
-
-Kernel functions, Storage & File management (0x0100 - 0x01FF)
-------------------------------------------------------------------------------
-
-
-0x0100: Task: Start loading binary data
+0x00: Task: Start loading binary data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_sfi_loadbin
 - Cycles: 800
 - Host:   Required.
 - N/S:    This function must be supported.
-- Param1: Target offset in CPU Data memory.
-- Param2: Number of words to load.
-- Param3: Source application binary offset high word.
-- Param4: Source application binary offset low word.
+- Param0: Target offset in CPU Data memory.
+- Param1: Number of words to load.
+- Param2: Source application binary offset high word.
+- Param3: Source application binary offset low word.
 - Ret.X3: Index of kernel task or 0x8000 if no more task slots are available.
 
 Loads an area of the Application binary into the CPU Data memory. The kernel
@@ -201,19 +187,19 @@ terminates the application if either parameter is invalid:
 The task always returns 0x8000 on completion.
 
 
-0x0110: Task: Start loading from file
+0x01: Task: Start loading from file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_sfi_load
 - Cycles: 800
 - Host:   Required.
 - N/S:    The task may always return 0xC000 indicating unsuccessful load.
-- Param1: Target (word) offset in CPU Data memory.
-- Param2: Number of bytes (!) to load, up to 16383.
-- Param3: Byte offset to start loading from the file, high word.
-- Param4: Byte offset to start loading from the file, low word.
-- Param5: File name offset in CPU Data memory.
-- Param6: File name size limit in words.
+- Param0: Target (word) offset in CPU Data memory.
+- Param1: Number of bytes (!) to load, up to 16383.
+- Param2: Byte offset to start loading from the file, high word.
+- Param3: Byte offset to start loading from the file, low word.
+- Param4: File name offset in CPU Data memory.
+- Param5: File name size limit in words.
 - Ret.X3: Index of kernel task or 0x8000 if no more task slots are available.
 
 Loads bytes from a file. The bytes are loaded in Big Endian order (so first
@@ -236,19 +222,19 @@ file was too small. Bit 14 set in the return value indicates failure, bits
 See "file_io.rst" for further details including fault codes.
 
 
-0x0111: Task: Start saving into file
+0x02: Task: Start saving into file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_sfi_save
 - Cycles: 800
 - Host:   Required.
 - N/S:    The task may always return 0xC000 indicating unsuccessful save.
-- Param1: Source (word) offset in CPU Data memory.
-- Param2: Number of bytes (!) to save, up to 16383.
-- Param3: Byte offset to start at in the file, high word.
-- Param4: Byte offset to start at the file, low word.
-- Param5: File name offset in CPU Data memory.
-- Param6: File name size limit in words.
+- Param0: Source (word) offset in CPU Data memory.
+- Param1: Number of bytes (!) to save, up to 16383.
+- Param2: Byte offset to start at in the file, high word.
+- Param3: Byte offset to start at the file, low word.
+- Param4: File name offset in CPU Data memory.
+- Param5: File name size limit in words.
 - Ret.X3: Index of kernel task or 0x8000 if no more task slots are available.
 
 Saves bytes into the target file. The bytes are saved in Big Endian order (so
@@ -273,15 +259,15 @@ value indicates failure, bits 0 - 13 providing a fault code.
 See "file_io.rst" for further details including fault codes.
 
 
-0x0112: Task: Find next file
+0x03: Task: Find next file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_sfi_next
 - Cycles: 800
 - Host:   Required.
 - N/S:    The target area may always be zeroed to indicate no files.
-- Param1: File name offset in CPU Data memory.
-- Param2: File name size limit in words.
+- Param0: File name offset in CPU Data memory.
+- Param1: File name size limit in words.
 - Ret.X3: Index of kernel task or 0x8000 if no more task slots are available.
 
 Finds and fills in the next valid file after the one passed. The passed file
@@ -304,17 +290,17 @@ The return of the kernel task on completion is always 0x8000.
 See "file_io.rst" for further details.
 
 
-0x0113: Task: Move a file
+0x04: Task: Move a file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_sfi_move
 - Cycles: 800
 - Host:   Required.
 - N/S:    The task may always return 0xC000 indicating unsuccessful move.
-- Param1: Target file name offset in CPU Data memory.
-- Param2: Target file name size limit in words.
-- Param3: Source file name offset in CPU Data memory.
-- Param4: Source file name size limit in words.
+- Param0: Target file name offset in CPU Data memory.
+- Param1: Target file name size limit in words.
+- Param2: Source file name offset in CPU Data memory.
+- Param3: Source file name size limit in words.
 - Ret.X3: Index of kernel task or 0x8000 if no more task slots are available.
 
 Moves (renames) a file, or deletes it. Deleting can be performed by setting
@@ -335,28 +321,19 @@ See "file_io.rst" for further details including fault codes.
 
 
 
-Kernel functions, Audio (0x0200 - 0x02FF)
+Kernel functions, Video (0x08 - 0x0F)
 ------------------------------------------------------------------------------
 
 
-(No kernel function in this group)
-
-
-
-
-Kernel functions, Video (0x0300 - 0x03FF)
-------------------------------------------------------------------------------
-
-
-0x0300: Set palette entry
+0x08: Set palette entry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_vid_setpal
 - Cycles: 100
 - Host:   Required.
 - N/S:    This function must be supported if the host produces display.
-- Param1: Palette index (only low 8 bits used).
-- Param2: Color in 4-4-4 RGB format (only low 12 bits used in this layout).
+- Param0: Palette index (only low 8 bits used).
+- Param1: Color in 4-4-4 RGB format (only low 12 bits used in this layout).
 
 Changes an entry in the video palette. There are 256 palette entries even in
 4 bit mode (although this case the upper 240 entries don't contribute to
@@ -374,14 +351,14 @@ on true palettized display modes not in sync with the emulator). The actual
 palette updates may delay by multiple frames.
 
 
-0x0330: Change video mode
+0x09: Change video mode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_vid_mode
 - Cycles: - (up to one frame or more)
 - Host:   Required.
 - N/S:    This function must be supported if the host produces display.
-- Param1: Requested video mode.
+- Param0: Requested video mode.
 
 Changes the video mode. The action may include extra stalls to meet
 implementation-specific timing requirements during the video mode change.
@@ -399,14 +376,14 @@ The following video modes are available:
 Other values passed in Param1 set mode 0 (640x400; 4 bit).
 
 
-0x0340: Set stereoscopic 3D
+0x0A: Set stereoscopic 3D
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_vid_setst3d
 - Cycles: 2400
 - Host:   Required.
 - N/S:    This function may be ignored (apart from altering the app. state).
-- Param1: Stereoscopic 3D output parameters.
+- Param0: Stereoscopic 3D output parameters.
 
 Informs the host about current use of stereoscopic 3D. Upon initialization,
 this is disabled. The parameter is formatted as follows:
@@ -438,18 +415,18 @@ mode all these pixel counts are halved.
 
 
 
-Kernel functions, Input devices (0x0400 - 0x04FF)
+Kernel functions, Input devices (0x10 - 0x1E)
 ------------------------------------------------------------------------------
 
 
-0x0410: Get device properties
+0x10: Get device properties
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_inp_getprops
 - Cycles: 800
 - Host:   Required.
 - N/S:    May always return 0 indicating the device is not available.
-- Param1: Device to query (only low 4 bits used).
+- Param0: Device to query (only low 4 bits used).
 - Ret.X3: Device properties.
 
 The return value provides the properties of the device queried. It is composed
@@ -481,14 +458,14 @@ For the layout of Device-specific flags and more on the behavior and handling
 of input devices, see "inputdev.rst".
 
 
-0x0411: Drop device
+0x11: Drop device
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_inp_dropdev
 - Cycles: 800
 - Host:   Required.
 - N/S:    May ignore it if this functionality is not necessary for the host.
-- Param1: Device to drop (only low 4 bits used).
+- Param0: Device to drop (only low 4 bits used).
 
 Notifies the kernel that the application does not need the given device any
 more. When encountering this call, the kernel discards the device from the
@@ -499,42 +476,16 @@ functions returning according to N/S).
 For more on the behavior and handling of input devices, see "inputdev.rst".
 
 
-0x0412: Get digital input descriptor
+0x12: Get digital input descriptor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_inp_getdidesc
 - Cycles: 2400
 - Host:   Required.
 - N/S:    May always return 0 indicating the input does not exist.
-- Param1: Device to query (only low 4 bits used).
-- Param2: Input group to query.
-- Param3: Input to query within the group (only low 4 bits used).
-- Param4: Target offset in CPU Data memory to load the description into.
-- Param5: Size limit for the description in words.
-- Ret.X3: 0 if the input does not exist, 1 otherwise.
-
-Returns a description for the given input point of the given device, or the
-information that the input is not available. This function may assist users
-using their physical controllers within the application by providing
-information by which they may identify the appropriate controls on their
-hardware.
-
-An UTF-8 description text is loaded into the target if the input exists (it
-may not terminate properly if truncated by size limit). Otherwise the target
-is not altered.
-
-See "inputdev.rst" for more information.
-
-
-0x0413: Get analog input descriptor
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- F.name: kc_inp_getaidesc
-- Cycles: 2400
-- Host:   Required.
-- N/S:    May always return 0 indicating the input does not exist.
-- Param1: Device to query (only low 4 bits used).
-- Param2: Analog input to query.
+- Param0: Device to query (only low 4 bits used).
+- Param1: Input group to query.
+- Param2: Input to query within the group (only low 4 bits used).
 - Param3: Target offset in CPU Data memory to load the description into.
 - Param4: Size limit for the description in words.
 - Ret.X3: 0 if the input does not exist, 1 otherwise.
@@ -552,16 +503,42 @@ is not altered.
 See "inputdev.rst" for more information.
 
 
-0x0414: Get device name
+0x13: Get analog input descriptor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- F.name: kc_inp_getaidesc
+- Cycles: 2400
+- Host:   Required.
+- N/S:    May always return 0 indicating the input does not exist.
+- Param0: Device to query (only low 4 bits used).
+- Param1: Analog input to query.
+- Param2: Target offset in CPU Data memory to load the description into.
+- Param3: Size limit for the description in words.
+- Ret.X3: 0 if the input does not exist, 1 otherwise.
+
+Returns a description for the given input point of the given device, or the
+information that the input is not available. This function may assist users
+using their physical controllers within the application by providing
+information by which they may identify the appropriate controls on their
+hardware.
+
+An UTF-8 description text is loaded into the target if the input exists (it
+may not terminate properly if truncated by size limit). Otherwise the target
+is not altered.
+
+See "inputdev.rst" for more information.
+
+
+0x14: Get device name
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_inp_getname
 - Cycles: 2400
 - Host:   Required.
 - N/S:    May always return 0 indicating the name does not exist.
-- Param1: Device to query (only low 4 bits used).
-- Param2: Target offset in CPU Data memory to load the name into.
-- Param3: Size limit for the name in words.
+- Param0: Device to query (only low 4 bits used).
+- Param1: Target offset in CPU Data memory to load the name into.
+- Param2: Size limit for the name in words.
 - Ret.X3: 0 if the name does not exist, 1 otherwise.
 
 Returns a descriptive UTF-8 device name if possible (it may not terminate
@@ -570,44 +547,44 @@ have no name information. If the name does not exist, the target is not
 altered.
 
 
-0x0422: Get digital inputs
+0x16: Get digital inputs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_inp_getdi
 - Cycles: 800
 - Host:   Required.
 - N/S:    May always return 0 indicating none of the inputs are active.
-- Param1: Device to query (only low 4 bits used).
-- Param2: Input group to query.
+- Param0: Device to query (only low 4 bits used).
+- Param1: Input group to query.
 - Ret.X3: Digital inputs.
 
 The exact role and layout of the directions and buttons vary by device type.
 For more information see "inputdev.rst".
 
 
-0x0423: Get analog inputs
+0x17: Get analog inputs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_inp_getai
 - Cycles: 800
 - Host:   Required.
 - N/S:    May always return 0 indicating the device is centered / idle.
-- Param1: Device to query (only low 4 bits used).
-- Param2: Analog input to query.
+- Param0: Device to query (only low 4 bits used).
+- Param1: Analog input to query.
 - Ret.X3: 2's complement input value.
 
 The exact role an layout of the analog inputs vary by device type. For more
 information see "inputdev.rst".
 
 
-0x0424: Pop text input FIFO
+0x18: Pop text input FIFO
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_inp_popchar
 - Cycles: 800
 - Host:   Required.
 - N/S:    May always return 0 indicating the FIFO is empty.
-- Param1: Device to query (only low 4 bits used).
+- Param0: Device to query (only low 4 bits used).
 - Ret. C: High 16 bits of UTF-32 character.
 - Ret.X3: Low 16 bits of UTF-32 character.
 
@@ -616,18 +593,18 @@ may be used to assist editing the text. For more information, see
 "inputdev.rst".
 
 
-0x0425: Return area activity
+0x19: Return area activity
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_inp_checkarea
 - Cycles: 1200
 - Host:   Required.
 - N/S:    May always return 0 indicating the area is inactive.
-- Param1: Device to query (only low 4 bits used).
-- Param2: Upper left corner, X (0 - 639).
-- Param3: Upper left corner, Y (0 - 399).
-- Param4: Width.
-- Param5: Height.
+- Param0: Device to query (only low 4 bits used).
+- Param1: Upper left corner, X (0 - 639).
+- Param2: Upper left corner, Y (0 - 399).
+- Param3: Width.
+- Param4: Height.
 - Ret.X3: Area activity flags.
 
 The kernel truncates the rectangle to fit on the display treating the upper
@@ -649,17 +626,17 @@ For more information, see "inputdev.rst".
 
 
 
-Kernel functions, Delay (0x0500 - 0x05FF)
+Kernel functions, Delay (0x1F - 0x1F)
 ------------------------------------------------------------------------------
 
 
-0x0500: Delay
+0x1F: Delay
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_dly_delay
 - Cycles: 200 - 65535
 - Host:   Not required.
-- Param1: Number of cycles to delay.
+- Param0: Number of cycles to delay.
 
 Passes back control to the kernel while waiting for some event. It will wait
 at most the given amount of cycles (consuming up to 200 cycles is allowed
@@ -678,18 +655,18 @@ application.
 
 
 
-Kernel functions, User information management (0x0600 - 0x06FF)
+Kernel functions, User information management (0x20 - 0x27)
 ------------------------------------------------------------------------------
 
 
-0x0600: Get local users
+0x20: Get local users
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_usr_getlocal
 - Cycles: 2400
 - Host:   Required.
 - N/S:    May not provide User ID information returning all zeros.
-- Param1: Target offset in CPU Data memory to load the data into (32 words).
+- Param0: Target offset in CPU Data memory to load the data into (32 words).
 
 The target area is 32 words long for 4 User ID's (one ID is 8 words long). If
 the ID is all zeroes, the user is not available. If the first user is not
@@ -707,18 +684,18 @@ The kernel terminates the application if either parameter is invalid:
 For the layout of User ID's, see "names.rst".
 
 
-0x0601: Task: Get UTF-8 representation of User ID
+0x21: Task: Get UTF-8 representation of User ID
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_usr_getutf
 - Cycles: 1200
 - Host:   Required.
 - N/S:    May not provide this information returning zero strings.
-- Param1: Target offset in CPU Data memory to load the main part into.
-- Param2: Size limit for the main part in words.
-- Param3: Target offset in CPU Data memory to load the extended part into.
-- Param4: Size limit for the extended part in words.
-- Param5: Offset of 8 word User ID to get the UTF-8 representation of.
+- Param0: Target offset in CPU Data memory to load the main part into.
+- Param1: Size limit for the main part in words.
+- Param2: Target offset in CPU Data memory to load the extended part into.
+- Param3: Size limit for the extended part in words.
+- Param4: Offset of 8 word User ID to get the UTF-8 representation of.
 - Ret.X3: Index of kernel task or 0x8000 if no more task slots are available.
 
 This call can request an UTF-8 representation for any name. The host may
@@ -732,14 +709,14 @@ The kernel terminates the application if either parameter is invalid:
 For the layout of User ID's, see "names.rst".
 
 
-0x0610: Get user preferred language
+0x22: Get user preferred language
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_usr_getlang
 - Cycles: 2400
 - Host:   Required.
 - N/S:    May not provide this information returning zero.
-- Param1: Language number (0: most preferred, 1: second, etc).
+- Param0: Language number (0: most preferred, 1: second, etc).
 - Ret. C: Preferred language, first bytes.
 - Ret.X3: Preferred language, last bytes.
 
@@ -748,7 +725,7 @@ high bytes, padded with zeros. A zero returns indicates no language
 information is present for this and any subsequent language numbers.
 
 
-0x0611: Get user preferred colors
+0x23: Get user preferred colors
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_usr_getcolors
@@ -764,7 +741,7 @@ the user has no such preference provided.
 For more on the color representation, see "Palette" in "vid_arch.rst".
 
 
-0x0612: Get user stereoscopic 3D preference
+0x24: Get user stereoscopic 3D preference
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_usr_getst3d
@@ -774,26 +751,26 @@ For more on the color representation, see "Palette" in "vid_arch.rst".
 - Ret.X3: 1 if stereoscopic 3D may be used, 0 otherwise.
 
 Returns whether the user is willing to accept stereoscopic 3D or not (see
-"0x340: Set stereoscopic 3D" for more). If this function returns zero, the
+"0x0A: Set stereoscopic 3D" for more). If this function returns zero, the
 application should not provide such content, otherwise it may.
 
 
 
 
-Kernel functions, Networking (0x0700 - 0x07FF)
+Kernel functions, Networking (0x28 - 0x2D)
 ------------------------------------------------------------------------------
 
 
-0x0700: Task: Send data to user
+0x28: Task: Send data to user
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_net_send
 - Cycles: 2400
 - Host:   Required.
 - N/S:    May discard the passed data not sending it out on any network.
-- Param1: Source offset in CPU Data memory.
-- Param2: Number of words to send.
-- Param3: Offset of 8 word User ID to send the packet to.
+- Param0: Source offset in CPU Data memory.
+- Param1: Number of words to send.
+- Param2: Offset of 8 word User ID to send the packet to.
 - Ret.X3: Index of kernel task or 0x8000 if no more task slots are available.
 
 Sends out a packet from the given source data targeting the given user. The
@@ -805,7 +782,7 @@ the same application with the same User ID's (or no User ID's) set, they
 should properly communicate with each other.
 
 The sender User ID is the primary user's User ID (the first user returned by
-0x0600: Get local users).
+0x20: Get local users).
 
 The kernel terminates the application if either parameter is invalid:
 
@@ -815,16 +792,16 @@ The kernel terminates the application if either parameter is invalid:
 The kernel task's return value is always 0x8000 on completion.
 
 
-0x0701: Poll for packets
+0x29: Poll for packets
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_net_recv
 - Cycles: 2400 + 10/word acquiring packet data.
 - Host:   Required.
 - N/S:    May always report zero (0), indicating there are no packets ready.
-- Param1: Target CPU Data memory offset for raw data.
-- Param2: Maximal number of words to receive.
-- Param3: Target CPU Data memory offset for User ID of sender (8 words).
+- Param0: Target CPU Data memory offset for raw data.
+- Param1: Maximal number of words to receive.
+- Param2: Target CPU Data memory offset for User ID of sender (8 words).
 - Ret.X3: Count of received data words, 0 indicating no packet is ready.
 
 If there is a packet in the receive buffer, it is popped off and copied to the
@@ -841,16 +818,16 @@ The kernel terminates the application if either parameter is invalid:
   Area, neither wrap around to it.
 
 
-0x0710: Task: List accessible users
+0x2A: Task: List accessible users
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_net_listusers
 - Cycles: 2400
 - Host:   Required.
 - N/S:    The task may always return 0x8000 indicating no users are found.
-- Param1: Target CPU Data memory offset for the list.
-- Param2: Maximal number of User ID's to receive (8 words / ID).
-- Param3: Start User ID offset in CPU Data memory (8 words).
+- Param0: Target CPU Data memory offset for the list.
+- Param1: Maximal number of User ID's to receive (8 words / ID).
+- Param2: Start User ID offset in CPU Data memory (8 words).
 - Ret. A: Index of kernel task or 0x8000 if no more task slots are available.
 
 Collects and list users available for the application on the network. Only
@@ -870,24 +847,24 @@ The kernel terminates the application if either parameter is invalid:
   Area, neither wrap around to it.
 
 
-0x0720: Set network availability
+0x2B: Set network availability
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_net_setavail
 - Cycles: 400
 - Host:   Required.
 - N/S:    This function may be ignored (apart from altering the app. state).
-- Param1: 0: Not available, Nonzero: Available.
+- Param0: 0: Not available, Nonzero: Available.
 
 Indicates whether the user should be available for other users running the
-same application on the network or not. This only affects the 0x0710: Task:
-List accessible users function (for the other parties on the network).
+same application on the network or not. This only affects the 0x2A: Task: List
+accessible users function (for the other parties on the network).
 
 If networking is not supported by the host, this function may only change the
 availability bit at 0x05F of the Application state.
 
 
-0x0721: Query network availability
+0x2C: Query network availability
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_net_getavail
@@ -896,23 +873,23 @@ availability bit at 0x05F of the Application state.
 - Ret.X3: 0: Not available, Nonzero: Available.
 
 Returns the current network availability state (as last set by function
-0x0720: Set network availability). This data comes from 0x05F in the
-Application State.
+0x2B: Set network availability). This data comes from 0x05F in the Application
+State.
 
 
 
 
-Kernel functions, Kernel task management (0x0800 - 0x08FF)
+Kernel functions, Kernel task management (0x2E - 0x2F)
 ------------------------------------------------------------------------------
 
 
-0x0800: Query task
+0x2E: Query task
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_tsk_query
 - Cycles: 400
 - Host:   Not required.
-- Param1: Task index to query.
+- Param0: Task index to query.
 - Ret.X3: Task status.
 
 Returns information on the given kernel task. The status codes are as follows:
@@ -925,13 +902,13 @@ Returns information on the given kernel task. The status codes are as follows:
 The completion codes are described at each kernel function starting a task.
 
 
-0x0801: Discard task
+0x2F: Discard task
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: kc_tsk_discard
 - Cycles: 100
 - Host:   Not required.
-- Param1: Task index to discard.
+- Param0: Task index to discard.
 
 Attempts to discard a task. This can only succeed on completed tasks (status
 is 0x8000 or above), otherwise it has no effect. If the discard was
@@ -956,63 +933,63 @@ abbreviations used in the table are:
 +--------+--------+---+---+---+------+---------------------------------------+
 | Fun.ID | Cycles | T | H | P |   R  | Function name                         |
 +========+========+===+===+===+======+=======================================+
-| 0x0100 |    800 | X | M | 4 |  X3  | kc_sfi_loadbin                        |
+|   0x00 |    800 | X | M | 4 |  X3  | kc_sfi_loadbin                        |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0110 |    800 | X | O | 6 |  X3  | kc_sfi_load                           |
+|   0x01 |    800 | X | O | 6 |  X3  | kc_sfi_load                           |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0111 |    800 | X | O | 6 |  X3  | kc_sfi_save                           |
+|   0x02 |    800 | X | O | 6 |  X3  | kc_sfi_save                           |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0112 |    800 | X | O | 2 |  X3  | kc_sfi_next                           |
+|   0x03 |    800 | X | O | 2 |  X3  | kc_sfi_next                           |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0113 |    800 | X | O | 4 |  X3  | kc_sfi_move                           |
+|   0x04 |    800 | X | O | 4 |  X3  | kc_sfi_move                           |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0300 |    100 |   | M | 2 |      | kc_vid_setpal                         |
+|   0x08 |    100 |   | M | 2 |      | kc_vid_setpal                         |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0330 |     \- |   | M | 1 |      | kc_vid_mode                           |
+|   0x09 |     \- |   | M | 1 |      | kc_vid_mode                           |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0340 |   2400 |   | O | 1 |      | kc_vid_setst3d                        |
+|   0x0A |   2400 |   | O | 1 |      | kc_vid_setst3d                        |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0410 |    800 |   | O | 1 |  X3  | kc_inp_getprops                       |
+|   0x10 |    800 |   | O | 1 |  X3  | kc_inp_getprops                       |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0411 |    800 |   | O | 1 |      | kc_inp_dropdev                        |
+|   0x11 |    800 |   | O | 1 |      | kc_inp_dropdev                        |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0412 |   2400 |   | O | 5 |  X3  | kc_inp_getdidesc                      |
+|   0x12 |   2400 |   | O | 5 |  X3  | kc_inp_getdidesc                      |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0413 |   2400 |   | O | 4 |  X3  | kc_inp_getaidesc                      |
+|   0x13 |   2400 |   | O | 4 |  X3  | kc_inp_getaidesc                      |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0414 |   2400 |   | O | 3 |  X3  | kc_inp_getname                        |
+|   0x14 |   2400 |   | O | 3 |  X3  | kc_inp_getname                        |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0422 |    800 |   | O | 2 |  X3  | kc_inp_getdi                          |
+|   0x16 |    800 |   | O | 2 |  X3  | kc_inp_getdi                          |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0423 |    800 |   | O | 1 |  X3  | kc_inp_getai                          |
+|   0x17 |    800 |   | O | 1 |  X3  | kc_inp_getai                          |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0424 |    800 |   | O | 1 | C:X3 | kc_inp_popchar                        |
+|   0x18 |    800 |   | O | 1 | C:X3 | kc_inp_popchar                        |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0425 |   1200 |   | O | 5 |      | kc_inp_checkarea                      |
+|   0x19 |   1200 |   | O | 5 |      | kc_inp_checkarea                      |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0500 |  Param |   |   | 1 |      | kc_dly_delay                          |
+|   0x1F |  Param |   |   | 1 |      | kc_dly_delay                          |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0600 |   2400 |   | O | 1 |      | kc_usr_getlocal                       |
+|   0x20 |   2400 |   | O | 1 |      | kc_usr_getlocal                       |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0601 |   2400 | X | O | 5 |  X3  | kc_usr_getutf                         |
+|   0x21 |   2400 | X | O | 5 |  X3  | kc_usr_getutf                         |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0610 |   2400 |   | O | 1 | C:X3 | kc_usr_getlang                        |
+|   0x22 |   2400 |   | O | 1 | C:X3 | kc_usr_getlang                        |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0611 |   2400 |   | O | 0 | C:X3 | kc_usr_getcolors                      |
+|   0x23 |   2400 |   | O | 0 | C:X3 | kc_usr_getcolors                      |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0612 |   2400 |   | O | 0 |  X3  | kc_usr_getst3d                        |
+|   0x24 |   2400 |   | O | 0 |  X3  | kc_usr_getst3d                        |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0700 |   2400 | X | O | 3 |  X3  | kc_net_send                           |
+|   0x28 |   2400 | X | O | 3 |  X3  | kc_net_send                           |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0701 | C+2400 |   | O | 3 |  X3  | kc_net_recv                           |
+|   0x29 | C+2400 |   | O | 3 |  X3  | kc_net_recv                           |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0710 |   2400 | X | O | 3 |  X3  | kc_net_listusers                      |
+|   0x2A |   2400 | X | O | 3 |  X3  | kc_net_listusers                      |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0720 |    400 |   | O | 1 |      | kc_net_setavail                       |
+|   0x2B |    400 |   | O | 1 |      | kc_net_setavail                       |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0721 |    400 |   |   | 0 |      | kc_net_getavail                       |
+|   0x2C |    400 |   |   | 0 |      | kc_net_getavail                       |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0800 |    400 |   |   | 1 |  X3  | kc_tsk_query                          |
+|   0x2E |    400 |   |   | 1 |  X3  | kc_tsk_query                          |
 +--------+--------+---+---+---+------+---------------------------------------+
-| 0x0801 |    100 |   |   | 1 |      | kc_tsk_discard                        |
+|   0x2F |    100 |   |   | 1 |      | kc_tsk_discard                        |
 +--------+--------+---+---+---+------+---------------------------------------+

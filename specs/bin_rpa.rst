@@ -3,7 +3,7 @@ RRPGE application binary specification
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
-:Copyright: 2013 - 2014, GNU GPLv3 (version 3 of the GNU General Public
+:Copyright: 2013 - 2015, GNU GPLv3 (version 3 of the GNU General Public
             License) extended as RRPGEvt (temporary version of the RRPGE
             License): see LICENSE.GPLv3 and LICENSE.RRPGEvt in the project
             root.
@@ -27,7 +27,7 @@ mode, is also visible in normal plaintext viewers on the host system.
 The binary begins with a text oriented header which describes the application,
 and locates it's binary descriptor by which the application's properties, code
 area, and initial data may be found. Apart from these, the contents of the
-binary are arbitrary, and may be read using the 0x100: Start loading binary
+binary are arbitrary, and may be read using the 0x00: Start loading binary
 data kernel call (described in "kcall.rst").
 
 
@@ -109,8 +109,8 @@ value 0x0A.
 +--------+---+---------------------------------------------------------------+
 | L.End  |   | Textual data. This may contain specific fields for various    |
 | \-     | M | application types, and language specific information. It may  |
-| T.End  |   | contain UTF-8 encoded characters. It is terminated by a singe |
-|        |   | null (0x00) character.                                        |
+| T.End  |   | contain UTF-8 encoded characters. It is terminated by a       |
+|        |   | single null (0x00) character.                                 |
 +--------+---+---------------------------------------------------------------+
 
 The first 64 words (0x0000 to 0x003F) also appear in state saves, used to
@@ -257,7 +257,7 @@ Licenses
 The License field is meant to identify the license of the application using a
 common acronym. The following acronyms are available:
 
-- RRPGEv2: Version 2 of the RRPGE License.
+- RRPGEvt: Temporary version of the RRPGE License.
 - GPLv3: Version 3 of GNU General Public License.
 - GPLv3+: Version 3 or any later version of GNU General Public License.
 - GPLv2: Version 2 of GNU General Public License.
@@ -266,7 +266,7 @@ common acronym. The following acronyms are available:
 
 License compatibility chart: ::
 
-    RRPGEv2 ----> GPLv2+ -----> GPLv2
+    RRPGEvt ----> GPLv2+ -----> GPLv2
        |            |
        |            |
        |            V
@@ -276,8 +276,6 @@ For example for the development of an application licensed under GPLv3, and
 RRPGE Licensed component may be used.
 
 Other acronyms may be added later.
-
-The RRPGE Developer Agreement may allow for further licenses.
 
 
 

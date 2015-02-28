@@ -21,6 +21,8 @@ Version 00.016.000 ()
  - New skips: XST and XNS by bit mask tests.
  - New skips for the Stack Pointer providing better support for variable
    number of arguments.
+ - JSV changed to accept a service operand, kernel calls are re-allocated
+   accordingly (the syntax of JSV is now similar to normal function calls).
 
 
 Version 00.015.003 (2015.01.23)

@@ -484,10 +484,10 @@ JSV
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 0100 0100 1e-- ---- | JSV {...}          |
+| 0100 0100 1eii iiii | JSV imm6 {...}     |
 +---------------------+--------------------+
 
-Supervisor call.
+Supervisor call. The imm6 operand selects the supervisor service to call.
 
 Works in a similar manner to JFL including the parameter list, however
 parameters are pushed on the supervisor stack, and the PC and BP of the caller

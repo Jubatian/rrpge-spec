@@ -3,7 +3,7 @@ RRPGE file I/O interface
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
-:Copyright: 2013 - 2014, GNU GPLv3 (version 3 of the GNU General Public
+:Copyright: 2013 - 2015, GNU GPLv3 (version 3 of the GNU General Public
             License) extended as RRPGEvt (temporary version of the RRPGE
             License): see LICENSE.GPLv3 and LICENSE.RRPGEvt in the project
             root.
@@ -16,7 +16,7 @@ Introduction, the basic file system interface concepts
 
 
 The RRPGE kernel supports file I/O through related kernel calls (see "Kernel
-functions, Storage & File management (0x0100 - 0x01FF)" in "kcall.rst" for
+functions, Storage & File management (0x00 - 0x07)" in "kcall.rst" for
 details). This document specifies the backend which should be provided behind
 this functionality.
 
@@ -134,9 +134,9 @@ File ordering and file searching
 ------------------------------------------------------------------------------
 
 
-The exact ordering of files (for the purposes of kernel call 0x0112 "Task:
-Find next file") is implementation defined, however some key characteristics
-of it are specified so it can be useful:
+The exact ordering of files (for the purposes of kernel call 0x03 "Task: Find
+next file") is implementation defined, however some key characteristics of it
+are specified so it can be useful:
 
 - The ordering must be deterministic for the host.
 

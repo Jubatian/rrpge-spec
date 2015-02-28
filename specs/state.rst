@@ -3,7 +3,7 @@ RRPGE System State dump
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
-:Copyright: 2013 - 2014, GNU GPLv3 (version 3 of the GNU General Public
+:Copyright: 2013 - 2015, GNU GPLv3 (version 3 of the GNU General Public
             License) extended as RRPGEvt (temporary version of the RRPGE
             License): see LICENSE.GPLv3 and LICENSE.RRPGEvt in the project
             root.
@@ -171,9 +171,9 @@ The State variables area's map:
 | \-     | Unused, must be 0x0000.                                           |
 | 0x06F  |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0x070  | Expected devices at each device ID's. The 0x0410 "Get device      |
-| \-     | properties" and the 0x0411 "Drop device" kernel calls manage      |
-| 0x07F  | these fields.                                                     |
+| 0x070  | Expected devices at each device ID's. The 0x10 "Get device        |
+| \-     | properties" and the 0x11 "Drop device" kernel calls manage these  |
+| 0x07F  | fields.                                                           |
 +--------+-------------------------------------------------------------------+
 | 0x080  |                                                                   |
 | \-     | Unused, must be 0x0000.                                           |
@@ -227,12 +227,11 @@ the FIFO's read pointer should be incremented.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This area is populated by the types of devices encountered at each device ID,
-as returned by the 0x0410 "Get device properties" kernel call. The return
-value is stored as-is on these fields (see "kcall.rst" for details). The
-0x0411 "Drop device" kernel call may clear these fields. Using this
-information the host may manage device hotplugging better, and allocate
-devices better on reloading a saved state. See "Hotplug support" in
-"inputdev.rst" for details.
+as returned by the 0x10 "Get device properties" kernel call. The return value
+is stored as-is on these fields (see "kcall.rst" for details). The 0x11 "Drop
+device" kernel call may clear these fields. Using this information the host
+may manage device hotplugging better, and allocate devices better on reloading
+a saved state. See "Hotplug support" in "inputdev.rst" for details.
 
 
 0x200, Kernel tasks
@@ -242,12 +241,10 @@ Up to 16 simultaneously executing kernel tasks are supported whose states are
 saved on these locations, each kernel task having a 16 word data block in this
 range.
 
-The first 15 words of each kernel task provide the parameters with which the
-task was started (these are the parameters of the supervisor call which
-started the task). The first of these is the kernel call identifier.
-
-The last word is the task status as readable by the 0x0800 "Query task" kernel
-function.
+The first word of each kernel task provides the kernel call identifier which
+started the task. The next 14 words are the parameters passed to the kernel
+call. The last word is the task status as readable by the 0x2E "Query task"
+kernel function.
 
 When restoring a state having an incomplete kernel task, the task should be
 restarted. This normally shouldn't affect the application (except if it

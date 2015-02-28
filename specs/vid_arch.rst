@@ -3,7 +3,7 @@ Graphics Display Generator architecture
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
-:Copyright: 2013 - 2014, GNU GPLv3 (version 3 of the GNU General Public
+:Copyright: 2013 - 2015, GNU GPLv3 (version 3 of the GNU General Public
             License) extended as RRPGEvt (temporary version of the RRPGE
             License): see LICENSE.GPLv3 and LICENSE.RRPGEvt in the project
             root.
@@ -573,13 +573,13 @@ Mode and double scanning
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The graphics mode (4 bit / 8 bit) and double scanning can be set using a
-kernel call. See "0x0330: Change video mode" in "kcall.rst" for details.
+kernel call. See "0x09: Change video mode" in "kcall.rst" for details.
 
 
 Palette
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The palette can only be written through the "0x0300: Set palette entry" kernel
+The palette can only be written through the "0x08: Set palette entry" kernel
 call. This component only affects the generated data, assigning the actual
 visible colors to each pixel of the output stream. In real hardware it might
 be a rather simple Digital Analog Converter (DAC).
