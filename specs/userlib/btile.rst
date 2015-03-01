@@ -3,7 +3,7 @@ RRPGE User Library - Basic tileset
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
-:Copyright: 2013 - 2014, GNU GPLv3 (version 3 of the GNU General Public
+:Copyright: 2013 - 2015, GNU GPLv3 (version 3 of the GNU General Public
             License) extended as RRPGEvt (temporary version of the RRPGE
             License): see LICENSE.GPLv3 and LICENSE.RRPGEvt in the project
             root.
@@ -129,15 +129,15 @@ up a blit (so blit functions may be called afterwards).
 
 The following accelerator registers are covered:
 
-- 0x800A: Set to the tile width
-- 0x8012: Set to the PRAM bank of source
-- 0x8013: Zeroed (so assumes no source partitioning)
-- 0x8014: Set to 0xFF00 (no source partitioning)
-- 0x8015: Set according to the Blit configuration (using Block Blitter)
-- 0x8016: Set according to the Blit configuration
-- 0x8017: Set to the tile height
-- 0x8018: Set to the tile width
-- 0x8019: Zeroed
+- 0x000A: Set to the tile width
+- 0x0012: Set to the PRAM bank of source
+- 0x0013: Zeroed (so assumes no source partitioning)
+- 0x0014: Set to 0xFF00 (no source partitioning)
+- 0x0015: Set according to the Blit configuration (using Block Blitter)
+- 0x0016: Set according to the Blit configuration
+- 0x0017: Set to the tile height
+- 0x0018: Set to the tile width
+- 0x0019: Zeroed
 
 The function also sets up the three associated CPU RAM locations (0xFABC,
 0xFABD, 0xFABE).
@@ -156,8 +156,8 @@ The function also sets up the three associated CPU RAM locations (0xFABC,
 Implements us_tile_blit in the tileset interface.
 
 Outputs the tile at an arbitrary location, suitable for sprite blitting as
-well. The destination offset is simply written to Accelerator 0x801C and
-0x801D.
+well. The destination offset is simply written to Accelerator 0x001C and
+0x001D.
 
 
 0xE0B4: Get height and width of tiles

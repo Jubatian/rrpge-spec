@@ -3,7 +3,7 @@ Graphics & Mixer FIFO
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
-:Copyright: 2013 - 2014, GNU GPLv3 (version 3 of the GNU General Public
+:Copyright: 2013 - 2015, GNU GPLv3 (version 3 of the GNU General Public
             License) extended as RRPGEvt (temporary version of the RRPGE
             License): see LICENSE.GPLv3 and LICENSE.RRPGEvt in the project
             root.
@@ -140,7 +140,7 @@ this purpose: the Mixer FIFO's registers are laid out identically.
 +--------+-------------------------------------------------------------------+
 |        | FIFO address word latch. Always reads zero.                       |
 | 0x000E |                                                                   |
-|        | - bit    15: If clear, increments latch, ignoring bits 0-14       |
+|        | - bit    15: If set, increments latch, ignoring bits 0-14         |
 |        | - bit  0-14: Address to latch                                     |
 +--------+-------------------------------------------------------------------+
 |        | FIFO data word & store trigger. Always reads zero. Writing        |

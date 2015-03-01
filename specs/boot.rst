@@ -3,7 +3,7 @@ RRPGE application boot up state
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
-:Copyright: 2013 - 2014, GNU GPLv3 (version 3 of the GNU General Public
+:Copyright: 2013 - 2015, GNU GPLv3 (version 3 of the GNU General Public
             License) extended as RRPGEvt (temporary version of the RRPGE
             License): see LICENSE.GPLv3 and LICENSE.RRPGEvt in the project
             root.
@@ -265,8 +265,8 @@ Mixer peripheral
 
 Most registers are initialized to zero except the followings:
 
-- 0x8005: 0x0558 (Partitioning: 256 samples for sources, 2048 for destination)
-- 0x8009: 0x0100 (Amplitude)
+- 0x0005: 0x0558 (Partitioning: 256 samples for sources, 2048 for destination)
+- 0x0009: 0x0100 (Amplitude)
 
 
 Mixer FIFO

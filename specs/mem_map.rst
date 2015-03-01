@@ -3,7 +3,7 @@ RRPGE system memory maps
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
-:Copyright: 2013 - 2014, GNU GPLv3 (version 3 of the GNU General Public
+:Copyright: 2013 - 2015, GNU GPLv3 (version 3 of the GNU General Public
             License) extended as RRPGEvt (temporary version of the RRPGE
             License): see LICENSE.GPLv3 and LICENSE.RRPGEvt in the project
             root.
@@ -159,10 +159,8 @@ Mixer FIFO memory map
 
 
 The Mixer FIFO is capable to access the 16 registers of the Mixer DMA
-peripheral. The addresses are given here with bit 15 set (not actually
-belonging to the address) as this is how they have to be passed through the
-FIFO's address word (bit 15 zero requests the FIFO to skip). The 16 Mixer DMA
-registers repeat through the entire address space of the FIFO.
+peripheral. The 16 Mixer DMA registers repeat through the entire address space
+of the FIFO.
 
 The register's descriptions may be found in the Mixer's documentation
 ("mix_arch.rst").
@@ -170,37 +168,37 @@ The register's descriptions may be found in the Mixer's documentation
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0x8000 | Amplitude source partition select                                 |
+| 0x0000 | Amplitude source partition select                                 |
 +--------+-------------------------------------------------------------------+
-| 0x8001 | Amplitude source start, whole                                     |
+| 0x0001 | Amplitude source start, whole                                     |
 +--------+-------------------------------------------------------------------+
-| 0x8002 | Amplitude source start, fraction                                  |
+| 0x0002 | Amplitude source start, fraction                                  |
 +--------+-------------------------------------------------------------------+
-| 0x8003 | Frequency for AM source read, whole                               |
+| 0x0003 | Frequency for AM source read, whole                               |
 +--------+-------------------------------------------------------------------+
-| 0x8004 | Frequency for AM source read, fraction                            |
+| 0x0004 | Frequency for AM source read, fraction                            |
 +--------+-------------------------------------------------------------------+
-| 0x8005 | Partitioning settings                                             |
+| 0x0005 | Partitioning settings                                             |
 +--------+-------------------------------------------------------------------+
-| 0x8006 | 64 KCell bank selection settings                                  |
+| 0x0006 | 64 KCell bank selection settings                                  |
 +--------+-------------------------------------------------------------------+
-| 0x8007 | Destination partition select                                      |
+| 0x0007 | Destination partition select                                      |
 +--------+-------------------------------------------------------------------+
-| 0x8008 | Destination start                                                 |
+| 0x0008 | Destination start                                                 |
 +--------+-------------------------------------------------------------------+
-| 0x8009 | Amplitude multiplier                                              |
+| 0x0009 | Amplitude multiplier                                              |
 +--------+-------------------------------------------------------------------+
-| 0x800A | Sample source partition select                                    |
+| 0x000A | Sample source partition select                                    |
 +--------+-------------------------------------------------------------------+
-| 0x800B | Sample source start, whole                                        |
+| 0x000B | Sample source start, whole                                        |
 +--------+-------------------------------------------------------------------+
-| 0x800C | Sample source start, fraction                                     |
+| 0x000C | Sample source start, fraction                                     |
 +--------+-------------------------------------------------------------------+
-| 0x800D | Frequency, whole                                                  |
+| 0x000D | Frequency, whole                                                  |
 +--------+-------------------------------------------------------------------+
-| 0x800E | Frequency, fraction                                               |
+| 0x000E | Frequency, fraction                                               |
 +--------+-------------------------------------------------------------------+
-| 0x800F | Mode & start trigger                                              |
+| 0x000F | Mode & start trigger                                              |
 +--------+-------------------------------------------------------------------+
 
 
@@ -211,10 +209,7 @@ Graphics FIFO memory map
 
 
 The Graphics FIFO is capable to access the registers of the Graphics
-Accelerator peripheral and it's Reindex table. The addresses are given here
-with bit 15 set (not actually belonging to the address) as this is how they
-have to be passed through the FIFO's address word (bit 15 zero requests the
-FIFO to skip).
+Accelerator peripheral and it's Reindex table.
 
 The register's descriptions may be found in the Accelerator's documentation
 ("acc_arch.rst").
@@ -226,13 +221,13 @@ words of these are described below.
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0x8000 |                                                                   |
+| 0x0000 |                                                                   |
 | \-     | Accelerator registers. They repeat every 32 words in this range   |
-| 0x80FF |                                                                   |
+| 0x00FF |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0x8100 |                                                                   |
+| 0x0100 |                                                                   |
 | \-     | Reindex table                                                     |
-| 0x81FF |                                                                   |
+| 0x01FF |                                                                   |
 +--------+-------------------------------------------------------------------+
 
 The Accelerator registers:
@@ -240,67 +235,67 @@ The Accelerator registers:
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0x8000 | Peripheral RAM write mask, high                                   |
+| 0x0000 | Peripheral RAM write mask, high                                   |
 +--------+-------------------------------------------------------------------+
-| 0x8001 | Peripheral RAM write mask, low                                    |
+| 0x0001 | Peripheral RAM write mask, low                                    |
 +--------+-------------------------------------------------------------------+
-| 0x8002 | Destination bank select & Partition size                          |
+| 0x0002 | Destination bank select & Partition size                          |
 +--------+-------------------------------------------------------------------+
-| 0x8003 | Destination partition select                                      |
+| 0x0003 | Destination partition select                                      |
 +--------+-------------------------------------------------------------------+
-| 0x8004 | Destination post-add whole part                                   |
+| 0x0004 | Destination post-add whole part                                   |
 +--------+-------------------------------------------------------------------+
-| 0x8005 | Destination post-add fractional part                              |
+| 0x0005 | Destination post-add fractional part                              |
 +--------+-------------------------------------------------------------------+
-| 0x8006 | Count post-add whole part                                         |
+| 0x0006 | Count post-add whole part                                         |
 +--------+-------------------------------------------------------------------+
-| 0x8007 | Count post-add fractional part                                    |
+| 0x0007 | Count post-add fractional part                                    |
 +--------+-------------------------------------------------------------------+
-| 0x8008 | Pointer Y post-add whole part                                     |
+| 0x0008 | Pointer Y post-add whole part                                     |
 +--------+-------------------------------------------------------------------+
-| 0x8009 | Pointer Y post-add fractional part                                |
+| 0x0009 | Pointer Y post-add fractional part                                |
 +--------+-------------------------------------------------------------------+
-| 0x800A | Pointer X post-add whole part                                     |
+| 0x000A | Pointer X post-add whole part                                     |
 +--------+-------------------------------------------------------------------+
-| 0x800B | Pointer X post-add fractional part                                |
+| 0x000B | Pointer X post-add fractional part                                |
 +--------+-------------------------------------------------------------------+
-| 0x800C | Pointer Y increment whole part                                    |
+| 0x000C | Pointer Y increment whole part                                    |
 +--------+-------------------------------------------------------------------+
-| 0x800D | Pointer Y increment fractional part                               |
+| 0x000D | Pointer Y increment fractional part                               |
 +--------+-------------------------------------------------------------------+
-| 0x800E | Pointer X increment whole part                                    |
+| 0x000E | Pointer X increment whole part                                    |
 +--------+-------------------------------------------------------------------+
-| 0x800F | Pointer X increment fractional part                               |
+| 0x000F | Pointer X increment fractional part                               |
 +--------+-------------------------------------------------------------------+
-| 0x8010 | Pointer Y whole part                                              |
+| 0x0010 | Pointer Y whole part                                              |
 +--------+-------------------------------------------------------------------+
-| 0x8011 | Pointer Y fractional part                                         |
+| 0x0011 | Pointer Y fractional part                                         |
 +--------+-------------------------------------------------------------------+
-| 0x8012 | Source bank select                                                |
+| 0x0012 | Source bank select                                                |
 +--------+-------------------------------------------------------------------+
-| 0x8013 | Source partition select                                           |
+| 0x0013 | Source partition select                                           |
 +--------+-------------------------------------------------------------------+
-| 0x8014 | Source partitioning settings                                      |
+| 0x0014 | Source partitioning settings                                      |
 +--------+-------------------------------------------------------------------+
-| 0x8015 | Blit control flags & Source barrel rotate                         |
+| 0x0015 | Blit control flags & Source barrel rotate                         |
 +--------+-------------------------------------------------------------------+
-| 0x8016 | Source AND mask & Colorkey                                        |
+| 0x0016 | Source AND mask & Colorkey                                        |
 +--------+-------------------------------------------------------------------+
-| 0x8017 | Count of rows to blit                                             |
+| 0x0017 | Count of rows to blit                                             |
 +--------+-------------------------------------------------------------------+
-| 0x8018 | Count of cells / pixels to blit, whole part                       |
+| 0x0018 | Count of cells / pixels to blit, whole part                       |
 +--------+-------------------------------------------------------------------+
-| 0x8019 | Count of cells / pixels to blit, fractional part                  |
+| 0x0019 | Count of cells / pixels to blit, fractional part                  |
 +--------+-------------------------------------------------------------------+
-| 0x801A | Source X whole part                                               |
+| 0x001A | Source X whole part                                               |
 +--------+-------------------------------------------------------------------+
-| 0x801B | Source X fractional part                                          |
+| 0x001B | Source X fractional part                                          |
 +--------+-------------------------------------------------------------------+
-| 0x801C | Destination whole part                                            |
+| 0x001C | Destination whole part                                            |
 +--------+-------------------------------------------------------------------+
-| 0x801D | Destination fractional part                                       |
+| 0x001D | Destination fractional part                                       |
 +--------+-------------------------------------------------------------------+
-| 0x801E | Reindexing & Pixel OR mask                                        |
+| 0x001E | Reindexing & Pixel OR mask                                        |
 +--------+-------------------------------------------------------------------+
-| 0x801F | Start on write & Pattern                                          |
+| 0x001F | Start on write & Pattern                                          |
 +--------+-------------------------------------------------------------------+

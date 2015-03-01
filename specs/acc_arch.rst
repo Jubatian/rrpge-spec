@@ -3,7 +3,7 @@ Graphics Accelerator architecture
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
-:Copyright: 2013 - 2014, GNU GPLv3 (version 3 of the GNU General Public
+:Copyright: 2013 - 2015, GNU GPLv3 (version 3 of the GNU General Public
             License) extended as RRPGEvt (temporary version of the RRPGE
             License): see LICENSE.GPLv3 and LICENSE.RRPGEvt in the project
             root.
@@ -649,76 +649,75 @@ details).
 
 The Accelerator components are accessed by a 9 bit address of which the first
 half represents the Accelerator registers repeating every 32 words in this
-range, and the second half represents the Reindex table. The addresses are
-provided with bit 15 set as this is how they should be supplied to the FIFO.
+range, and the second half represents the Reindex table.
 
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0x8000 | Peripheral RAM write mask (0x8000: High, 0x8001: Low). Clear bits |
+| 0x0000 | Peripheral RAM write mask (0x0000: High, 0x0001: Low). Clear bits |
 | \-     | in it mask writes to the respective positions in the Destination  |
-| 0x8001 | combine stage of the Accelerator.                                 |
+| 0x0001 | combine stage of the Accelerator.                                 |
 +--------+-------------------------------------------------------------------+
 |        | Destination bank select & Partition size.                         |
-| 0x8002 |                                                                   |
+| 0x0002 |                                                                   |
 |        | - bit 12-15: Destination partition size                           |
 |        | - bit  4-11: Unused                                               |
 |        | - bit  0- 3: Bank select (selects a 64K cell bank of the PRAM)    |
 |        |                                                                   |
-|        | For the interpretation of Destination partition size, see 0x8014. |
+|        | For the interpretation of Destination partition size, see 0x0014. |
 +--------+-------------------------------------------------------------------+
 |        | Destination partition select. OR combined with the whole part of  |
-| 0x8003 | the destination offset after that offset is masked with the       |
+| 0x0003 | the destination offset after that offset is masked with the       |
 |        | partition size.                                                   |
 +--------+-------------------------------------------------------------------+
-| 0x8004 | Destination post-add whole part. Not used for LI.                 |
+| 0x0004 | Destination post-add whole part. Not used for LI.                 |
 +--------+-------------------------------------------------------------------+
-| 0x8005 | Destination post-add fractional part. Not used for BB and LI.     |
+| 0x0005 | Destination post-add fractional part. Not used for BB and LI.     |
 +--------+-------------------------------------------------------------------+
-| 0x8006 | Count post-add whole part. Not used for BB and LI.                |
+| 0x0006 | Count post-add whole part. Not used for BB and LI.                |
 +--------+-------------------------------------------------------------------+
-| 0x8007 | Count post-add fractional part. Not used for BB and LI.           |
+| 0x0007 | Count post-add fractional part. Not used for BB and LI.           |
 +--------+-------------------------------------------------------------------+
-| 0x8008 | Pointer Y post-add whole part. Only used for SC.                  |
+| 0x0008 | Pointer Y post-add whole part. Only used for SC.                  |
 +--------+-------------------------------------------------------------------+
-| 0x8009 | Pointer Y post-add fractional part. Only used for SC.             |
+| 0x0009 | Pointer Y post-add fractional part. Only used for SC.             |
 +--------+-------------------------------------------------------------------+
-| 0x800A | Pointer X post-add whole part. Only used for BB and SC.           |
+| 0x000A | Pointer X post-add whole part. Only used for BB and SC.           |
 +--------+-------------------------------------------------------------------+
-| 0x800B | Pointer X post-add fractional part. Only used for SC.             |
+| 0x000B | Pointer X post-add fractional part. Only used for SC.             |
 +--------+-------------------------------------------------------------------+
-| 0x800C | Pointer Y increment whole part. Only used for SC and LI.          |
+| 0x000C | Pointer Y increment whole part. Only used for SC and LI.          |
 +--------+-------------------------------------------------------------------+
-| 0x800D | Pointer Y increment fractional part. Only used for SC and LI.     |
+| 0x000D | Pointer Y increment fractional part. Only used for SC and LI.     |
 +--------+-------------------------------------------------------------------+
-| 0x800E | Pointer X increment whole part. Only used for SC and LI.          |
+| 0x000E | Pointer X increment whole part. Only used for SC and LI.          |
 +--------+-------------------------------------------------------------------+
-| 0x800F | Pointer X increment fractional part. Only used for SC and LI.     |
+| 0x000F | Pointer X increment fractional part. Only used for SC and LI.     |
 +--------+-------------------------------------------------------------------+
-| 0x8010 | Pointer Y whole part. Only used for SC and LI.                    |
+| 0x0010 | Pointer Y whole part. Only used for SC and LI.                    |
 +--------+-------------------------------------------------------------------+
-| 0x8011 | Pointer Y fractional part. Only used for SC and LI.               |
+| 0x0011 | Pointer Y fractional part. Only used for SC and LI.               |
 +--------+-------------------------------------------------------------------+
 |        | Source bank select.                                               |
-| 0x8012 |                                                                   |
+| 0x0012 |                                                                   |
 |        | - bit  4-15: Unused                                               |
 |        | - bit  0- 3: Bank select (selects a 64K cell bank of the PRAM)    |
 |        |                                                                   |
 |        | Not used for FL and LI.                                           |
 +--------+-------------------------------------------------------------------+
 |        | Source partition select. OR combined with the whole part of the   |
-| 0x8013 | the source offset after that offset is masked with the partition  |
+| 0x0013 | the source offset after that offset is masked with the partition  |
 |        | size.                                                             |
 |        |                                                                   |
 |        | Not used for FL and LI.                                           |
 +--------+-------------------------------------------------------------------+
 |        | Source partitioning settings.                                     |
-| 0x8014 |                                                                   |
+| 0x0014 |                                                                   |
 |        | - bit 12-15: Source partition size. Only for BB and SC.           |
 |        | - bit  8-11: X/Y split location (X size). Only for SC and LI.     |
 |        | - bit  0- 7: Unused                                               |
 |        |                                                                   |
-|        | The Source & Destination partition sizes (the latter in 0x8002)   |
+|        | The Source & Destination partition sizes (the latter in 0x0002)   |
 |        | and the X/Y split location may specify the following sizes:       |
 |        |                                                                   |
 |        | - 0:  4 Words (2 * 32 bit cells)                                  |
@@ -739,7 +738,7 @@ provided with bit 15 set as this is how they should be supplied to the FIFO.
 |        | - 15: 128 KWords (64K * 32 bit cells)                             |
 +--------+-------------------------------------------------------------------+
 |        | Blit control flags & Source barrel rotate.                        |
-| 0x8015 |                                                                   |
+| 0x0015 |                                                                   |
 |        | - bit  7-15: Unused                                               |
 |        | - bit  5- 6: (VMD) Selects blit mode                              |
 |        | - bit     4: (VBT) If set, 8 bit mode, if clear, 4 bit mode       |
@@ -757,35 +756,35 @@ provided with bit 15 set as this is how they should be supplied to the FIFO.
 |        | - 3: Line (LI)                                                    |
 +--------+-------------------------------------------------------------------+
 |        | Pixel AND mask & Colorkey.                                        |
-| 0x8016 |                                                                   |
+| 0x0016 |                                                                   |
 |        | - bit  8-15: Pixel AND mask (only low 4 bits used in 4 bit mode)  |
 |        | - bit  0- 7: Colorkey (only low 4 bits used in 4 bit mode)        |
 +--------+-------------------------------------------------------------------+
-| 0x8017 | Count of rows to blit. Only bits 0 - 8 are used. If all these     |
+| 0x0017 | Count of rows to blit. Only bits 0 - 8 are used. If all these     |
 |        | bits are set zero, 512 rows are produced. Not used for LI.        |
 +--------+-------------------------------------------------------------------+
 |        | Count of cells / pixels to blit, whole part.                      |
-| 0x8018 |                                                                   |
+| 0x0018 |                                                                   |
 |        | Only bits 0 - 7 are used for producing 0 - 255 cells of output in |
 |        | BB, FL and SC modes. In LI mode all bits are used, defining the   |
 |        | count of pixels to produce.                                       |
 +--------+-------------------------------------------------------------------+
 |        | Count of cells / pixels to blit, fractional part.                 |
-| 0x8019 |                                                                   |
+| 0x0019 |                                                                   |
 |        | Used in FL and SC modes for a pixel precise row length. Only the  |
 |        | high 2 bits are used for generating the row in 8 bit mode, only   |
 |        | the high 3 bits in 4 bit mode. Not used for BB and LI.            |
 +--------+-------------------------------------------------------------------+
-| 0x801A | Source X whole part. Not used for FL.                             |
+| 0x001A | Source X whole part. Not used for FL.                             |
 +--------+-------------------------------------------------------------------+
-| 0x801B | Source X fractional part. Not used for BB and FL.                 |
+| 0x001B | Source X fractional part. Not used for BB and FL.                 |
 +--------+-------------------------------------------------------------------+
-| 0x801C | Destination whole part. Not used for LI.                          |
+| 0x001C | Destination whole part. Not used for LI.                          |
 +--------+-------------------------------------------------------------------+
-| 0x801D | Destination fractional part. Not used for LI.                     |
+| 0x001D | Destination fractional part. Not used for LI.                     |
 +--------+-------------------------------------------------------------------+
 |        | Reindexing & Pixel OR mask.                                       |
-| 0x801E |                                                                   |
+| 0x001E |                                                                   |
 |        | - bit    15: (VMR) Pixel order swap enabled if set (Mirroring)    |
 |        | - bit    14: (VDR) If bit 13 is set, Reindex using dest. if set   |
 |        | - bit    13: (VRE) Reindexing enabled if set                      |
@@ -794,7 +793,7 @@ provided with bit 15 set as this is how they should be supplied to the FIFO.
 |        |                                                                   |
 |        | The VMR flag only has effect in BB mode.                          |
 +--------+-------------------------------------------------------------------+
-| 0x801F | Start on write & Pattern for Filler (FL) & Line (LI). A write to  |
+| 0x001F | Start on write & Pattern for Filler (FL) & Line (LI). A write to  |
 |        | this location starts the accelerator operation.                   |
 +--------+-------------------------------------------------------------------+
 
@@ -807,72 +806,72 @@ Register usage table, summarizing which of the registers each blit mode uses:
 +--------+-----------------------------------------------+----+----+----+----+
 | Range  | Description                                   | BB | FL | SC | LI |
 +========+===============================================+====+====+====+====+
-| 0x8000 | Peripheral RAM write mask, high               |  X |  X |  X |  X |
+| 0x0000 | Peripheral RAM write mask, high               |  X |  X |  X |  X |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x8001 | Peripheral RAM write mask, low                |  X |  X |  X |  X |
+| 0x0001 | Peripheral RAM write mask, low                |  X |  X |  X |  X |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x8002 | Destination bank select & Partition size      |  X |  X |  X |  X |
+| 0x0002 | Destination bank select & Partition size      |  X |  X |  X |  X |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x8003 | Destination partition select                  |  X |  X |  X |  X |
+| 0x0003 | Destination partition select                  |  X |  X |  X |  X |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x8004 | Destination post-add whole part               |  X |  X |  X |    |
+| 0x0004 | Destination post-add whole part               |  X |  X |  X |    |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x8005 | Destination post-add fractional part          |    |  X |  X |    |
+| 0x0005 | Destination post-add fractional part          |    |  X |  X |    |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x8006 | Count post-add whole part                     |    |  X |  X |    |
+| 0x0006 | Count post-add whole part                     |    |  X |  X |    |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x8007 | Count post-add fractional part                |    |  X |  X |    |
+| 0x0007 | Count post-add fractional part                |    |  X |  X |    |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x8008 | Pointer Y post-add whole part                 |    |    |  X |    |
+| 0x0008 | Pointer Y post-add whole part                 |    |    |  X |    |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x8009 | Pointer Y post-add fractional part            |    |    |  X |    |
+| 0x0009 | Pointer Y post-add fractional part            |    |    |  X |    |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x800A | Pointer X post-add whole part                 |  X |    |  X |    |
+| 0x000A | Pointer X post-add whole part                 |  X |    |  X |    |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x800B | Pointer X post-add fractional part            |    |    |  X |    |
+| 0x000B | Pointer X post-add fractional part            |    |    |  X |    |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x800C | Pointer Y increment whole part                |    |    |  X |  X |
+| 0x000C | Pointer Y increment whole part                |    |    |  X |  X |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x800D | Pointer Y increment fractional part           |    |    |  X |  X |
+| 0x000D | Pointer Y increment fractional part           |    |    |  X |  X |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x800E | Pointer X increment whole part                |    |    |  X |  X |
+| 0x000E | Pointer X increment whole part                |    |    |  X |  X |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x800F | Pointer X increment fractional part           |    |    |  X |  X |
+| 0x000F | Pointer X increment fractional part           |    |    |  X |  X |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x8010 | Pointer Y whole part                          |    |    |  X |  X |
+| 0x0010 | Pointer Y whole part                          |    |    |  X |  X |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x8011 | Pointer Y fractional part                     |    |    |  X |  X |
+| 0x0011 | Pointer Y fractional part                     |    |    |  X |  X |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x8012 | Source bank select                            |  X |    |  X |    |
+| 0x0012 | Source bank select                            |  X |    |  X |    |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x8013 | Source partition select                       |  X |    |  X |    |
+| 0x0013 | Source partition select                       |  X |    |  X |    |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x8014 | Source partitioning settings                  |  X |    |  X |  X |
+| 0x0014 | Source partitioning settings                  |  X |    |  X |  X |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x8015 | Blit control flags & Source barrel rotate     |  X |  X |  X |  X |
+| 0x0015 | Blit control flags & Source barrel rotate     |  X |  X |  X |  X |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x8016 | Source AND mask & Colorkey                    |  X |  X |  X |  X |
+| 0x0016 | Source AND mask & Colorkey                    |  X |  X |  X |  X |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x8017 | Count of rows to blit                         |  X |  X |  X |    |
+| 0x0017 | Count of rows to blit                         |  X |  X |  X |    |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x8018 | Count of cells / pixels to blit, whole part   |  X |  X |  X |  X |
+| 0x0018 | Count of cells / pixels to blit, whole part   |  X |  X |  X |  X |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x8019 | Count of cells / pixels to blit, fract. part  |    |  X |  X |    |
+| 0x0019 | Count of cells / pixels to blit, fract. part  |    |  X |  X |    |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x801A | Source X whole part                           |  X |    |  X |  X |
+| 0x001A | Source X whole part                           |  X |    |  X |  X |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x801B | Source X fractional part                      |    |    |  X |  X |
+| 0x001B | Source X fractional part                      |    |    |  X |  X |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x801C | Destination whole part                        |  X |  X |  X |    |
+| 0x001C | Destination whole part                        |  X |  X |  X |    |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x801D | Destination fractional part                   |  X |  X |  X |    |
+| 0x001D | Destination fractional part                   |  X |  X |  X |    |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x801E | Reindexing & Pixel OR mask                    |  X |  X |  X |  X |
+| 0x001E | Reindexing & Pixel OR mask                    |  X |  X |  X |  X |
 +--------+-----------------------------------------------+----+----+----+----+
-| 0x801F | Start on write & Pattern                      |    |  X |    |  X |
+| 0x001F | Start on write & Pattern                      |    |  X |    |  X |
 +--------+-----------------------------------------------+----+----+----+----+
 
-The Start on write (0x801F) register is necessarily written for all blit modes
+The Start on write (0x001F) register is necessarily written for all blit modes
 to start the operation, however the Pattern written into it is only used for
 Filler and Line modes.
 
@@ -882,27 +881,27 @@ The Reindex table:
 | Range  | Description                                                       |
 +========+===================================================================+
 |        | First reindex table entry, first reindex bank (bank 0).           |
-| 0x8100 |                                                                   |
+| 0x0100 |                                                                   |
 |        | - bit  8-15: Reindex for source value 0x0.                        |
 |        | - bit  0- 7: Reindex for source value 0x1.                        |
 +--------+-------------------------------------------------------------------+
-| 0x8101 | Reindexes for source values 0x2 and 0x3, bank 0.                  |
+| 0x0101 | Reindexes for source values 0x2 and 0x3, bank 0.                  |
 +--------+-------------------------------------------------------------------+
-| 0x8102 | Reindexes for source values 0x4 and 0x5, bank 0.                  |
+| 0x0102 | Reindexes for source values 0x4 and 0x5, bank 0.                  |
 +--------+-------------------------------------------------------------------+
-| 0x8103 | Reindexes for source values 0x6 and 0x7, bank 0.                  |
+| 0x0103 | Reindexes for source values 0x6 and 0x7, bank 0.                  |
 +--------+-------------------------------------------------------------------+
-| 0x8104 | Reindexes for source values 0x8 and 0x9, bank 0.                  |
+| 0x0104 | Reindexes for source values 0x8 and 0x9, bank 0.                  |
 +--------+-------------------------------------------------------------------+
-| 0x8105 | Reindexes for source values 0xA and 0xB, bank 0.                  |
+| 0x0105 | Reindexes for source values 0xA and 0xB, bank 0.                  |
 +--------+-------------------------------------------------------------------+
-| 0x8106 | Reindexes for source values 0xC and 0xD, bank 0.                  |
+| 0x0106 | Reindexes for source values 0xC and 0xD, bank 0.                  |
 +--------+-------------------------------------------------------------------+
-| 0x8107 | Reindexes for source values 0xE and 0xF, bank 0.                  |
+| 0x0107 | Reindexes for source values 0xE and 0xF, bank 0.                  |
 +--------+-------------------------------------------------------------------+
-| 0x8108 | Further reindex banks (banks 1 - 31) to specify 512 reindex       |
+| 0x0108 | Further reindex banks (banks 1 - 31) to specify 512 reindex       |
 | \-     | values in total.                                                  |
-| 0x81FF |                                                                   |
+| 0x01FF |                                                                   |
 +--------+-------------------------------------------------------------------+
 
 Note that the value order accords with the Big Endian scheme the system uses.

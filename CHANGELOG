@@ -11,6 +11,7 @@ Version 00.016.000 ()
  - Accelerator destination partition size moved from 0x8014 to 0x8002, into
    the destination bank select, to completely separate source and destination
    configurations. Registers are renamed accordingly.
+ - FIFO skip feature changed: now bit 15 set written to address skips.
  - Reordered instruction set along with removing the "ADD sp, adr" and the
    "SUB sp, adr" instructions. Otherwise source compatibility is retained.
  - Added special immediate encodings for register loads (MOV), function

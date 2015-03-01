@@ -3,7 +3,7 @@ RRPGE User Library - Destination surfaces
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
-:Copyright: 2013 - 2014, GNU GPLv3 (version 3 of the GNU General Public
+:Copyright: 2013 - 2015, GNU GPLv3 (version 3 of the GNU General Public
             License) extended as RRPGEvt (temporary version of the RRPGE
             License): see LICENSE.GPLv3 and LICENSE.RRPGEvt in the project
             root.
@@ -20,14 +20,14 @@ using with the Graphics Accelerator.
 
 The structure is formed as follows:
 
-- Word0: Peripheral RAM Write mask, high (for accelerator register 0x8000)
-- Word1: Peripheral RAM Write mask, low (for accelerator register 0x8001)
-- Word2: Partition size (for accelerator register 0x8002)
-- Word3: Surface A bank select (for accelerator register 0x8002)
-- Word4: Surface B bank select (for accelerator register 0x8002)
-- Word5: Surface A partition select (for accelerator register 0x8003)
-- Word6: Surface B partition select (for accelerator register 0x8003)
-- Word7: Width of surface in cells (for accelerator register 0x8004)
+- Word0: Peripheral RAM Write mask, high (for accelerator register 0x0000)
+- Word1: Peripheral RAM Write mask, low (for accelerator register 0x0001)
+- Word2: Partition size (for accelerator register 0x0002)
+- Word3: Surface A bank select (for accelerator register 0x0002)
+- Word4: Surface B bank select (for accelerator register 0x0002)
+- Word5: Surface A partition select (for accelerator register 0x0003)
+- Word6: Surface B partition select (for accelerator register 0x0003)
+- Word7: Width of surface in cells (for accelerator register 0x0004)
 
 All of these except Partition size are used as-is, submitted to the
 Accelerator as they are. From Partition size only bits 12-15 have effect
@@ -149,10 +149,9 @@ to the current work surface of a given surface structure. It waits for frame
 end as needed if called in double buffered mode (by us_dbuf_getlist),
 otherwise it returns immediately.
 
-Accelerator registers 0x8000 - 0x8005 and 0x8014 are filled by this function.
-For 0x8014 (partitioning settings) the source partition size and X/Y split are
-both set to 64K cells. The work surface is used for setting up the bank and
-partition selects of the destination.
+Accelerator registers 0x0000 - 0x0005 are filled by this function. The work
+surface is used for setting up the bank and partition selects of the
+destination.
 
 
 0xE0A0: Get width and partitioning settings

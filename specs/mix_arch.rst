@@ -3,7 +3,7 @@ RRPGE Audio Mixer DMA peripheral architecture
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
-:Copyright: 2013 - 2014, GNU GPLv3 (version 3 of the GNU General Public
+:Copyright: 2013 - 2015, GNU GPLv3 (version 3 of the GNU General Public
             License) extended as RRPGEvt (temporary version of the RRPGE
             License): see LICENSE.GPLv3 and LICENSE.RRPGEvt in the project
             root.
@@ -136,29 +136,26 @@ The following table describes the registers of the Mixer DMA. These
 registers are only accessible through the Mixer FIFO (see "fifo.rst" for
 details).
 
-The Mixer is accessed by a 4 bit address. The addresses however are provided
-with bit 15 set as this is how they should be supplied to the FIFO.
-
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0x8000 | Amplitude source partition select bits. Used in AM mode for       |
+| 0x0000 | Amplitude source partition select bits. Used in AM mode for       |
 |        | reading the amplitude source.                                     |
 +--------+-------------------------------------------------------------------+
-| 0x8001 | Amplitude source start pointer whole part (addresses 32 bit cell  |
+| 0x0001 | Amplitude source start pointer whole part (addresses 32 bit cell  |
 |        | units). Used in AM mode for reading the amplitude source.         |
 +--------+-------------------------------------------------------------------+
-| 0x8002 | Amplitude source start pointer fractional part. Used in AM mode   |
+| 0x0002 | Amplitude source start pointer fractional part. Used in AM mode   |
 |        | for reading the amplitude source.                                 |
 +--------+-------------------------------------------------------------------+
-| 0x8003 | Frequency for AM source read, whole part. Provides the increment  |
+| 0x0003 | Frequency for AM source read, whole part. Provides the increment  |
 |        | for the AM source pointer.                                        |
 +--------+-------------------------------------------------------------------+
-| 0x8004 | Frequency for AM source read, fractional part. Provides the       |
+| 0x0004 | Frequency for AM source read, fractional part. Provides the       |
 |        | increment for the AM source pointer.                              |
 +--------+-------------------------------------------------------------------+
 |        | Partitioning settings.                                            |
-| 0x8005 |                                                                   |
+| 0x0005 |                                                                   |
 |        | - bit 12-15: Unused                                               |
 |        | - bit  8-11: Amplitude source partitioning.                       |
 |        | - bit  4- 7: Sample source partitioning.                          |
@@ -184,18 +181,18 @@ with bit 15 set as this is how they should be supplied to the FIFO.
 |        | - 0xF: 64 KCells (256K samples)                                   |
 +--------+-------------------------------------------------------------------+
 |        | 64 KCell bank selection settings (start address high bits).       |
-| 0x8006 |                                                                   |
+| 0x0006 |                                                                   |
 |        | - bit 12-15: Unused                                               |
 |        | - bit  8-11: Amplitude source bank select.                        |
 |        | - bit  4- 7: Sample source bank select.                           |
 |        | - bit  0- 3: Destination bank select.                             |
 +--------+-------------------------------------------------------------------+
-| 0x8007 | Destination partition select bits.                                |
+| 0x0007 | Destination partition select bits.                                |
 +--------+-------------------------------------------------------------------+
-| 0x8008 | Destination start pointer (addresses 32 bit cell units).          |
+| 0x0008 | Destination start pointer (addresses 32 bit cell units).          |
 +--------+-------------------------------------------------------------------+
 |        | Amplitude multiplier.                                             |
-| 0x8009 |                                                                   |
+| 0x0009 |                                                                   |
 |        | - bit  9-15: Unused                                               |
 |        | - bit     8: If set, the multiplier is not effective.             |
 |        | - bit  0- 7: Amplitude multiplier.                                |
@@ -206,21 +203,21 @@ with bit 15 set as this is how they should be supplied to the FIFO.
 |        | higher than the greatest valid multiplier) to turn this           |
 |        | multiplication off.                                               |
 +--------+-------------------------------------------------------------------+
-| 0x800A | Sample source partition select bits.                              |
+| 0x000A | Sample source partition select bits.                              |
 +--------+-------------------------------------------------------------------+
-| 0x800B | Sample source start pointer whole part (addresses 32 bit cell     |
+| 0x000B | Sample source start pointer whole part (addresses 32 bit cell     |
 |        | units).                                                           |
 +--------+-------------------------------------------------------------------+
-| 0x800C | Sample source start pointer fractional part.                      |
+| 0x000C | Sample source start pointer fractional part.                      |
 +--------+-------------------------------------------------------------------+
-| 0x800D | Frequency, whole part. Provides the increment for the Sample      |
+| 0x000D | Frequency, whole part. Provides the increment for the Sample      |
 |        | source pointer.                                                   |
 +--------+-------------------------------------------------------------------+
-| 0x800E | Frequency, fractional part. Provides the increment for the Sample |
+| 0x000E | Frequency, fractional part. Provides the increment for the Sample |
 |        | source pointer.                                                   |
 +--------+-------------------------------------------------------------------+
 |        | Mode & Start trigger.                                             |
-| 0x800F |                                                                   |
+| 0x000F |                                                                   |
 |        | - bit    15: Destination overwrite if set (otherwise sat. add).   |
 |        | - bit    14: AM mode enabled if set, the AM source is used.       |
 |        | - bit 10-13: Unused                                               |
