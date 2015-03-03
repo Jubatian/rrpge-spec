@@ -19,7 +19,7 @@ Version 00.016.000 ()
  - JMR and JMA now can load PC into a register, providing support for "light"
    subroutines.
  - RFN now can load X3 and optionally zero C to produce return value.
- - New skips: XST and XNS by bit mask tests.
+ - New JNZ instruction jumping if it's register operand is nonzero.
  - New skips for the Stack Pointer providing better support for variable
    number of arguments.
  - JSV changed to accept a service operand, kernel calls are re-allocated

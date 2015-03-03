@@ -198,9 +198,9 @@ AND
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 1000 101r rraa aaaa | AND rx, adr        |
+| 1011 001r rraa aaaa | AND rx, adr        |
 +---------------------+--------------------+
-| 1000 100r rraa aaaa | AND adr, rx        |
+| 1011 000r rraa aaaa | AND adr, rx        |
 +---------------------+--------------------+
 
 Performs binary AND between the source and destination operands, and stores
@@ -218,13 +218,13 @@ ASR
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 0011 001r rraa aaaa | ASR rx, adr        |
+| 0001 001r rraa aaaa | ASR rx, adr        |
 +---------------------+--------------------+
-| 0011 000r rraa aaaa | ASR adr, rx        |
+| 0001 000r rraa aaaa | ASR adr, rx        |
 +---------------------+--------------------+
-| 0111 001r rraa aaaa | ASR C:rx, adr      |
+| 0101 001r rraa aaaa | ASR C:rx, adr      |
 +---------------------+--------------------+
-| 0111 000r rraa aaaa | ASR C:adr, rx      |
+| 0101 000r rraa aaaa | ASR C:adr, rx      |
 +---------------------+--------------------+
 
 Performs arithmetic right shift (replicating the high bit) on the destination
@@ -413,6 +413,26 @@ Absolute function call (subroutine entry). The target address is the operand.
 See JFL for details.
 
 Timing (cycles): 9 + ai; 4 + ai / parameter
+
+
+JNZ
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
++---------------------+--------------------+
+| Binary              | Mnemonic           |
++=====================+====================+
+| 1000 10ir rrii iiii | JNZ rx, simm7      |
++---------------------+--------------------+
+
+Jump if rx is nonzero. The base of the jump is the address of the opcode, so
+an immediate of zero will generate an infinite loop. The 7 bit immediate is
+2's complement signed ranging from -64 to +63 inclusive. The 6th bit
+(determining the sign) of it is bit 6 of the opcode.
+
+This instruction is basically a replacement for the commonly used "XEG rx, 0;
+JMS addr" sequence, mostly occurring in loop constructs.
+
+Timing (cycles): 3 (no jump) / 5 (jump)
 
 
 JMR
@@ -712,9 +732,9 @@ OR
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 0001 001r rraa aaaa | OR rx, adr         |
+| 0011 001r rraa aaaa | OR rx, adr         |
 +---------------------+--------------------+
-| 0001 000r rraa aaaa | OR adr, rx         |
+| 0011 000r rraa aaaa | OR adr, rx         |
 +---------------------+--------------------+
 
 Performs binary OR between the source and destination operands, and stores the
@@ -1044,32 +1064,15 @@ For more information on the skip mechanism, check XBC.
 Timing (cycles): 4 + ai (no skip) / 5 + ai (skip)
 
 
-XNS
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-+---------------------+--------------------+
-| Binary              | Mnemonic           |
-+=====================+====================+
-| 1011 001r rraa aaaa | XNS rx, adr        |
-+---------------------+--------------------+
-
-Skips the next instruction if the value of the first operand has neither bit
-set from the second operand (rx AND adr produces zero).
-
-For more information on the skip mechanism, check XBC.
-
-Timing (cycles): 4 + ai (no skip) / 5 + ai (skip)
-
-
 XOR
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 0101 001r rraa aaaa | XOR rx, adr        |
+| 0111 001r rraa aaaa | XOR rx, adr        |
 +---------------------+--------------------+
-| 0101 000r rraa aaaa | XOR adr, rx        |
+| 0111 000r rraa aaaa | XOR adr, rx        |
 +---------------------+--------------------+
 
 Performs binary exclusive OR between the source and destination operands, and
@@ -1096,23 +1099,6 @@ Skips the next instruction if the value of the first operand is 2's complement
 signed greater than the second. A complementing operation (signed less than)
 may be provided by swapping the operand order, for which an XSL mnemonic may
 be supported.
-
-For more information on the skip mechanism, check XBC.
-
-Timing (cycles): 4 + ai (no skip) / 5 + ai (skip)
-
-
-XST
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-+---------------------+--------------------+
-| Binary              | Mnemonic           |
-+=====================+====================+
-| 1011 000r rraa aaaa | XST adr, rx        |
-+---------------------+--------------------+
-
-Skips the next instruction if the value of the first operand has any bit set
-from the second operand (adr AND rx produces nonzero).
 
 For more information on the skip mechanism, check XBC.
 
@@ -1168,14 +1154,14 @@ layout. The columns group by the highest two bits (bit 15 and bit 14) and bit
 |    |         |         || JSV     |          |         |         |         |
 |    |         |         || RFN     |          |         |         |         |
 +----+---------+---------+----------+----------+---------+---------+         |
-|    || ADD    || ADD    || ADD     || ADD     || AND    || AND    |         |
-|0010|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|| adr, rx|| rx, adr|         |
-+----+---------+---------+----------+----------+---------+---------+         |
+|    || ADD    || ADD    || ADD     || ADD     |   JNZ rx, simm7   |         |
+|0010|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|                   |         |
++----+---------+---------+----------+----------+-------------------+         |
 |    || SUB    || SUB    || SUB     || SUB     |     JMS simm10    |         |
 |0011|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|                   |         |
 +----+---------+---------+----------+----------+-------------------+         |
-|    || OR     || OR     || XOR     || XOR     |                   |         |
-|0100|| adr, rx|| rx, adr|| adr, rx || rx, adr |     Supervisor    |         |
+|    || ASR    || ASR    || ASR     || ASR     |                   |         |
+|0100|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|     Supervisor    |         |
 +----+---------+---------+----------+----------+                   |         |
 |    || DIV    || DIV    || DIV     || DIV     |                   |         |
 |0101|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|                   |         |
@@ -1198,8 +1184,8 @@ layout. The columns group by the highest two bits (bit 15 and bit 14) and bit
 |    || SHL    || SHL    || SHL     || SHL     |                   |         |
 |1011|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|   XBS adr, imm4   |         |
 +----+---------+---------+----------+----------+---------+---------+         |
-|    || ASR    || ASR    || ASR     || ASR     || XST    || XNS    |         |
-|1100|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|| adr, rx|| rx, adr|         |
+|    || OR     || OR     || XOR     || XOR     || AND    || AND    |         |
+|1100|| adr, rx|| rx, adr|| adr, rx || rx, adr || adr, rx|| rx, adr|         |
 +----+---------+---------+----------+----------+---------+---------+         |
 |    || MAC    || MAC    || MAC     || MAC     || XSG    || XSG    |         |
 |1101|| adr, rx|| rx, adr|| C:adr,rx|| C:rx,adr|| adr, rx|| rx, adr|         |
