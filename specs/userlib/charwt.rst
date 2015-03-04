@@ -68,6 +68,11 @@ The conversion table is used with us_idfutf32 to convert non-ASCII-7
 characters to tile indices for the text output (the table does not need to
 be restricted to 256 characters).
 
+The return value of the UTF-32 => ID conversion is used as-is for evaulating
+control characters (which never generate graphics), however for blitting, it's
+highest bit (bit 15) is masked. This can be utilized to use graphics tiles in
+the control character range (0x00 - 0x1F).
+
 The color shift is applied to the initial color, and any subsequent color set
 by us_cw_tile_setst: the color value is shifted left by this amount before OR
 combining with the acquired tile index, before forwarding it to the tileset's
@@ -88,9 +93,9 @@ Implements us_cw_setnc in the character writer interface.
 If the character is a non-ASCII-7 character, the us_idfutf32 function is used
 to convert it to a suitable tile index for blitting.
 
-In the ASCII-7 range some characters are used as control characters, so that
-they won't produce a blit, but have a certain effect instead. These are the
-followings:
+In the ASCII-7 range characters 0x00 - 0x1F are used as control characters, so
+that they won't produce a blit (they don't even increment X), but may have a
+certain effect instead. The characters with effect are the followings:
 
 - New line (ASCII 0x0A): Increments Y to the next character row, then Carriage
   Return.
