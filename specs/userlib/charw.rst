@@ -3,7 +3,7 @@ RRPGE User Library - Character writers
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
-:Copyright: 2013 - 2014, GNU GPLv3 (version 3 of the GNU General Public
+:Copyright: 2013 - 2015, GNU GPLv3 (version 3 of the GNU General Public
             License) extended as RRPGEvt (temporary version of the RRPGE
             License): see LICENSE.GPLv3 and LICENSE.RRPGEvt in the project
             root.
@@ -52,10 +52,10 @@ Byte data, CPU RAM
 - Word1: <Character writer extended interface>
 - Word2: <Character writer extended interface>
 - Word3: <Character writer extended interface>
-- Word4: Pointer (8 bit) of next character to write, high (1 bit).
-- Word5: Pointer (8 bit) of next character to write, low.
-- Word6: Pointer (8 bit) of termination, high (1 bit).
-- Word7: Pointer (8 bit) of termination, low.
+- Word4: Word pointer of next character to write.
+- Word5: Word pointer fraction of next character to write (on bit 3).
+- Word6: Word pointer of termination.
+- Word7: Word pointer fraction of termination (on bit 3).
 - Word8: PRAM pointer (word) of conversion table, high.
 - Word9: PRAM pointer (word) of conversion table, low.
 
@@ -82,10 +82,10 @@ UTF-8 data, CPU RAM
 - Word1: <Character writer extended interface>
 - Word2: <Character writer extended interface>
 - Word3: <Character writer extended interface>
-- Word4: Pointer (8 bit) of next character to write, high (1 bit).
-- Word5: Pointer (8 bit) of next character to write, low.
-- Word6: Pointer (8 bit) of termination, high (1 bit).
-- Word7: Pointer (8 bit) of termination, low.
+- Word4: Word pointer of next character to write.
+- Word5: Word pointer fraction of next character to write (on bit 3).
+- Word6: Word pointer of termination.
+- Word7: Word pointer fraction of termination (on bit 3).
 
 
 UTF-8 data, PRAM

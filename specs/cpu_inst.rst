@@ -55,7 +55,7 @@ Parameter notations
 - rx:    One of the registers: A, B, C, D, X0, X1, X2 or X3.
 - rp:    One of the pointers: X0, X1, X2 or X3.
 - xmn:   One of the 4bit parts of the XM register.
-- xhn:   One of the 4bit parts of the XH register.
+- xbn:   One of the 4bit parts of the XB register.
 - imm4:  4bit immediate ranging from 0 - 15.
 - imm16: 16bit immediate.
 - adr:   Parameter specified by the addressing mode field.
@@ -570,9 +570,9 @@ MOV
 +---------------------+--------------------+
 | 0100 0000 nnaa aaaa | MOV adr, xmn       |
 +---------------------+--------------------+
-| 0100 0011 nnaa aaaa | MOV xhn, adr       |
+| 0100 0011 nnaa aaaa | MOV xbn, adr       |
 +---------------------+--------------------+
-| 0100 0001 nnaa aaaa | MOV adr, xhn       |
+| 0100 0001 nnaa aaaa | MOV adr, xbn       |
 +---------------------+--------------------+
 | 0100 011r rrxx xxxx | MOV rx, imx        |
 +---------------------+--------------------+
@@ -580,9 +580,9 @@ MOV
 +---------------------+--------------------+
 | 1000 0000 00aa aaaa | MOV adr, XM        |
 +---------------------+--------------------+
-| 1000 0010 01aa aaaa | MOV XH, adr        |
+| 1000 0010 01aa aaaa | MOV XB, adr        |
 +---------------------+--------------------+
-| 1000 0000 01aa aaaa | MOV adr, XH        |
+| 1000 0000 01aa aaaa | MOV adr, XB        |
 +---------------------+--------------------+
 | 1000 0010 1-aa aaaa | MOV SP, adr        |
 +---------------------+--------------------+
@@ -597,12 +597,12 @@ MOV
 
 Moves from source to target.
 
-When the source is a 4bit part of the XM (xmn) or XH (xhn) register, the
+When the source is a 4bit part of the XM (xmn) or XB (xbn) register, the
 destination will receive the value in it's low 4 bits, and it's high 12 bits
 are set zero.
 
-When the destination is a 4bit part of the XM (xmn) or XH (xhn) register, the
-destination (the appropriate part of XM or XH) will receive the low 4 bits of
+When the destination is a 4bit part of the XM (xmn) or XB (xbn) register, the
+destination (the appropriate part of XM or XB) will receive the low 4 bits of
 the source.
 
 The "MOV rx, imx" variants are used to load special immediate values into a
@@ -1146,7 +1146,7 @@ layout. The columns group by the highest two bits (bit 15 and bit 14) and bit
 +====+=========+=========+==========+==========+=========+=========+=========+
 |    || MOV    || MOV    || MOV     || MOV     || MOV    || MOV    |         |
 |0000|| adr, rx|| rx, adr|| adr, xmn|| xmn, adr|| adr, XM|| XM, adr|   NOP   |
-|    |         |         || adr, xhn|| xhn, adr|| adr, XH|| XH, adr|         |
+|    |         |         || adr, xbn|| xbn, adr|| adr, XB|| XB, adr|         |
 |    |         |         |          |          || SP ops || SP ops |         |
 +----+---------+---------+----------+----------+---------+---------+         |
 |    || XCH    || MOV    || JFR     || MOV     || JMR    || MOV    |         |

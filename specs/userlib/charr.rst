@@ -3,7 +3,7 @@ RRPGE User Library - Character readers
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
-:Copyright: 2013 - 2014, GNU GPLv3 (version 3 of the GNU General Public
+:Copyright: 2013 - 2015, GNU GPLv3 (version 3 of the GNU General Public
             License) extended as RRPGEvt (temporary version of the RRPGE
             License): see LICENSE.GPLv3 and LICENSE.RRPGEvt in the project
             root.
@@ -54,8 +54,8 @@ Byte data, CPU RAM
 
 - Word0: <Character reader interface>
 - Word1: <Character reader interface>
-- Word2: Pointer (8 bit) of next character to read, high (1 bit).
-- Word3: Pointer (8 bit) of next character to read, low.
+- Word2: Word pointer of next character to read.
+- Word3: Word pointer fraction of next character to read (on bit 3).
 - Word4: PRAM pointer (word) of conversion table, high.
 - Word5: PRAM pointer (word) of conversion table, low.
 
@@ -76,8 +76,8 @@ UTF-8 data, CPU RAM
 
 - Word0: <Character reader interface>
 - Word1: <Character reader interface>
-- Word2: Pointer (8 bit) of next character to read, high (1 bit).
-- Word3: Pointer (8 bit) of next character to read, low.
+- Word2: Word pointer of next character to read.
+- Word3: Word pointer fraction of next character to read (on bit 3).
 
 
 UTF-8 data, PRAM

@@ -3,7 +3,7 @@ RRPGE CPU architecture
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
-:Copyright: 2013 - 2014, GNU GPLv3 (version 3 of the GNU General Public
+:Copyright: 2013 - 2015, GNU GPLv3 (version 3 of the GNU General Public
             License) extended as RRPGEvt (temporary version of the RRPGE
             License): see LICENSE.GPLv3 and LICENSE.RRPGEvt in the project
             root.
@@ -23,10 +23,10 @@ The RRPGE CPU is a 16bit CISC design with the following fundamental features:
 
 - Built-in memory management unit and separate address space for code, data
   and stack accesses enabling a large address space despite the 16 bit pointer
-  size and allowing for fine-grained access control in supervisor mode. The
-  memory management unit is only accessible in supervisor mode, and so is not
-  covered in this specification (only the interface to be provided by the
-  kernel running in supervisor mode is defined).
+  size and allowing for fine-grained access control in supervisor mode (stack
+  may be requested to be within the data address space). The memory management
+  unit is only accessible in supervisor mode, and so is not covered in this
+  specification.
 
 - No flags in user mode. Carry mechanism is provided through a carry register
   and instruction variants affecting it, other common flags on other
@@ -96,8 +96,8 @@ The following table summarizes the processor registers available in user mode:
 | XM | 4*4  |         | - Addressing mode specifier for the pointer          |
 |    |      | Pointer |   registers. Lowest bits refer to X0, highest to X3. |
 +----+------+ config  +------------------------------------------------------+
-| XH | 4*4  |         | - High bits for the pointer registers. Lowest bits   |
-|    |      |         |   refer to X0, highest to X3.                        |
+| XB | 4*4  |         | - Fractional bits for the pointer registers. Lowest  |
+|    |      |         |   bits refer to X0, highest to X3.                   |
 +----+------+---------+------------------------------------------------------+
 | PC | 16   |         | - Program counter. Not accessible directly.          |
 +----+------+---------+------------------------------------------------------+
@@ -134,11 +134,11 @@ pointer is used to address memory. There are 15 modes as follows:
 - 1110b:  2 bit post-increment after write only.
 - 1111b:  1 bit post-increment after write only.
 
-The XH register adds high bits to the pointers in sub-word addressing modes,
-as many as required to keep addressing the whole 64KWord address space. Bits
-in the register above this are not used and are ignored. In post-incrementing
-modes however all bits of the appropriate XH part is affected by the
-increment.
+The XB register adds fractional bits to the pointers in sub-word addressing
+modes. Fractional bits not necessary for the selected pointer mode are not
+used and are ignored (they preserve their value). For example in 4 bit mode,
+the high 2 bits of the appropriate XB register are used to select the nybble
+within the word.
 
 Sub-word addressing modes take the higher bits for the lower address (that is
 the system is Big Endian).
@@ -173,10 +173,10 @@ hold true:
 - The Code space is 64 KWords, the RRPGE Application code beginning at address
   zero.
 
-- The Stack space is 32 KWords. When kernel calls are executed, a kernel trap,
-  or an interrupt happens, a stack switch is performed (automatically by the
-  CPU), so stack accesses related to these populate a supervisor stack
-  invisible to the user.
+- The Stack space is 32 KWords (if it is selected to be in a seperate address
+  space). When kernel calls are executed, a kernel trap, or an interrupt
+  happens, a stack switch is performed (automatically by the CPU), so stack
+  accesses related to these populate a supervisor stack invisible to the user.
 
 - The Data space is 64 KWords. The first 64 words of this show memory mapped
   peripherals, the rest is Data memory usable by the application.
@@ -293,6 +293,10 @@ application exit. If a separate stack space is used, the stack top is fixed at
 0x8000 (32768), and the stack bottom is fixed at 0, corresponding with the
 stack size of 32 KWords. Otherwise the stack top and bottom are set according
 to the contents of the Application descriptor.
+
+Note that it is not critical to implement the stack boundary checks for
+conformance, implementing the return to supervisor mode mechanism is
+sufficient considering only well-behaving applications.
 
 
 
@@ -415,18 +419,27 @@ carried out (such as writing the Carry register for operations affecting it).
 In Pointer modes the high 16 of the used pointer bits are used to address the
 16 bit cells. An example shows this concept with the following parameters:
 
-- X0 = 0x1002
-- XM = 0x...1 (4 bit stationary mode)
-- XH = 0x...2 ::
+- X0 = 0x8400
+- XM = 0x...9 (4 bit post-incrementing mode)
+- XB = 0x...4
+- Result of "MOV A, [X0]": 0x3 written in 'A'; 'XB' becomes 0x...8 ::
 
-    0x83FF  |    (((XH0 & 0x3) << 16) + X0) >> 2 = 0x8400   |  0x8401
-    --------+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--------
-            |15|14|13|12|11|10| 9| 8| 7| 6| 5| 4| 3| 2| 1| 0|
-            | 0| 1| 1| 0| 0| 0| 1| 1| 0| 1| 1| 0| 0| 1| 1| 0|
-    --------+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--------
-            |     0     |     1     |     2     |     3     |
-            |           |           |  X0 & 0x3 |           |
+    0x83FF  |                  X0 = 0x8400                  |  0x8401
+    --------+-----------+-----------+-----------+-----------+--------
+            |15 14 13 12|11 10  9  8| 7  6  5  4| 3  2  1  0|
+    --------+-----------+-----------+-----------+-----------+--------
+            | 0  1  1  0| 0  0  1  1| 1  1  1  0| 0  1  0  0|
+    --------+-----------+-----------+-----------+-----------+--------
+            |  0 (0x0)  |  1 (0x4)  |  2 (0x8)  |  3 (0xC)  |
+            |           |  XB & 0xC |           |           |
 
 When writing data to sub-word addressing mode accessed cells, the Read -
 Modify - Write logic of the data writes realizes the effect of only altering
-the appropriate sub-unit of the word.
+the appropriate sub-unit of the word, for example:
+
+- X0 = 0x8400
+- XM = 0x...9 (4 bit post-incrementing mode)
+- XB = 0x...8
+- B  = 0x1234
+- Result of "MOV [X0], B": 0x4 written at bits 4 - 7 of cell 0x8400, 'XB'
+  becomes 0x...C

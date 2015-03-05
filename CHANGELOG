@@ -22,6 +22,8 @@ Version 00.016.000 ()
  - New JNZ instruction jumping if it's register operand is nonzero.
  - New skips for the Stack Pointer providing better support for variable
    number of arguments.
+ - Sub-word memory addressing scheme changed to provide fractional bits (the
+   XH register renamed to XB, referring to pointer fractional bits).
  - JSV changed to accept a service operand, kernel calls are re-allocated
    accordingly (the syntax of JSV is now similar to normal function calls).
 
