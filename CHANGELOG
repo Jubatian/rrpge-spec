@@ -8,6 +8,7 @@ Version 00.016.000 ()
    produced in either.
  - Two new pointer setup functions for 16 bit PRAM pointers, also changing the
    naming conventions. Pointer setup functions no longer produce return in C.
+ - Font management refined, adding a larger, UTF capable font.
  - Accelerator destination partition size moved from 0x8014 to 0x8002, into
    the destination bank select, to completely separate source and destination
    configurations. Registers are renamed accordingly.

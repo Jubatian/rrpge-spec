@@ -65,22 +65,6 @@ for working with the built-in font:
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0xFA9C |                                                                   |
-| \-     | Tileset using Normal 4 bit font (up_font_4).                      |
-| 0xFAA3 |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0xFAA4 |                                                                   |
-| \-     | Tileset using Inverted 4 bit font (up_font_4i).                   |
-| 0xFAAB |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0xFAAC |                                                                   |
-| \-     | Tileset using Normal 8 bit font (up_font_8).                      |
-| 0xFAB3 |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0xFAB4 |                                                                   |
-| \-     | Tileset using Inverted 8 bit font (up_font_8i).                   |
-| 0xFABB |                                                                   |
-+--------+-------------------------------------------------------------------+
 | 0xFABC | Tile index multiplier (Width * Height).                           |
 +--------+-------------------------------------------------------------------+
 | 0xFABD | Memorized Tile index layout on low 3 bits, other bits undefined.  |

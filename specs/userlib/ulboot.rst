@@ -90,17 +90,18 @@ This corresponds with the display surface defined in the initial display list.
 
 
 
-Tileset manager initialization
+Tileset manager initializations
 ------------------------------------------------------------------------------
 
 
-The tileset manager starts out uninitialized, so the FABC - FABE range set
-zero. The default tilesets however are initialized as follows:
+The tileset managers (btile and ftile) start out uninitialized, so the
+0xFABC - 0xFABE and 0xFA92 - 0xFA94 ranges set zero. The default tilesets
+however are initialized as follows over ftile:
 
-- 0xFA9C: Normal 4 bit font. Tile index layout 1, No colorkey.
-- 0xFAA4: Inverted 4 bit font. Tile index layout 5, Pixel AND mask colorkey.
-- 0xFAAC: Normal 8 bit font. Tile index layout 1, No colorkey.
-- 0xFAB4: Inverted 8 bit font. Tile index layout 5, Pixel AND mask colorkey.
+- 0xFA9C: Normal 4 bit font. Reindexing + 12 bits, No colorkey.
+- 0xFAA4: Inverted 4 bit font. Pixel OR mask + 12 bits, colorkeyed.
+- 0xFAAC: Normal 8 bit font. Reindexing + 12 bits, No colorkey.
+- 0xFAB4: Inverted 8 bit font. Pixel OR mask + 12 bits, colorkeyed.
 
 
 
@@ -130,19 +131,19 @@ The following table provides the initial fill data to be used for the range
 | 0xFA9B |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xFA9C |                                                                   |
-| \-     | 0xE0B2, 0xE0B4, 0xE0B0, 0x0001, 0x000C, 0x000F, 0xC800, 0x0020    |
+| \-     | 0xE13A, 0xE13C, 0xE138, 0x0001, 0x000C, 0x000F, 0xC500, 0x0020    |
 | 0xFAA3 |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xFAA4 |                                                                   |
-| \-     | 0xE0B2, 0xE0B4, 0xE0B0, 0x0001, 0x000C, 0x000F, 0xC800, 0x01AA    |
+| \-     | 0xE13A, 0xE13C, 0xE138, 0x0001, 0x000C, 0x000F, 0xCBC0, 0x0108    |
 | 0xFAAB |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xFAAC |                                                                   |
-| \-     | 0xE0B2, 0xE0B4, 0xE0B0, 0x0002, 0x000C, 0x000F, 0xC800, 0x0031    |
+| \-     | 0xE13A, 0xE13C, 0xE138, 0x0002, 0x000C, 0x000F, 0xD280, 0x0030    |
 | 0xFAB3 |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xFAB4 |                                                                   |
-| \-     | 0xE0B2, 0xE0B4, 0xE0B0, 0x0002, 0x000C, 0x000F, 0xC800, 0x01BD    |
+| \-     | 0xE13A, 0xE13C, 0xE138, 0x0002, 0x000C, 0x000F, 0xD940, 0x0118    |
 | 0xFABB |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xFABC |                                                                   |
@@ -190,6 +191,7 @@ The following table provides the initial fill data to be used for the range
 Peripheral RAM user library range fill map
 ------------------------------------------------------------------------------
 
+
 The following table provides the initial fill data to be used for the range
 0xFC000 - 0xFDFFF in the Peripheral RAM.
 
@@ -198,9 +200,29 @@ The following table provides the initial fill data to be used for the range
 +=========+==================================================================+
 | 0xFC000 |                                                                  |
 | \-      | 0                                                                |
-| 0xFC7FF |                                                                  |
+| 0xFC0FF |                                                                  |
 +---------+------------------------------------------------------------------+
-| 0xFC800 |                                                                  |
-| \-      | User Library font, see "fontdata.rst".                           |
+| 0xFC100 |                                                                  |
+| \-      | UTF to font transformation table, see "fontdata.rst".            |
+| 0xFC47F |                                                                  |
++---------+------------------------------------------------------------------+
+| 0xFC480 |                                                                  |
+| \-      | Code page 437 to UTF transformation table, see "fontdata.rst".   |
+| 0xFC4FF |                                                                  |
++---------+------------------------------------------------------------------+
+| 0xFC500 |                                                                  |
+| \-      | Normal font for 4 bit mode, see "fontdata.rst".                  |
+| 0xFCBBF |                                                                  |
++---------+------------------------------------------------------------------+
+| 0xFCBC0 |                                                                  |
+| \-      | Inverted font for 4 bit mode, see "fontdata.rst".                |
+| 0xFD27F |                                                                  |
++---------+------------------------------------------------------------------+
+| 0xFD280 |                                                                  |
+| \-      | Normal font for 8 bit mode, see "fontdata.rst".                  |
+| 0xFD93F |                                                                  |
++---------+------------------------------------------------------------------+
+| 0xFD940 |                                                                  |
+| \-      | Inverted font for 8 bit mode, see "fontdata.rst".                |
 | 0xFDFFF |                                                                  |
 +---------+------------------------------------------------------------------+
