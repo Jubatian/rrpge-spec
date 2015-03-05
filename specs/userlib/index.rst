@@ -130,6 +130,13 @@ File "fontdata.rst"
 Code Page 437 compliant binary font in the Peripheral RAM (0xFC800 - 0xFDFFF).
 
 
+File "ftile.rst"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Compact 1 bit font tileset implementation for the tileset interface, for
+working with the Graphics Accelerator.
+
+
 File "ifcharr.rst"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -394,7 +401,7 @@ formatted as a NOP. Not used handlers are filled with NOPs.
 +--------+---------------+---+------+-------------------------+--------------+
 | 0xE0B2 |           150 | 4 |      | us_btile_blit           | btile.rst    |
 +--------+---------------+---+------+-------------------------+--------------+
-| 0xE0B4 |            30 | 1 | C:X3 | us_btile_gethw          | btile.rst    |
+| 0xE0B4 |            40 | 1 | C:X3 | us_btile_gethw          | btile.rst    |
 +--------+---------------+---+------+-------------------------+--------------+
 | 0xE0B6 |            80 | 6 |      | us_tmap_new             | tmap.rst     |
 +--------+---------------+---+------+-------------------------+--------------+
@@ -523,4 +530,12 @@ formatted as a NOP. Not used handlers are filled with NOPs.
 | 0xE132 |   200 + W + F | 1 |      | us_cw_tile_init         | charwt.rst   |
 +--------+---------------+---+------+-------------------------+--------------+
 | 0xE134 |           100 | 3 |      | us_cw_tile_setxy        | charwt.rst   |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xE136 |           110 | 6 |      | us_ftile_new            | ftile.rst    |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xE138 |           180 | 1 |      | us_ftile_acc            | ftile.rst    |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xE13A |           180 | 4 |      | us_ftile_blit           | ftile.rst    |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xE13C |            40 | 1 | C:X3 | us_ftile_gethw          | ftile.rst    |
 +--------+---------------+---+------+-------------------------+--------------+

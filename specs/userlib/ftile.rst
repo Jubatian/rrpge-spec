@@ -1,5 +1,5 @@
 
-RRPGE User Library - Basic tileset
+RRPGE User Library - Font tileset
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
@@ -15,9 +15,9 @@ Introduction, data structures
 ------------------------------------------------------------------------------
 
 
-The basic tileset provides a simple and fast implementation for tilesets (see
-"iftile.rst"), useful as a base for most 2D rendering tasks. Combined with a
-Destination surface tilesets can be used to produce graphics directly.
+The font tileset provides a simple and fast implementation for 1 bit tilesets
+(see "iftile.rst"), useful for producing fonts for text output. Combined with
+a Destination surface tilesets can be used to produce graphics directly.
 
 The tileset manager works with tileset structures (objects). The structure is
 formed as follows, on top of the tileset interface:
@@ -33,31 +33,34 @@ formed as follows, on top of the tileset interface:
 
 The Blit configuration composes as follows:
 
-- bit  9-15: Bits 1 - 7 of Pixel AND mask (bit 0 is always 1)
-- bit     8: If set, colorkey is Pixel AND mask, otherwise it is 0
-- bit  5- 7: Tile index layout
+- bit 13-15: Bits 5 - 7 of Pixel OR mask
+- bit    12: Bit 4 of Pixel OR mask or High bit of Reindex bank select
+- bit  9-11: Unused
+- bit     8: If set, colorkey is 1, otherwise it is 0
+- bit     7: Unused
+- bit     6: Reindex by destination if set (only if bit 5 is also set)
+- bit     5: Tile index layout (0: OR mask + 12 bits; 1: Reindexing + 12 bits)
 - bit     4: If set, 8 bit mode, otherwise 4 bit mode
 - bit     3: If set, colorkey is enabled
-- bit  0- 2: Pixel barrel rotate right
+- bit  0- 2: Unused
 
-The tile index layout defines how the tile index word (16 bits, the first
-parameter of blit functions) should be translated to a tile image. The
-following layouts are possible:
+If bit 6 and bit 5 are both set, the high 4 bits of the tile index will act as
+an OR mask, and Reindexing by destination is always applied.
 
-- 0: bit 15: Reindex by destination enabled; bit 0-14: Index
-- 1: bit 11-15: Reindex bank (0: no reindexing;  1-31); bit 0-10: Index
-- 2: bit 12-15: Reindex bank (0: no reindexing; 17-31); bit 0-11: Index
-- 3: bit 13-15: Reindex bank (0: no reindexing; 25-31); bit 0-12: Index
-- 4: bit 12-15: OR mask (low 4 bits); bit 0-11: Index
-- 5: bit  8-15: OR mask (all bits); bit 0-7: Index
-- 6: bit 12-15: OR mask (high 4 bits); bit 0-11: Index
-- 7: bit 13-15: OR mask (high 3 bits); bit 0-12: Index
+If bit 6 is clear and bit 5 is set, if the high 4 bits are zero, no reindexing
+is applied (the high 4 bits ranging from 1 to 15 select reindex banks).
 
-The Index bits select a tile image within the tileset. Tiles within the
-tileset are laid out row by row, each tile on one contiguous area of Width *
-Height size. The offset of the tile image selected so can be calculated as: ::
+The Index bits select a tile image within the tileset. Tile images are laid
+out row by row, however they are compacted in either 4 or 8 bit planes
+depending on mode (4 bitplanes in 4 bit mode, 8 bitplanes in 8 bit mode). The
+start offset of a tile image can be calculated as follows: ::
 
-    start_offset + (index * (width * height))
+    start_offset + ((index / mode) * (width * height))
+
+Then the bit plane to use is selected with the low 2 or 3 bits (depending on
+mode) of the tile index, lower values selecting the lower bit planes. So in 4
+bit mode, tiles 0 - 3 occupy the same memory area, on bit planes 0 - 3
+respectively.
 
 CPU RAM locations are used for supporting blitting, and as default tilesets
 for working with the built-in font:
@@ -65,6 +68,12 @@ for working with the built-in font:
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
+| 0xFA92 | Tile index multiplier (Width * Height).                           |
++--------+-------------------------------------------------------------------+
+| 0xFA93 | Memorized Blit configuration (Word7).                             |
++--------+-------------------------------------------------------------------+
+| 0xFA94 | Memorized Start offset of source (Word6).                         |
++--------+-------------------------------------------------------------------+
 | 0xFA9C |                                                                   |
 | \-     | Tileset using Normal 4 bit font (up_font_4).                      |
 | 0xFAA3 |                                                                   |
@@ -81,12 +90,6 @@ for working with the built-in font:
 | \-     | Tileset using Inverted 8 bit font (up_font_8i).                   |
 | 0xFABB |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFABC | Tile index multiplier (Width * Height).                           |
-+--------+-------------------------------------------------------------------+
-| 0xFABD | Memorized Tile index layout on low 3 bits, other bits undefined.  |
-+--------+-------------------------------------------------------------------+
-| 0xFABE | Memorized Start offset of source (Word6).                         |
-+--------+-------------------------------------------------------------------+
 
 
 
@@ -95,10 +98,10 @@ Functions
 ------------------------------------------------------------------------------
 
 
-0xE0AE: Set up tileset
+0xE136: Set up tileset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- F.name: us_btile_new
+- F.name: us_ftile_new
 - Cycles: 110
 - Param0: Tileset structure pointer
 - Param1: Width of tiles in cells
@@ -111,11 +114,11 @@ Sets up a tileset structure using the given parameters as-is. Width must be
 between 1 and 128. Height must be between 1 and 512.
 
 
-0xE0B0: Initialize accelerator for tile output
+0xE138: Initialize accelerator for tile output
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- F.name: us_btile_acc
-- Cycles: 200
+- F.name: us_ftile_acc
+- Cycles: 180
 - Param0: Tileset structure pointer
 
 Implements us_tile_acc in the tileset interface.
@@ -130,21 +133,20 @@ The following accelerator registers are covered:
 - 0x0012: Set to the PRAM bank of source
 - 0x0013: Zeroed (so assumes no source partitioning)
 - 0x0014: Set to 0xFF00 (no source partitioning)
-- 0x0015: Set according to the Blit configuration (using Block Blitter)
 - 0x0016: Set according to the Blit configuration
 - 0x0017: Set to the tile height
 - 0x0018: Set to the tile width
 - 0x0019: Zeroed
 
-The function also sets up the three associated CPU RAM locations (0xFABC,
-0xFABD, 0xFABE).
+The function also sets up the three associated CPU RAM locations (0xFA92,
+0xFA93, 0xFA94).
 
 
-0xE0B2: Blit tile at arbitrary location
+0xE13A: Blit tile at arbitrary location
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- F.name: us_btile_blit
-- Cycles: 150
+- F.name: us_ftile_blit
+- Cycles: 180
 - Param0: Tileset structure pointer
 - Param1: Tile index
 - Param2: Destination start offset, whole
@@ -157,10 +159,10 @@ well. The destination offset is simply written to Accelerator 0x001C and
 0x001D.
 
 
-0xE0B4: Get height and width of tiles
+0xE13C: Get height and width of tiles
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- F.name: us_btile_gethw
+- F.name: us_ftile_gethw
 - Cycles: 30
 - Param0: Tileset structure pointer
 - Ret. C: Height in rows
@@ -172,7 +174,7 @@ Returns the width and height of a tileset.
 
 
 
-Entry point table of Basic tileset functions
+Entry point table of Font tileset functions
 ------------------------------------------------------------------------------
 
 
@@ -187,11 +189,11 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | Addr.  | Cycles        | P |   R  | Name                                   |
 +========+===============+===+======+========================================+
-| 0xE0AE |           110 | 6 |      | us_btile_new                           |
+| 0xE136 |           110 | 6 |      | us_ftile_new                           |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0B0 |           200 | 1 |      | us_btile_acc                           |
+| 0xE138 |           180 | 1 |      | us_ftile_acc                           |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0B2 |           150 | 4 |      | us_btile_blit                          |
+| 0xE13A |           180 | 4 |      | us_ftile_blit                          |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0B4 |            40 | 1 | C:X3 | us_btile_gethw                         |
+| 0xE13C |            40 | 1 | C:X3 | us_ftile_gethw                         |
 +--------+---------------+---+------+----------------------------------------+

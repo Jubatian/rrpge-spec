@@ -27,9 +27,9 @@ The object structure is as follows:
 - Word2: <Character writer interface>
 - Word3: X cell position for next character.
 - Word4: Y position expressed as Y * surface_width.
-- Word5: Width of tileset
-- Word6: Height of tileset * surface_width
-- Word7: Effective width of surface
+- Word5: Width of tileset (us_cw_tile_init)
+- Word6: Height of tileset * surface_width (us_cw_tile_init)
+- Word7: Effective width of surface (us_cw_tile_init)
 - Word8: PRAM pointer (word) of conversion table, high
 - Word9: PRAM pointer (word) of conversion table, low
 - Word10: Color shift (low 4 bits effective only)
@@ -42,6 +42,9 @@ The Effective width of surface might not equal the true surface width as read
 from the destination surface object: it is the largest multiple of the font
 width which fits in the destination surface width.
 
+Word5 - Word7 is set up by the us_cw_tile_init routine, in order to support
+changing tileset or destination object properties after object construction.
+
 
 
 
@@ -53,7 +56,7 @@ Functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_cw_tile_new
-- Cycles: 250 + Tileset us_tile_gethw implementation
+- Cycles: 180
 - Param0: Character writer structure pointer
 - Param1: Initial and Default color (appropriate low bits used)
 - Param2: Color shift (low 4 bits used)
@@ -135,7 +138,7 @@ Changes the output color of the text if the style attribute is 'c' (ASCII
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_cw_tile_init
-- Cycles: 200 + Wait for frame end + Tileset us_tile_acc implementation
+- Cycles: 350 + Wait for frame end + Tileset us_tile_acc and us_tile_gethw
 - Param0: Character writer structure pointer
 
 Implements us_cw_init in the character writer interface.
@@ -177,7 +180,7 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | Addr.  | Cycles        | P |   R  | Name                                   |
 +========+===============+===+======+========================================+
-| 0xE12C |       250 + F | 7 |      | us_cw_tile_new                         |
+| 0xE12C |           180 | 7 |      | us_cw_tile_new                         |
 +--------+---------------+---+------+----------------------------------------+
 | 0xE12E |             S | 3 |      | us_cw_tile_setnc                       |
 +--------+---------------+---+------+----------------------------------------+
