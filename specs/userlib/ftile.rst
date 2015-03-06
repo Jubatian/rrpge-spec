@@ -163,7 +163,7 @@ well. The destination offset is simply written to Accelerator 0x001C and
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ftile_gethw
-- Cycles: 30
+- Cycles: 40
 - Param0: Tileset structure pointer
 - Ret. C: Height in rows
 - Ret.X3: Width in cells
@@ -171,6 +171,19 @@ well. The destination offset is simply written to Accelerator 0x001C and
 Implements us_tile_gethw in the tileset interface.
 
 Returns the width and height of a tileset.
+
+
+0xE13E: Set high bits of color or reindex bank
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- F.name: us_ftile_setch
+- Cycles: 50
+- Param0: Tileset structure pointer
+- Param1: New color bits (only low 4 bits used)
+
+Allows for setting bits 4-7 of the OR mask, or the highest bit (bit 4) of the
+reindex bank select for a font tileset.
+
 
 
 
@@ -196,4 +209,6 @@ included, and are maximal counts.
 | 0xE13A |           180 | 4 |      | us_ftile_blit                          |
 +--------+---------------+---+------+----------------------------------------+
 | 0xE13C |            40 | 1 | C:X3 | us_ftile_gethw                         |
++--------+---------------+---+------+----------------------------------------+
+| 0xE13E |            50 | 2 |      | us_ftile_setch                         |
 +--------+---------------+---+------+----------------------------------------+

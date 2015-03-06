@@ -145,7 +145,7 @@ well. The destination offset is simply written to Accelerator 0x001C and
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_btile_gethw
-- Cycles: 30
+- Cycles: 40
 - Param0: Tileset structure pointer
 - Ret. C: Height in rows
 - Ret.X3: Width in cells
