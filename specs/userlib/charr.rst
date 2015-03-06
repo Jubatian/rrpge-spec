@@ -33,6 +33,21 @@ selectable by an additional function.
 With all the readers strings can only start at the respective boundaries (CPU
 RAM: Word, PRAM: 32 bit unit boundary).
 
+CPU RAM locations are used for providing initialized objects for character
+reading from the CPU RAM:
+
++--------+-------------------------------------------------------------------+
+| Range  | Description                                                       |
++========+===================================================================+
+| 0xFD88 | UTF-8 data, CPU RAM reader, initialized to CPU RAM position       |
+| \-     | 0x0040. (up_cr_utf8)                                              |
+| 0xFD8B |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0xFD8C | Byte data, CPU RAM reader, using the Code Page 437 to UTF         |
+| \-     | conversion table defined in "fontdata.rst", initialized to CPU    |
+| 0xFD91 | RAM position 0x0040. (up_cr_byte)                                 |
++--------+-------------------------------------------------------------------+
+
 
 
 

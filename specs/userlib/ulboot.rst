@@ -3,7 +3,7 @@ RRPGE user library boot up state
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
-:Copyright: 2013 - 2014, GNU GPLv3 (version 3 of the GNU General Public
+:Copyright: 2013 - 2015, GNU GPLv3 (version 3 of the GNU General Public
             License) extended as RRPGEvt (temporary version of the RRPGE
             License): see LICENSE.GPLv3 and LICENSE.RRPGEvt in the project
             root.
@@ -22,7 +22,7 @@ the User Library.
 
 The following two RAM memory areas are covered in this specification:
 
-- CPU RAM memory range 0xF800 - 0xFAFF.
+- CPU RAM memory range 0xFB00 - 0xFDFF.
 - Peripheral RAM memory range 0xFC000 - 0xFDFFF.
 
 Unless otherwise specified, these areas should be initialized to zero.
@@ -46,17 +46,17 @@ The page flip hook list contains the following functions:
 - 0xE06E: us_smux_reset
 - 0xE0A4: us_dsurf_flip
 
-The absolute offset of it's first free slot at 0xFAEF is set 0xFAF3
+The absolute offset of it's first free slot at 0xFDEF is set 0xFDF3
 (indicating three functions loaded).
 
 The frame end hook list is empty. The absolute offset of it's first free slot
-at 0xFAEE is set 0xFAE0 (indicating empty).
+at 0xFDEE is set 0xFDE0 (indicating empty).
 
 The init hook list contains the following functions:
 
 - 0xE0A2: us_dsurf_init
 
-The absolute offset of it's first free slot at 0xFADF is set 0xFAD1
+The absolute offset of it's first free slot at 0xFDDF is set 0xFDD1
 (indicating one function loaded).
 
 
@@ -75,10 +75,10 @@ Destination surface initialization
 ------------------------------------------------------------------------------
 
 
-Destination surfaces start out uninitialized, the flipflop at 0xFABF set zero.
+Destination surfaces start out uninitialized, the flipflop at 0xFDBF set zero.
 They are usable for single buffered surfaces in this state.
 
-The default surface (up_dsurf at 0xFAC0) is set up as follows:
+The default surface (up_dsurf at 0xFDC0) is set up as follows:
 
 - PRAM write mask is all set (no masking).
 - Surface A and Surface B bank and partition selects are zero.
@@ -95,13 +95,13 @@ Tileset manager initializations
 
 
 The tileset managers (btile and ftile) start out uninitialized, so the
-0xFABC - 0xFABE and 0xFA92 - 0xFA94 ranges set zero. The default tilesets
+0xFDBC - 0xFDBE and 0xFD92 - 0xFD94 ranges set zero. The default tilesets
 however are initialized as follows over ftile:
 
-- 0xFA9C: Normal 4 bit font. Reindexing + 12 bits, No colorkey.
-- 0xFAA4: Inverted 4 bit font. Pixel OR mask + 12 bits, colorkeyed.
-- 0xFAAC: Normal 8 bit font. Reindexing + 12 bits, No colorkey.
-- 0xFAB4: Inverted 8 bit font. Pixel OR mask + 12 bits, colorkeyed.
+- 0xFD9C: Normal 4 bit font. Reindexing + 12 bits, No colorkey.
+- 0xFDA4: Inverted 4 bit font. Pixel OR mask + 12 bits, colorkeyed.
+- 0xFDAC: Normal 8 bit font. Reindexing + 12 bits, No colorkey.
+- 0xFDB4: Inverted 8 bit font. Pixel OR mask + 12 bits, colorkeyed.
 
 
 
@@ -116,73 +116,95 @@ zero.
 
 
 
+Character readers and writers
+------------------------------------------------------------------------------
+
+
+Two pre-initialized character reader objects are provided to read the CPU RAM:
+a byte reader at 0xFD8C and a utf-8 reader at 0xFD88 (see "charr.rst").
+
+
+
+
 CPU RAM user library range fill map
 ------------------------------------------------------------------------------
 
 
 The following table provides the initial fill data to be used for the range
-0xF800 - 0xFAFF in the CPU RAM.
+0xFB00 - 0xFDFF in the CPU RAM.
 
 +--------+-------------------------------------------------------------------+
 | Range  | Fill data                                                         |
 +========+===================================================================+
-| 0xF800 |                                                                   |
+| 0xFB00 |                                                                   |
 | \-     | 0                                                                 |
-| 0xFA9B |                                                                   |
+| 0xFD83 |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFA9C |                                                                   |
+| 0xFD88 |                                                                   |
+| \-     | 0xE102, 0xE100, 0x0040, 0                                         |
+| 0xFD8B |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0xFD8C |                                                                   |
+| \-     | 0xE0F4, 0xE0F2, 0x0040, 0, 0x001F, 0x8900                         |
+| 0xFD91 |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0xFD92 |                                                                   |
+| \-     | 0                                                                 |
+| 0xFD9B |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0xFD9C |                                                                   |
 | \-     | 0xE13A, 0xE13C, 0xE138, 0x0001, 0x000C, 0x000F, 0xC500, 0x0020    |
-| 0xFAA3 |                                                                   |
+| 0xFDA3 |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFAA4 |                                                                   |
+| 0xFDA4 |                                                                   |
 | \-     | 0xE13A, 0xE13C, 0xE138, 0x0001, 0x000C, 0x000F, 0xCBC0, 0x0108    |
-| 0xFAAB |                                                                   |
+| 0xFDAB |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFAAC |                                                                   |
+| 0xFDAC |                                                                   |
 | \-     | 0xE13A, 0xE13C, 0xE138, 0x0002, 0x000C, 0x000F, 0xD280, 0x0030    |
-| 0xFAB3 |                                                                   |
+| 0xFDB3 |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFAB4 |                                                                   |
+| 0xFDB4 |                                                                   |
 | \-     | 0xE13A, 0xE13C, 0xE138, 0x0002, 0x000C, 0x000F, 0xD940, 0x0118    |
-| 0xFABB |                                                                   |
+| 0xFDBB |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFABC |                                                                   |
+| 0xFDBC |                                                                   |
 | \-     | 0                                                                 |
-| 0xFABF |                                                                   |
+| 0xFDBF |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFAC0 |                                                                   |
+| 0xFDC0 |                                                                   |
 | \-     | 0xFFFF, 0xFFFF, 0xF000, 0, 0, 0, 0, 0x0050                        |
-| 0xFAC7 |                                                                   |
+| 0xFDC7 |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFAC8 |                                                                   |
+| 0xFDC8 |                                                                   |
 | \-     | 0                                                                 |
-| 0xFACF |                                                                   |
+| 0xFDCF |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFAD0 | 0xE0A2                                                            |
+| 0xFDD0 | 0xE0A2                                                            |
 +--------+-------------------------------------------------------------------+
-| 0xFAD1 |                                                                   |
+| 0xFDD1 |                                                                   |
 | \-     | 0                                                                 |
-| 0xFADE |                                                                   |
+| 0xFDDE |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFADF | 0xFAD1                                                            |
+| 0xFDDF | 0xFDD1                                                            |
 +--------+-------------------------------------------------------------------+
-| 0xFAE0 |                                                                   |
+| 0xFDE0 |                                                                   |
 | \-     | 0                                                                 |
-| 0xFAED |                                                                   |
+| 0xFDED |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFAEE | 0xFAE0                                                            |
+| 0xFDEE | 0xFDE0                                                            |
 +--------+-------------------------------------------------------------------+
-| 0xFAEF | 0xFAF3                                                            |
+| 0xFDEF | 0xFDF3                                                            |
 +--------+-------------------------------------------------------------------+
-| 0xFAF0 | 0xE06C                                                            |
+| 0xFDF0 | 0xE06C                                                            |
 +--------+-------------------------------------------------------------------+
-| 0xFAF1 | 0xE06E                                                            |
+| 0xFDF1 | 0xE06E                                                            |
 +--------+-------------------------------------------------------------------+
-| 0xFAF2 | 0xE0A4                                                            |
+| 0xFDF2 | 0xE0A4                                                            |
 +--------+-------------------------------------------------------------------+
-| 0xFAF3 |                                                                   |
+| 0xFDF3 |                                                                   |
 | \-     | 0                                                                 |
-| 0xFAFF |                                                                   |
+| 0xFDFF |                                                                   |
 +--------+-------------------------------------------------------------------+
 
 

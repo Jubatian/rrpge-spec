@@ -38,12 +38,12 @@ Some CPU RAM locations are used as well:
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0xFABF | Double buffer flipflop. Only bit 0 is used. If clear, Surface A   |
+| 0xFDBF | Double buffer flipflop. Only bit 0 is used. If clear, Surface A   |
 |        | is assumed to be the display surface in surface structures.       |
 +--------+-------------------------------------------------------------------+
-| 0xFAC0 |                                                                   |
+| 0xFDC0 |                                                                   |
 | \-     | Default surface structure (up_dsurf).                             |
-| 0xFAC7 |                                                                   |
+| 0xFDC7 |                                                                   |
 +--------+-------------------------------------------------------------------+
 
 

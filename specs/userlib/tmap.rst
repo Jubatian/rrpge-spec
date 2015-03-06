@@ -3,7 +3,7 @@ RRPGE User Library - Tile map manager
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
-:Copyright: 2013 - 2014, GNU GPLv3 (version 3 of the GNU General Public
+:Copyright: 2013 - 2015, GNU GPLv3 (version 3 of the GNU General Public
             License) extended as RRPGEvt (temporary version of the RRPGE
             License): see LICENSE.GPLv3 and LICENSE.RRPGEvt in the project
             root.
@@ -34,19 +34,19 @@ and derivative functions):
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0xFA95 | Destination width (cells).                                        |
+| 0xFD95 | Destination width (cells).                                        |
 +--------+-------------------------------------------------------------------+
-| 0xFA96 | Destination height.                                               |
+| 0xFD96 | Destination height.                                               |
 +--------+-------------------------------------------------------------------+
-| 0xFA97 | Tile width (cells).                                               |
+| 0xFD97 | Tile width (cells).                                               |
 +--------+-------------------------------------------------------------------+
-| 0xFA98 | Tile height.                                                      |
+| 0xFD98 | Tile height.                                                      |
 +--------+-------------------------------------------------------------------+
-| 0xFA99 | X origin fraction.                                                |
+| 0xFD99 | X origin fraction.                                                |
 +--------+-------------------------------------------------------------------+
-| 0xFA9A | X origin.                                                         |
+| 0xFD9A | X origin.                                                         |
 +--------+-------------------------------------------------------------------+
-| 0xFA9B | Y origin.                                                         |
+| 0xFD9B | Y origin.                                                         |
 +--------+-------------------------------------------------------------------+
 
 

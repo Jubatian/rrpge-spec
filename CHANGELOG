@@ -9,6 +9,8 @@ Version 00.016.000 ()
  - Two new pointer setup functions for 16 bit PRAM pointers, also changing the
    naming conventions. Pointer setup functions no longer produce return in C.
  - Font management refined, adding a larger, UTF capable font.
+ - CPU RAM data rearranged so User Library provided objects generate 1 word
+   literals in function calls.
  - Accelerator destination partition size moved from 0x8014 to 0x8002, into
    the destination bank select, to completely separate source and destination
    configurations. Registers are renamed accordingly.
@@ -20,7 +22,7 @@ Version 00.016.000 ()
  - JMR and JMA now can load PC into a register, providing support for "light"
    subroutines.
  - RFN now can load X3 and optionally zero C to produce return value.
- - New JNZ instruction jumping if it's register operand is nonzero.
+ - New JNZ instruction jumping if its register operand is nonzero.
  - New skips for the Stack Pointer providing better support for variable
    number of arguments.
  - Sub-word memory addressing scheme changed to provide fractional bits (the

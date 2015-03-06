@@ -68,27 +68,27 @@ for working with the built-in font:
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0xFA92 | Tile index multiplier (Width * Height).                           |
+| 0xFD92 | Tile index multiplier (Width * Height).                           |
 +--------+-------------------------------------------------------------------+
-| 0xFA93 | Memorized Blit configuration (Word7).                             |
+| 0xFD93 | Memorized Blit configuration (Word7).                             |
 +--------+-------------------------------------------------------------------+
-| 0xFA94 | Memorized Start offset of source (Word6).                         |
+| 0xFD94 | Memorized Start offset of source (Word6).                         |
 +--------+-------------------------------------------------------------------+
-| 0xFA9C |                                                                   |
+| 0xFD9C |                                                                   |
 | \-     | Tileset using Normal 4 bit font (up_font_4).                      |
-| 0xFAA3 |                                                                   |
+| 0xFDA3 |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFAA4 |                                                                   |
+| 0xFDA4 |                                                                   |
 | \-     | Tileset using Inverted 4 bit font (up_font_4i).                   |
-| 0xFAAB |                                                                   |
+| 0xFDAB |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFAAC |                                                                   |
+| 0xFDAC |                                                                   |
 | \-     | Tileset using Normal 8 bit font (up_font_8).                      |
-| 0xFAB3 |                                                                   |
+| 0xFDB3 |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFAB4 |                                                                   |
+| 0xFDB4 |                                                                   |
 | \-     | Tileset using Inverted 8 bit font (up_font_8i).                   |
-| 0xFABB |                                                                   |
+| 0xFDBB |                                                                   |
 +--------+-------------------------------------------------------------------+
 
 
@@ -138,8 +138,8 @@ The following accelerator registers are covered:
 - 0x0018: Set to the tile width
 - 0x0019: Zeroed
 
-The function also sets up the three associated CPU RAM locations (0xFA92,
-0xFA93, 0xFA94).
+The function also sets up the three associated CPU RAM locations (0xFD92,
+0xFD93, 0xFD94).
 
 
 0xE13A: Blit tile at arbitrary location

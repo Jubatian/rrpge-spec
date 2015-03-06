@@ -65,11 +65,11 @@ for working with the built-in font:
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0xFABC | Tile index multiplier (Width * Height).                           |
+| 0xFDBC | Tile index multiplier (Width * Height).                           |
 +--------+-------------------------------------------------------------------+
-| 0xFABD | Memorized Tile index layout on low 3 bits, other bits undefined.  |
+| 0xFDBD | Memorized Tile index layout on low 3 bits, other bits undefined.  |
 +--------+-------------------------------------------------------------------+
-| 0xFABE | Memorized Start offset of source (Word6).                         |
+| 0xFDBE | Memorized Start offset of source (Word6).                         |
 +--------+-------------------------------------------------------------------+
 
 
@@ -120,8 +120,8 @@ The following accelerator registers are covered:
 - 0x0018: Set to the tile width
 - 0x0019: Zeroed
 
-The function also sets up the three associated CPU RAM locations (0xFABC,
-0xFABD, 0xFABE).
+The function also sets up the three associated CPU RAM locations (0xFDBC,
+0xFDBD, 0xFDBE).
 
 
 0xE0B2: Blit tile at arbitrary location

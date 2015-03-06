@@ -3,7 +3,7 @@ RRPGE User Library - Low Level Display List management and Double Buffering
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
-:Copyright: 2013 - 2014, GNU GPLv3 (version 3 of the GNU General Public
+:Copyright: 2013 - 2015, GNU GPLv3 (version 3 of the GNU General Public
             License) extended as RRPGEvt (temporary version of the RRPGE
             License): see LICENSE.GPLv3 and LICENSE.RRPGEvt in the project
             root.
@@ -95,30 +95,30 @@ locations are not meant to be accessed directly by applications.
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0xFAD0 |                                                                   |
+| 0xFDD0 |                                                                   |
 | \-     | Init hooks (functions to call on init)                            |
-| 0xFADD |                                                                   |
+| 0xFDDD |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFADE | Flip performed flag (bit 0 set after a flip, then cleared by      |
+| 0xFDDE | Flip performed flag (bit 0 set after a flip, then cleared by      |
 |        | processing the frame hooks)                                       |
 +--------+-------------------------------------------------------------------+
-| 0xFADF | Absolute offset of first free slot in init hooks                  |
+| 0xFDDF | Absolute offset of first free slot in init hooks                  |
 +--------+-------------------------------------------------------------------+
-| 0xFAE0 |                                                                   |
+| 0xFDE0 |                                                                   |
 | \-     | Frame end hooks (functions to call when frame ends)               |
-| 0xFAED |                                                                   |
+| 0xFDED |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFAEE | Absolute offset of first free slot in frame hooks                 |
+| 0xFDEE | Absolute offset of first free slot in frame hooks                 |
 +--------+-------------------------------------------------------------------+
-| 0xFAEF | Absolute offset of first free slot in flip hooks                  |
+| 0xFDEF | Absolute offset of first free slot in flip hooks                  |
 +--------+-------------------------------------------------------------------+
-| 0xFAF0 |                                                                   |
+| 0xFDF0 |                                                                   |
 | \-     | Page flip hooks (functions to call when flipping pages)           |
-| 0xFAFD |                                                                   |
+| 0xFDFD |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFAFE | Current work display list definition & process flags              |
+| 0xFDFE | Current work display list definition & process flags              |
 +--------+-------------------------------------------------------------------+
-| 0xFAFF | Current displayed display list definition & process flags         |
+| 0xFDFF | Current displayed display list definition & process flags         |
 +--------+-------------------------------------------------------------------+
 
 Note that several locations are initialized to nonzero, see "ulboot.rst" for
@@ -173,7 +173,7 @@ to them.
 First if necessary, it waits for the Graphics FIFO to be drained, so anything
 still processing for the current work display list may finish before flipping
 it in. Then the pages are flipped, and the flip hooks are called, also setting
-the Flip performed flag (0xFAFD in CPU RAM).
+the Flip performed flag (0xFDFD in CPU RAM).
 
 Before starting the above described tasks, it may also call the frame hooks if
 calling us_dbuf_getlist was omitted after the last page flip.

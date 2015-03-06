@@ -3,7 +3,7 @@ RRPGE constant data blocks
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
-:Copyright: 2013 - 2014, GNU GPLv3 (version 3 of the GNU General Public
+:Copyright: 2013 - 2015, GNU GPLv3 (version 3 of the GNU General Public
             License) extended as RRPGEvt (temporary version of the RRPGE
             License): see LICENSE.GPLv3 and LICENSE.RRPGEvt in the project
             root.
@@ -369,12 +369,16 @@ CPU data memory
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0xFB00 |                                                                   |
-| \-     | The RRPGE Incremental palette.                                    |
-| 0xFBFF |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0xFC00 |                                                                   |
+| 0xF800 |                                                                   |
 | \-     | Musical logarithmic table.                                        |
+| 0xF9FF |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0xFA00 |                                                                   |
+| \-     | The RRPGE Incremental palette.                                    |
+| 0xFAFF |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0xFB00 |                                                                   |
+| \-     | User Library data (see "userlib/ulboot.rst").                     |
 | 0xFDFF |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xFE00 |                                                                   |

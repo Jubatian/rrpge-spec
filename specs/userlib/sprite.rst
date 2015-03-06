@@ -3,7 +3,7 @@ RRPGE User Library - Display List sprite management
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
-:Copyright: 2013 - 2014, GNU GPLv3 (version 3 of the GNU General Public
+:Copyright: 2013 - 2015, GNU GPLv3 (version 3 of the GNU General Public
             License) extended as RRPGEvt (temporary version of the RRPGE
             License): see LICENSE.GPLv3 and LICENSE.RRPGEvt in the project
             root.
@@ -104,15 +104,15 @@ locations are not meant to be accessed directly by applications.
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0xFAC8 | Current first non-occupied column on the bottom                   |
+| 0xFDC8 | Current first non-occupied column on the bottom                   |
 +--------+-------------------------------------------------------------------+
-| 0xFAC9 | Current first occupied column on the top                          |
+| 0xFDC9 | Current first occupied column on the top                          |
 +--------+-------------------------------------------------------------------+
-| 0xFACA | Count of columns to use                                           |
+| 0xFDCA | Count of columns to use                                           |
 +--------+-------------------------------------------------------------------+
-| 0xFACB | First column to use                                               |
+| 0xFDCB | First column to use                                               |
 +--------+-------------------------------------------------------------------+
-| 0xFACC | Occupation data dirty flag (bit 0 set if *not*(!) dirty)          |
+| 0xFDCC | Occupation data dirty flag (bit 0 set if *not*(!) dirty)          |
 +--------+-------------------------------------------------------------------+
 
 All these locations are zero-initialized.
@@ -124,8 +124,8 @@ All these locations are zero-initialized.
 - F.name: us_sprite_reset
 - Cycles: 20 / 100
 
-Clears display list occupation data (0xFAD8 and 0xFAD9) according to the set
-bounds (0xFADA, 0xFADB). This clearing respects the display list configuration
+Clears display list occupation data (0xFDD8 and 0xFDD9) according to the set
+bounds (0xFDDA, 0xFDDB). This clearing respects the display list configuration
 (display list size) as set in the Graphics Display Generator.
 
 Sets the dirty flag (indicating *not* dirty), so if no simple sprite manager
@@ -141,8 +141,8 @@ shortcut path (20 cycles).
 - Param0: First display list column to use
 - Param1: Count of display list columns to use
 
-The parameters are directly loaded into the appropriate locations (0xFADA,
-0xFADB). Clears the dirty flag (indicating dirty).
+The parameters are directly loaded into the appropriate locations (0xFDDA,
+0xFDDB). Clears the dirty flag (indicating dirty).
 
 
 0xE074: Add graphics component to display list
@@ -157,7 +157,7 @@ The parameters are directly loaded into the appropriate locations (0xFADA,
 - Param4: Y position to start at (signed 2's complement, can be off-display)
 
 Selects the column to add the sprite to by the current column locations
-(0xFAD8 and 0xFAD9), updates the appropriate location (increments the current
+(0xFDD8 and 0xFDD9), updates the appropriate location (increments the current
 first non-occupied on the bottom location if added to the bottom, decrements
 the current first occupied on the top location if added to the top), clears
 the dirty flag (indicating dirty), then transfers to us_dlist_db_add.
@@ -219,19 +219,19 @@ locations are not meant to be accessed directly by applications.
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0xF800 | Occupation data, current first non-occupied column on the bottom  |
+| 0xFB00 | Occupation data, current first non-occupied column on the bottom  |
 | \-     | for each display list row. Byte (8 bit) data.                     |
-| 0xF8C7 |                                                                   |
+| 0xFBC7 |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xF8C8 | Occupation data, current first occupied column on the top for     |
+| 0xFBC8 | Occupation data, current first occupied column on the top for     |
 | \-     | each display list row. Byte (8 bit) data.                         |
-| 0xF98F |                                                                   |
+| 0xFC8F |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFACD | Occupation data dirty flag (bit 0 set if *not*(!) dirty)          |
+| 0xFDCD | Occupation data dirty flag (bit 0 set if *not*(!) dirty)          |
 +--------+-------------------------------------------------------------------+
-| 0xFACE | Count of columns to use                                           |
+| 0xFDCE | Count of columns to use                                           |
 +--------+-------------------------------------------------------------------+
-| 0xFACF | First column to use                                               |
+| 0xFDCF | First column to use                                               |
 +--------+-------------------------------------------------------------------+
 
 All these locations are zero-initialized.
@@ -243,8 +243,8 @@ All these locations are zero-initialized.
 - F.name: us_smux_reset
 - Cycles: 20 / 1800
 
-Clears display list occupation data (0xF800 - 0xF98F) according to the set
-bounds (0xFADE, 0xFADF). This clearing respects the display list configuration
+Clears display list occupation data (0xFB00 - 0xFC8F) according to the set
+bounds (0xFDDE, 0xFDDF). This clearing respects the display list configuration
 (display list size) as set in the Graphics Display Generator.
 
 Sets the dirty flag (indicating *not* dirty), so if no multiplexing sprite
@@ -260,8 +260,8 @@ on a shortcut path (20 cycles).
 - Param0: First display list column to use
 - Param1: Count of display list columns to use
 
-The parameters are directly loaded into the appropriate locations (0xFADA,
-0xFADB). Clears the dirty flag (indicating dirty).
+The parameters are directly loaded into the appropriate locations (0xFDDA,
+0xFDDB). Clears the dirty flag (indicating dirty).
 
 
 0xE076: Add graphics component to display list

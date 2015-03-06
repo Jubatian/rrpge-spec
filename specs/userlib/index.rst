@@ -39,7 +39,7 @@ specification (see "../boot.rst"). It adds binary data over this to support
 the features it introduces, using the following regions:
 
 - Code address space: 0xE000 - 0xFFFF.
-- Data address space (CPU RAM): 0xF800 - 0xFAFF.
+- Data address space (CPU RAM): 0xFB00 - 0xFDFF.
 - Peripheral RAM (PRAM): 0xFC000 - 0xFDFFF (32 bit unit address).
 
 The loaded application may override the User Library's code by defining it's

@@ -99,6 +99,11 @@ should be used to realize a soft hyphen functionality if such is needed.
 
 For unknown UTF input, the return is the '?' character (0x3F).
 
+The table's 16 bit word address may be referred with the following symbols:
+
+- up_ffutf_h: 0x001F
+- up_ffutf_l: 0x8200
+
 
 
 
@@ -109,6 +114,11 @@ Code page 437 to UTF transformation table
 A table compatible with byte character writers accepting such (see
 "charw.rst") is provided at 0xFC480. This table can be used to convert CP437
 byte streams to UTF-32, to be used with functions only accepting UTF.
+
+The table's 16 bit word address may be referred with the following symbols:
+
+- up_uf437_h: 0x001F
+- up_uf437_l: 0x8900
 
 
 
