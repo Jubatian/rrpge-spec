@@ -114,13 +114,19 @@ Functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_cr_cbyte_new
-- Cycles: 110
+- Cycles: 130
 - Param0: Character reader structure pointer
 - Param1: Index to set up
 - Param2: PRAM word pointer of conversion table, high
 - Param3: PRAM word pointer of conversion table, low
 
-Sets up a character reader using the given parameters as-is.
+Sets up a character reader using the given parameters as-is. Parameters 1 - 3
+may be omitted, which case the default values will be as follows:
+
+- Param1: Zero
+- Param2 and Param3: The code page 437 to UTF transformation table (up_uf437_h
+  and up_uf437_l). If Param3 is omitted, the default will be used for Param2
+  as well.
 
 
 0xE0F2: Byte, CPU RAM set string index
@@ -157,14 +163,20 @@ Uses PRAM pointer 3, which is not preserved.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_cr_pbyte_new
-- Cycles: 160
+- Cycles: 180
 - Param0: Character reader structure pointer
 - Param1: PRAM bank to use initially
 - Param2: Index to set up
 - Param3: PRAM word pointer of conversion table, high
 - Param4: PRAM word pointer of conversion table, low
 
-Sets up a character reader using the given parameters as-is.
+Sets up a character reader using the given parameters as-is. Parameters 2 - 4
+may be omitted, which case the default values will be as follows:
+
+- Param2: Zero
+- Param3 and Param4: The code page 437 to UTF transformation table (up_uf437_h
+  and up_uf437_l). If Param4 is omitted, the default will be used for Param3
+  as well.
 
 
 0xE0F8: Byte, PRAM set bank
@@ -215,11 +227,12 @@ Uses PRAM pointer 3, which is not preserved.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_cr_cutf8_new
-- Cycles: 90
+- Cycles: 100
 - Param0: Character reader structure pointer
 - Param1: Index to set up
 
-Sets up a character reader using the given parameters as-is.
+Sets up a character reader using the given parameters as-is. Param1 may be
+omitted, which case it will be initialized to zero.
 
 
 0xE100: UTF-8, CPU RAM set string index
@@ -254,12 +267,13 @@ otherwise up to 500.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_cr_putf8_new
-- Cycles: 140
+- Cycles: 150
 - Param0: Character reader structure pointer
 - Param1: PRAM bank to use initially
 - Param2: Index to set up
 
-Sets up a character reader using the given parameters as-is.
+Sets up a character reader using the given parameters as-is. Param2 may be
+omitted, which case it will be initialized to zero.
 
 
 0xE106: UTF-8, PRAM set bank
@@ -323,13 +337,13 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | Addr.  | Cycles        | P |   R  | Name                                   |
 +========+===============+===+======+========================================+
-| 0xE0F0 |           110 | 4 |      | us_cr_cbyte_new                        |
+| 0xE0F0 |           130 | 4 |      | us_cr_cbyte_new                        |
 +--------+---------------+---+------+----------------------------------------+
 | 0xE0F2 |            50 | 2 |      | us_cr_cbyte_setsi                      |
 +--------+---------------+---+------+----------------------------------------+
 | 0xE0F4 |     110 / 190 | 1 | C:X3 | us_cr_cbyte_getnc                      |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0F6 |           160 | 5 |      | us_cr_pbyte_new                        |
+| 0xE0F6 |           180 | 5 |      | us_cr_pbyte_new                        |
 +--------+---------------+---+------+----------------------------------------+
 | 0xE0F8 |            50 | 2 |      | us_cr_pbyte_setsb                      |
 +--------+---------------+---+------+----------------------------------------+
@@ -337,13 +351,13 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | 0xE0FC |     110 / 190 | 1 | C:X3 | us_cr_pbyte_getnc                      |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE0FE |            90 | 2 |      | us_cr_cutf8_new                        |
+| 0xE0FE |           100 | 2 |      | us_cr_cutf8_new                        |
 +--------+---------------+---+------+----------------------------------------+
 | 0xE100 |            50 | 2 |      | us_cr_cutf8_setsi                      |
 +--------+---------------+---+------+----------------------------------------+
 | 0xE102 |     110 / 550 | 1 | C:X3 | us_cr_cutf8_getnc                      |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE104 |           140 | 3 |      | us_cr_putf8_new                        |
+| 0xE104 |           150 | 3 |      | us_cr_putf8_new                        |
 +--------+---------------+---+------+----------------------------------------+
 | 0xE106 |            50 | 2 |      | us_cr_putf8_setsb                      |
 +--------+---------------+---+------+----------------------------------------+

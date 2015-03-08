@@ -27,9 +27,9 @@ The object structure is as follows:
 - Word2: <Character writer interface>
 - Word3: X cell position for next character.
 - Word4: Y position expressed as Y * surface_width.
-- Word5: Width of tileset (us_cw_tile_init)
-- Word6: Height of tileset * surface_width (us_cw_tile_init)
-- Word7: Effective width of surface (us_cw_tile_init)
+- Word5: Width of tileset
+- Word6: Height of tileset * surface_width
+- Word7: Effective width of surface
 - Word8: PRAM pointer (word) of conversion table, high
 - Word9: PRAM pointer (word) of conversion table, low
 - Word10: Color shift (low 4 bits effective only)
@@ -56,16 +56,28 @@ Functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_cw_tile_new
-- Cycles: 180
+- Cycles: 350 + Tileset us_tile_gethw
 - Param0: Character writer structure pointer
-- Param1: Initial and Default color (appropriate low bits used)
-- Param2: Color shift (low 4 bits used)
-- Param3: Used tileset's object pointer (tileset interface descendant)
-- Param4: Used destination surface's object pointer
+- Param1: Used tileset's object pointer (tileset interface descendant)
+- Param2: Used destination surface's object pointer
+- Param3: Initial and Default color (appropriate low bits used)
+- Param4: Color shift (low 4 bits used)
 - Param5: Conversion table PRAM word pointer, high
 - Param6: Conversion table PRAM word pointer, low
 
 Sets up a tileset based character writer by the passed parameters.
+
+Parameters except Param0 may be omitted. If only Param0 is supplied, the
+behavior changes to re-initialization, which must be done with an already
+initialized object (this is useful if for example the destination surface
+changes). Otherwise a normal object creation is performed with the following
+default values:
+
+- Param2 omitted: Uses up_dsurf.
+- Param3 omitted: Uses color 1.
+- Param4 omitted: Uses 12 for color shift.
+- Param5 omitted: Uses the built-in UTF translation table (up_ffutf_h and
+  up_ffutf_l). If Param6 is omitted, the effect is the same.
 
 The conversion table is used with us_idfutf32 to convert non-ASCII-7
 characters to tile indices for the text output (the table does not need to
@@ -138,7 +150,7 @@ Changes the output color of the text if the style attribute is 'c' (ASCII
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_cw_tile_init
-- Cycles: 350 + Wait for frame end + Tileset us_tile_acc and us_tile_gethw
+- Cycles: 200 + Wait for frame end + Tileset us_tile_acc
 - Param0: Character writer structure pointer
 
 Implements us_cw_init in the character writer interface.
@@ -180,7 +192,7 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | Addr.  | Cycles        | P |   R  | Name                                   |
 +========+===============+===+======+========================================+
-| 0xE12C |           180 | 7 |      | us_cw_tile_new                         |
+| 0xE12C |       350 + F | 7 |      | us_cw_tile_new                         |
 +--------+---------------+---+------+----------------------------------------+
 | 0xE12E |             S | 3 |      | us_cw_tile_setnc                       |
 +--------+---------------+---+------+----------------------------------------+
