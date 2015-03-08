@@ -9,6 +9,7 @@ Version 00.016.000 ()
  - Two new pointer setup functions for 16 bit PRAM pointers, also changing the
    naming conventions. Pointer setup functions no longer produce return in C.
  - Font management refined, adding a larger, UTF capable font.
+ - Printf and related character reader and writer infrastructure added.
  - CPU RAM data rearranged so User Library provided objects generate 1 word
    literals in function calls.
  - Accelerator destination partition size moved from 0x8014 to 0x8002, into

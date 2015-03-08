@@ -169,6 +169,12 @@ File "math.rst"
 Mathematic functions.
 
 
+File "printf.rst"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Formatted and unformatted string output, similar to standard C library printf.
+
+
 File "sprite.rst"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -540,4 +546,12 @@ formatted as a NOP. Not used handlers are filled with NOPs.
 | 0xE13C |            40 | 1 | C:X3 | us_ftile_gethw          | ftile.rst    |
 +--------+---------------+---+------+-------------------------+--------------+
 | 0xE13E |            50 | 2 |      | us_ftile_setch          | ftile.rst    |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xE140 |   4U + 25 + F | 3 |      | us_strcpynz             | printf.rst   |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xE142 |   4U + 50 + F | 3 |      | us_strcpy               | printf.rst   |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xE144 |             S | 3+|      | us_printfnz             | printf.rst   |
++--------+---------------+---+------+-------------------------+--------------+
+| 0xE146 |             S | 3+|      | us_printf               | printf.rst   |
 +--------+---------------+---+------+-------------------------+--------------+
