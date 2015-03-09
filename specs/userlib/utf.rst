@@ -31,17 +31,22 @@ Functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_utf32f8
-- Cycles: 40 / 200
-- Param0: UTF-8 first byte
-- Param1: UTF-8 second byte
-- Param2: UTF-8 third byte
-- Param3: UTF-8 fourth byte
+- Cycles: 40 / 200 + Byte reader function calls
+- Param0: Byte reader function
+- Param1: Parameter to pass to the byte reader
 - Ret. C: UTF-32 character, high
 - Ret.X3: UTF-32 character, low
 
-Converts a UTF-8 sequence to a UTF-32 character. Variable number of parameters
-are accepted (second, third, and fourth bytes may be omitted). The first
-parameter must be the first character of a valid UTF-8 sequence.
+Converts a UTF-8 sequence read by the provided function to a UTF-32 character.
+
+The provided function should accept zero or one parameter, the latter case it
+may be an object pointer over which the function operates. It has to produce
+the byte return in X3 (only low 8 bits used). At least one byte is read by
+this function; only that many bytes are read otherwise which complete a UTF-8
+sequence.
+
+The parameter for the byte reader may be omitted if such a reader is supplied
+which doesn't rely on one.
 
 If the UTF-8 sequence is invalid (or would be longer than 4 bytes), zero is
 returned.
