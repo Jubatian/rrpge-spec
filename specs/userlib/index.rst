@@ -66,8 +66,9 @@ follows:
 - 16 bit return value is generated into X3.
 - 32 bit return value is generated into C:X3 (C: High part, X3: Low part).
 - Registers C and X3 are zeroed unless the function produces a return in them.
-- Registers A, B, D, X0, X1, X2, XM and XB are always preserved.
-- XM3 (Pointer mode 3) must be set Incrementing 16 bits (mode 0x6).
+- Register XB3 is not preserved.
+- Registers A, B, D, X0, X1, X2, XM and XB0 - XB2 are always preserved.
+- Register XM3 (Pointer mode 3) must be set Incrementing 16 bits (mode 0x6).
 
 The usage of other resources are described in the function's specification.
 
