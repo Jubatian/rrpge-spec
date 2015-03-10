@@ -178,13 +178,13 @@ The register's descriptions may be found in the Mixer's documentation
 +--------+-------------------------------------------------------------------+
 | 0x0004 | Frequency for AM source read, fraction                            |
 +--------+-------------------------------------------------------------------+
-| 0x0005 | Partitioning settings                                             |
+| 0x0005 | Destination Partitioning & Bank selection settings                |
 +--------+-------------------------------------------------------------------+
-| 0x0006 | 64 KCell bank selection settings                                  |
+| 0x0006 | Destination partition select                                      |
 +--------+-------------------------------------------------------------------+
-| 0x0007 | Destination partition select                                      |
+| 0x0007 | Destination start                                                 |
 +--------+-------------------------------------------------------------------+
-| 0x0008 | Destination start                                                 |
+| 0x0008 | Source Partitioning & Bank selection settings                     |
 +--------+-------------------------------------------------------------------+
 | 0x0009 | Amplitude multiplier                                              |
 +--------+-------------------------------------------------------------------+

@@ -154,14 +154,14 @@ details).
 | 0x0004 | Frequency for AM source read, fractional part. Provides the       |
 |        | increment for the AM source pointer.                              |
 +--------+-------------------------------------------------------------------+
-|        | Partitioning settings.                                            |
+|        | Destination Partitioning & Bank selection settings.               |
 | 0x0005 |                                                                   |
 |        | - bit 12-15: Unused                                               |
-|        | - bit  8-11: Amplitude source partitioning.                       |
-|        | - bit  4- 7: Sample source partitioning.                          |
-|        | - bit  0- 3: Destination partitioning.                            |
+|        | - bit  8-11: Destination partitioning.                            |
+|        | - bit  4- 7: Unused                                               |
+|        | - bit  0- 3: Destination bank select.                             |
 |        |                                                                   |
-|        | Encoding of partition sizes:                                      |
+|        | Encoding of partition sizes for partitioning settings:            |
 |        |                                                                   |
 |        | - 0x0: 2 Cells (8 samples)                                        |
 |        | - 0x1: 4 Cells (16 samples)                                       |
@@ -179,17 +179,23 @@ details).
 |        | - 0xD: 16 KCells (64K samples)                                    |
 |        | - 0xE: 32 KCells (128K samples)                                   |
 |        | - 0xF: 64 KCells (256K samples)                                   |
+|        |                                                                   |
+|        | The bank selects provide the high 4 bits of PRAM address          |
+|        | allowing to address the entire 1M * 32 bits Peripheral RAM.       |
 +--------+-------------------------------------------------------------------+
-|        | 64 KCell bank selection settings (start address high bits).       |
-| 0x0006 |                                                                   |
-|        | - bit 12-15: Unused                                               |
-|        | - bit  8-11: Amplitude source bank select.                        |
-|        | - bit  4- 7: Sample source bank select.                           |
-|        | - bit  0- 3: Destination bank select.                             |
+| 0x0006 | Destination partition select bits.                                |
 +--------+-------------------------------------------------------------------+
-| 0x0007 | Destination partition select bits.                                |
+| 0x0007 | Destination start pointer (addresses 32 bit cell units).          |
 +--------+-------------------------------------------------------------------+
-| 0x0008 | Destination start pointer (addresses 32 bit cell units).          |
+|        | Source Partitioning & Bank selection settings.                    |
+| 0x0008 |                                                                   |
+|        | - bit 12-15: Amplitude source partitioning.                       |
+|        | - bit  8-11: Sample source partitioning.                          |
+|        | - bit  4- 7: Amplitude source bank select.                        |
+|        | - bit  0- 3: Sample source bank select.                           |
+|        |                                                                   |
+|        | Partitioning settings and bank select is encoded in a similar     |
+|        | manner like for register 0x0005 (Destination).                    |
 +--------+-------------------------------------------------------------------+
 |        | Amplitude multiplier.                                             |
 | 0x0009 |                                                                   |

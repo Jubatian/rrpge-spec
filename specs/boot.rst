@@ -267,9 +267,8 @@ The Audio output DMA is prepared for 48KHz output.
 Mixer peripheral
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Most registers are initialized to zero except the followings:
+Most registers are initialized to zero except the following:
 
-- 0x0005: 0x0558 (Partitioning: 256 samples for sources, 2048 for destination)
 - 0x0009: 0x0100 (Amplitude)
 
 
@@ -329,12 +328,6 @@ Application state, see "state.rst".
 | 0x055  | 0x07F8                                                            |
 +--------+-------------------------------------------------------------------+
 | 0x056  |                                                                   |
-| \-     | 0                                                                 |
-| 0x094  |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0x095  | 0x0558                                                            |
-+--------+-------------------------------------------------------------------+
-| 0x096  |                                                                   |
 | \-     | 0                                                                 |
 | 0x098  |                                                                   |
 +--------+-------------------------------------------------------------------+
