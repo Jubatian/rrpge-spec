@@ -22,7 +22,7 @@ character size which can be used for drawing text using the 1 bit font tileset
 There are multiple layouts of this font in the Peripheral RAM to assist
 different text output algorithms.
 
-The font data is accompanyed with a conversion table for UTF transformation.
+The font data is accompanied with a conversion table for UTF transformation.
 A table for converting the 128 - 255 range of Code Page 437 to UTF is also
 included.
 

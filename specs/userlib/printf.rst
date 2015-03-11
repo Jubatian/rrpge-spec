@@ -33,7 +33,7 @@ where outputting such a termination character is undesirable.
 
 Note that this documentation occasionally refers to UTF (Unicode
 Transformation Format), however it is not mandatory to have character formats
-confoming it: there is no reliance on any character value beyond ASCII-7.
+conforming it: there is no reliance on any character value beyond ASCII-7.
 
 
 
@@ -128,7 +128,7 @@ Attributes
 
 Attributes are an extension to the ordinary printf functionality, not found in
 C standard libraries. They are meant to support altering the appearance of the
-output, such as by text color, stlying and font face. Their function depends
+output, such as by text color, styling and font face. Their function depends
 on the used character writer's properties: the us_cw_setst function is used
 when an attribute is processed.
 
@@ -201,7 +201,7 @@ writer.
 - Param3-: Parameters (up to 13) used depending on format strings occurring.
 
 The printf function normally works similarly to simple string copy, however it
-recognizes and evaulates format strings and special sequences described in the
+recognizes and evaluates format strings and special sequences described in the
 Printf format string specification chapter.
 
 Hexadecimal numeric output takes at about 40 cycles per digit excluding the

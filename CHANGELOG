@@ -1,4 +1,4 @@
-Version 00.016.000 ()
+Version 00.016.000 (2015.03.11)
  - User Library size increased from 4 KWords to 8 KWords, moving the entry
    point table down to start at 0xE000.
  - New object-oriented concepts in the User Library, notably at the

@@ -7,7 +7,7 @@ RRPGE system specification and guides
    :width: 100%
 
 :Author:    Sandor Zsuga (Jubatian)
-:Copyright: 2013 - 2014, GNU GPLv3 (version 3 of the GNU General Public
+:Copyright: 2013 - 2015, GNU GPLv3 (version 3 of the GNU General Public
             License) extended as RRPGEvt (temporary version of the RRPGE
             License): see LICENSE.GPLv3 and LICENSE.RRPGEvt in the project
             root.
@@ -33,7 +33,7 @@ of software-art.
 
 
 Related projects
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - RRPGE home: http://www.rrpge.org
 - RRPGE Assembler: https://www.github.com/Jubatian/rrpge-asm
@@ -43,7 +43,7 @@ Related projects
 
 
 Temporary license notes
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Currently the project is developed under a temporary GPL compatible license.
 The intention for later is to add some permissive exceptions to this license,
@@ -53,27 +53,123 @@ other licenses than GPL.
 For more information, see http://www.rrpge.org/community/index.php?topic=30.0
 
 
+
+
 Design goals
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------------------------------------------------------------
 
-In summary meeting the following goals are aimed for when designing this
-system:
 
-- Overall system efficiency achieved by specialized hardware.
-- Relative ease of use from assembler.
-- Ease and efficiency of emulation.
-- Good integration in the host when emulated.
-- Possibility of (preferably not too complex) realization in hardware.
-- Completely open specification.
+The primary goals of this system are roughly as follows:
 
-As always, there are necessary compromises. For example the design of the CPU
-is heavily constrained by three of the goals: be easy to program in assembler,
-be efficient when emulated, and be possible to be realized as real hardware.
-The first two of these goals determined it to be CISC processor.
+- Long term binary stability (once the first stable version is produced).
+- Capability to integrate seamlessly in host systems (emulation).
+- Simple design allowing for realizations by as little resources as possible.
+- Realizing an early 90's era microcomputer or game console.
+
+Below each of these four goals are described, what is aimed for exactly, why,
+along with some related design notes.
+
+
+Long term binary stability
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Nowadays when information technology advances with a frightening pace, it gets
+more and more troublesome for lone developers to release something, and then,
+to maintain it to keep it being usable. Especially with retro style games,
+supposed to be possible with decades old hardware, this is getting somewhat
+ridiculous: If you knew you hadn't got the resources to actively maintain it,
+you would have to pick an existing old system (such as a Commodore 64 or IBM
+PC with DOS) as target, so, thanks to emulation, your game won't just bit-rot
+away in a few years.
+
+RRPGE in this term aims to provide a system similar to those old ones which
+are emulated today: with a stable specification, it aims to achieve long-term
+binary stability, so games and other software produced for it keep being
+usable without the burden of maintenance on the part of the developer. Just
+like any other old system with decent emulators today.
+
+
+Capability to integrate seamlessly in hosts
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Designing a new system it is possible to settle for an emulation-centric
+viewpoint: aiming to design it such a manner it can integrate without the
+need of awkward solutions at the user. For example the need for virtual disks,
+complex system configurations, inadequate controller setups can be avoided
+fairly well.
+
+From the developer's point this is advantageous since an easy to use system
+(at the user's end) is more likely to be adapted.
+
+While it is true that it is possible to hide complex configuration in
+pre-packaged installers, that solution is far from ideal, and demands the
+developer's attention to design and maintain those. With RRPGE, the problem
+is shifted to the system's design, lifting this problem from the developer's
+shoulders, and allowing for a much cleaner system on the user's end.
+
+
+Simple design for little resources
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+RRPGE is designed in a manner anticipating scarce resources in both host
+systems and integrators (who would adapt RRPGE to a particular host).
+
+The microcomputer is constructed in such a manner it can be largely
+self-contained in a completely freestanding library (under development), with
+as little interface to the host as reasonably possible, provided in a manner
+that it can be developed incrementally.
+
+In addition to this, several features of the system is rather contained in a
+so-called User Library, which is a software package designed for the (virtual)
+hardware of RRPGE. This approach reduces the implementation needs in case the
+RRPGE hardware has to be reproduced.
+
+The RRPGE CPU from the user's point of view is a Harvard architecture, with an
+instruction set which is rather trivial to disassemble: this, if such approach
+is necessary, allows for simple recompilation, increasing performance.
+Otherwise the CPU's characteristics is chosen so it can be emulated fairly
+well even with simple cross-platform interpreting.
+
+
+An early 90's microcomputer or game console
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The target era for RRPGE is chosen to produce a fairly capable system which
+still represents an age when lone or small group software development was
+still common and viable.
+
+The 80's is quite well covered with well-known and properly emulated systems
+such as the Commodore 64, developing an another 8 bit machine would have been
+rather pointless. The 90's with higher end 2D, larger RAM allowing for more
+complex games and software however is rather unfriendly from today's
+perspective. Systems in this era (both computers and consoles) are already
+quite complex, largely with no open specifications, and mostly even with legal
+constraints (such as the case of Kickstart ROMs for Amigas). Practically
+probably the only "clean" system to have from this era is the IBM PC with all
+it's known problems.
+
+RRPGE aims to fill in this gap by providing a system with a definite, simpler
+specification than several of those from this era, with clear licensing
+status.
+
+From microcomputer perspective RRPGE might be at about as capable as a 12 MHz
+80286 by it's CPU, however it provides graphics and audio hardware uncommon
+for the IBM PC, which can be utilized to produce complex visuals and sound
+which wasn't possible until much later with the PC.
+
+From console perspective RRPGE may be somewhere between the 4th and 5th
+generations. It provides rich 2D features similar to the capabilities of 4th
+generation consoles, while allowing for venturing in the world of 3D as well.
+
+
 
 
 Main components
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------------------------------------------------------
+
+
+Below a short summary of the main RRPGE components and their features is
+provided. For more extensive details, check "specs/overview.rst".
 
 - 16bit CISC CPU with user / supervisor mode separation, memory protection,
   with a highly orthogonal instruction set. Notable features are small chunk
@@ -103,33 +199,7 @@ Main components
 - Additional features provided by a kernel, including network support.
 
 - Additional convenience routines and features provided by an User Library
-  such as a sprite system.
-
-
-Comparison with computers
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The RRPGE system aims to reproduce something which might have been possible in
-the early 90s. In this era already the IBM PC dominated, still running mostly
-DOS in 16 bits, gradually pushing Commodore's Amiga behind. By design RRPGE is
-closer to an Amiga than an IBM PC with it's extensive graphics system (the IBM
-PC mostly only had VGA with very little acceleration used), however it has a
-16 bit CPU. Access to larger amounts of RAM than directly addressable by this
-processor is provided through an unique streaming interface, mostly resembling
-to a concept utilized by a rare type of REU for the Commodore 64.
-
-By CPU power and the main clock frequency of 12.5MHz RRPGE mostly falls behind
-the microcomputers of the era, however it provides a graphics subsystem and
-audio acceleration features usually not available on those.
-
-
-Comparison with consoles
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-By design RRPGE may be considered a 4th generation game console. The system
-design is simpler than most consoles, and a notable difference is a rather
-large RAM memory compared to those, while no fast direct access is provided
-for application binary data (unlike cartridges).
+  such as a sprite system and text output facilities.
 
 
 
