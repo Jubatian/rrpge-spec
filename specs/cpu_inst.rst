@@ -584,9 +584,9 @@ MOV
 +---------------------+--------------------+
 | 1000 0000 01aa aaaa | MOV adr, XB        |
 +---------------------+--------------------+
-| 1000 0010 1-aa aaaa | MOV SP, adr        |
+| 1000 0010 10aa aaaa | MOV SP, adr        |
 +---------------------+--------------------+
-| 1000 0000 1-aa aaaa | MOV adr, SP        |
+| 1000 0000 10aa aaaa | MOV adr, SP        |
 +---------------------+--------------------+
 | 1000 0011 1iii iiii | MOV SP, imm7       |
 +---------------------+--------------------+
@@ -744,6 +744,58 @@ result in the destination: ::
     dst = dst | src;
 
 Timing (cycles): 4 + ai
+
+
+POP
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
++---------------------+--------------------+
+| Binary              | Mnemonic           |
++=====================+====================+
+| 1000 0010 11rr rrrr | POP rx [,...]      |
++---------------------+--------------------+
+
+Pops off registers from the stack. For each register, the Stack Pointer (SP)
+decrements first, then the register is loaded. The six 'r' bits specify which
+registers to load (if set), which are as follows in bit5 to bit0 order: ::
+
+    A, B, X2, D, X0, X1
+
+If all 'r' bits are clear, the following registers are loaded: ::
+
+    A, B, X2, D, X0, X1, XM, XB
+
+The order of registers on the stack from lower address to higher is the same:
+for example if all 'r' bits are set, first 'X1' will be popped off of the
+stack, and last, 'A'.
+
+Timing (cycles): 2 + 2 / register
+
+
+PSH
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
++---------------------+--------------------+
+| Binary              | Mnemonic           |
++=====================+====================+
+| 1000 0000 11rr rrrr | PSH rx [,...]      |
++---------------------+--------------------+
+
+Pushes registers on the stack. For each register, the register is saved, then
+the Stack Pointer (SP) increments. The six 'r' bits specify which registers to
+save (if set), which are as follows in bit5 to bit0 order: ::
+
+    A, B, X2, D, X0, X1
+
+If all 'r' bits are clear, the following registers are saved: ::
+
+    A, B, X2, D, X0, X1, XM, XB
+
+The order of registers on the stack from lower address to higher is the same:
+for example if all 'r' bits are set, first 'A' will be pushed on the stack,
+and last, 'X1'.
+
+Timing (cycles): 2 + 2 / register
 
 
 RFN

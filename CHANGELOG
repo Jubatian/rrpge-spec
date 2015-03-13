@@ -1,3 +1,9 @@
+Version 00.017.000 ()
+ - New PSH (Push) and POP instructions for loading and storing multiple
+   registers from / to the stack, decreasing function prolog and epilog sizes
+   and execution times.
+
+
 Version 00.016.000 (2015.03.11)
  - User Library size increased from 4 KWords to 8 KWords, moving the entry
    point table down to start at 0xE000.
