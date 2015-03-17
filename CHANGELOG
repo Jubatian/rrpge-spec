@@ -2,6 +2,8 @@ Version 00.017.000 ()
  - New PSH (Push) and POP instructions for loading and storing multiple
    registers from / to the stack, decreasing function prolog and epilog sizes
    and execution times.
+ - Function calls (JFR, JFA and JSV) no longer traverse the parameter list
+   again after return.
 
 
 Version 00.016.000 (2015.03.11)

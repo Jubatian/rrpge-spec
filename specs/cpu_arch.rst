@@ -236,9 +236,9 @@ Stack management
 ------------------------------------------------------------------------------
 
 
-Stack memory is implemented using a distinct address space, the SP and BP
-registers, and two supervisor mode registers specifying user mode stack
-bounds.
+Stack memory is implemented using a distinct address space (optional: it can
+be located in data area), the SP and BP registers, and two supervisor mode
+registers specifying user mode stack bounds.
 
 The stack grows upwards, post-incrementing.
 
@@ -275,9 +275,7 @@ based on the current BP and the BP pushed on the stack at entry. ::
     +------------+
     | (...)      |
 
-In user mode there are no direct push and pop operations, however subroutine
-entries, returns and parameter passing realize identical mechanisms. The
-primary use of the stack is providing an efficient parameter and local
+The primary use of the stack is providing an efficient parameter and local
 variable storage for subroutines supporting reentrancy.
 
 Two additional supervisor mode registers are provided specifying user mode

@@ -323,13 +323,6 @@ JFR
 Relative function call (subroutine entry). The target address is calculated by
 adding the operand to the current PC which points to the JFR instruction.
 
-The stack receives the PC pointing after the function call opcode, then the
-current BP, after which the called function's stack frame is established.
-For more information, see "Stack Management" in "cpu_arch.rst".
-
-Note that the caller's stack frame is remembered for passing parameters from
-the caller's stack.
-
 After the function call opcode (including the additional opcode word if it was
 necessary by the addressing mode) up to 16 parameters may follow which are
 pushed on the called function's stack. The parameter opcode format is normally
@@ -341,13 +334,24 @@ formed as follows: ::
 The 'e' bit (also found in the function's opcode) marks the last parameter if
 if it is set. The 16th parameter ignores the 'e' bit treating it set.
 
-Note that as mentioned above, if stack space addressing is used in the
-parameter opcodes, the parameter is taken from the caller's stack (and pushed
-onto the new stack frame created for the subroutine).
+If stack space addressing is used in the parameter opcodes, the parameter is
+taken from the caller's stack (and pushed onto the new stack frame created for
+the subroutine).
 
-Also note that the stored PC points after the function call's opcode, so the
-parameter list will be executed as normal opcodes after return. They should
-be formatted as NOPs to prevent this producing ill effects.
+The function call is executed through the following essential steps:
+
+- Current SP is saved for remembering the target offest for the saved PC.
+- SP is incremented (skipping the word which will receive PC).
+- BP is pushed on the stack.
+- Current BP + SP is saved for loading in BP later (for new stack frame).
+- Parameters (if any) are processed and pushed on the stack, counting those.
+- PC (pointing after the last parameter) is saved to the remembered offset.
+- BP is loaded to establish new stack frame.
+- SP is set to the parameter count.
+
+Note that the actual implementation may establish the new stack frame before
+processing the parameter list, however then it has to remember the old stack
+frame to be used when stack addressing modes are used in parameter loads.
 
 An example call with 3 parameters: ::
 
@@ -362,7 +366,7 @@ An example call with 3 parameters: ::
 
     | (...)       |
     +-------------+
-    | PC (at 2)   | Saved return address, pointing at first parameter
+    | PC (at 6)   | Saved return address, pointing after the last parameter
     +-------------+
     | BP (caller) |
     +-------------+--> End of caller's stack frame
@@ -372,7 +376,7 @@ An example call with 3 parameters: ::
     +-------------+
     | pppp        | Third parameter, value read from [X0].
     +-------------+
-    |             | <- SP
+    |             | <- BP + SP
     +-------------+
     | (...)       |
 
