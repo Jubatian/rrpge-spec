@@ -588,9 +588,9 @@ MOV
 +---------------------+--------------------+
 | 1000 0000 10aa aaaa | MOV adr, SP        |
 +---------------------+--------------------+
-| 1000 0011 1iii iiii | MOV SP, imm7       |
+| 1000 0011 1iii i000 | MOV SP, imx        |
 +---------------------+--------------------+
-| 1000 0001 1iii iiii | MOV imm7, SP (NOP) |
+| 1000 0001 1iii i000 | MOV imx, SP (NOP)  |
 +---------------------+--------------------+
 | 1100 011r rrxx xxxx | MOV rx, imx        |
 +---------------------+--------------------+
@@ -604,6 +604,9 @@ are set zero.
 When the destination is a 4bit part of the XM (xmn) or XB (xbn) register, the
 destination (the appropriate part of XM or XB) will receive the low 4 bits of
 the source.
+
+The "MOV SP, imx" variant can be used to load SP with values from 16 to 31
+(the provided immediate is used for bits 0 - 3, bit 4 is set).
 
 The "MOV rx, imx" variants are used to load special immediate values into a
 register in one instruction word. These instructions lay out as follows:
@@ -752,22 +755,25 @@ POP
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 1000 0010 11rr rrrr | POP rx [,...]      |
+| 1000 0011 rrrr rrrr | POP rx [,...]      |
 +---------------------+--------------------+
 
 Pops off registers from the stack. For each register, the Stack Pointer (SP)
-decrements first, then the register is loaded. The six 'r' bits specify which
-registers to load (if set), which are as follows in bit5 to bit0 order: ::
+decrements first, then the register is loaded. The eight 'r' bits specify
+which registers to load (if set), which are as follows in bit7 to bit0
+order: ::
 
-    A, B, X2, D, X0, X1
-
-If all 'r' bits are clear, the following registers are loaded: ::
-
-    A, B, X2, D, X0, X1, XM, XB
+    XM, XB, A, B, D, X0, X1, X2
 
 The order of registers on the stack from lower address to higher is the same:
-for example if all 'r' bits are set, first 'X1' will be popped off of the
-stack, and last, 'A'.
+for example if all 'r' bits are set, first 'X2' will be popped off of the
+stack, and last, 'XM'.
+
+There are some invalid combinations which are used to encode different
+instructions:
+
+- 1000 0011 01xx xxxx: Popping XB without XM is not available.
+- 1000 0011 1xxx x000: Popping XM without a pointer register is not available.
 
 Timing (cycles): 2 + 2 / register
 
@@ -778,22 +784,24 @@ PSH
 +---------------------+--------------------+
 | Binary              | Mnemonic           |
 +=====================+====================+
-| 1000 0000 11rr rrrr | PSH rx [,...]      |
+| 1000 0001 rrrr rrrr | PSH rx [,...]      |
 +---------------------+--------------------+
 
 Pushes registers on the stack. For each register, the register is saved, then
-the Stack Pointer (SP) increments. The six 'r' bits specify which registers to
-save (if set), which are as follows in bit5 to bit0 order: ::
+the Stack Pointer (SP) increments. The eight 'r' bits specify which registers
+to save (if set), which are as follows in bit7 to bit0 order: ::
 
-    A, B, X2, D, X0, X1
-
-If all 'r' bits are clear, the following registers are saved: ::
-
-    A, B, X2, D, X0, X1, XM, XB
+    XM, XB, A, B, D, X0, X1, X2
 
 The order of registers on the stack from lower address to higher is the same:
-for example if all 'r' bits are set, first 'A' will be pushed on the stack,
-and last, 'X1'.
+for example if all 'r' bits are set, first 'XM' will be pushed on the stack,
+and last, 'X2'.
+
+There are some invalid combinations which are used to encode different
+instructions:
+
+- 1000 0001 01xx xxxx: Pushing XB without XM is not available.
+- 1000 0001 1xxx x000: Pushing XM without a pointer register is not available.
 
 Timing (cycles): 2 + 2 / register
 
@@ -1167,9 +1175,9 @@ XUG
 +---------------------+--------------------+
 | 1011 110r rraa aaaa | XUG adr, rx        |
 +---------------------+--------------------+
-| 1000 0011 00aa aaaa | XUG SP, adr        |
+| 1000 0010 11aa aaaa | XUG SP, adr        |
 +---------------------+--------------------+
-| 1000 0001 00aa aaaa | XUG adr, SP        |
+| 1000 0000 11aa aaaa | XUG adr, SP        |
 +---------------------+--------------------+
 
 Skips the next instruction if the value of the first operand is unsigned
