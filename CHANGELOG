@@ -4,6 +4,10 @@ Version 00.017.000 ()
    and execution times.
  - Function calls (JFR, JFA and JSV) no longer traverse the parameter list
    again after return.
+ - CPU timing updates including adding coarse implementation details in
+   "impl_hw", causing roughly a 5% - 10% raise in usual throughput. Function
+   entry and exit codes became notably faster (which are also simpler to
+   emulate by interpreting emulators).
 
 
 Version 00.016.000 (2015.03.11)

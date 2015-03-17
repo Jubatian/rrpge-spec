@@ -205,29 +205,32 @@ Memory accessing
 ------------------------------------------------------------------------------
 
 
-The processor is capable to access memory in two ways:
+The processor is capable to access memory in three ways:
 
-- Read: A read access is performed to fetch the 16bit data from a given 16 bit
-  word address.
+- Read: A read access is performed to fetch the 16 bit data from a given 16
+  bit word address.
 
-- Read-Modify-Write: A read access is performed to fetch the 16bit data from a
-  given 16 bit word address, an operation is performed (not necessarily
-  actually using the read data), then the result is written to the given
+- Read-Modify-Write: A read access is performed to fetch the 16 bit data from
+  a given 16 bit word address, an operation is performed (not necessarily
+  actually using the read data), then the result is written to the (same)
   address.
 
-Note that any writes so are accompanied with a read from the same 16 bit
-address, which some peripherals rely upon.
+- Write: A write of a 16 bit data is performed to a 16 bit word address. Stack
+  pushes are typical occurences of this access mode, and whenever a Read
+  access of a normally Read-Modify-Write sequence is optimized out (the data
+  is not needed by the operation).
 
-Moreover for Read-Modify-Write the processor has an additional line indicating
+For Read-Modify-Write accesses the processor has an additional line indicating
 whether the Read access is stand-alone, or is part of a Read-Modify-Write
 sequence. Peripherals may monitor this line when carrying out access related
 operations (so they can skip such operations for Read accesses which are part
 of a Read-Modify-Write sequence).
 
-Stack push operations are also affected, but the read data is always
-discarded. Implementations are allowed to omit these reads as by the
-specification these reads can never have side effects (the stack is always
-located in ordinary data memory).
+The specification allows for an implementation which never optimizes out a
+Read access from a Read-Modify-Write sequence. Stack pushes however need to be
+implemented as Write only access to meet the timing requirements. (Note: the
+stack, by this specification, can not be located over memory-mapped peripheral
+registers)
 
 
 

@@ -3,7 +3,7 @@ Peripheral RAM interface
 ==============================================================================
 
 :Author:    Sandor Zsuga (Jubatian)
-:Copyright: 2013 - 2014, GNU GPLv3 (version 3 of the GNU General Public
+:Copyright: 2013 - 2015, GNU GPLv3 (version 3 of the GNU General Public
             License) extended as RRPGEvt (temporary version of the RRPGE
             License): see LICENSE.GPLv3 and LICENSE.RRPGEvt in the project
             root.
@@ -33,15 +33,21 @@ They provide a configurable data unit size from 1 bit to 16 bits in power of
 2 increments, corresponding with the sub-word addressing scheme used by the
 RRPGE CPU.
 
-For realizing this in the write direction, the interface relies on that the
-RRPGE CPU always performs a Read - Modify - Write sequence when it wants to
-write out data. On the Read access, the appropriate 32 bit PRAM cell is
-latched, and on the Write access it is combined with the data coming from the
-CPU in correspondence with the data unit size.
+For realizing this in the write direction, two approaches may be taken.
 
-To prevent post-incrementing the pointer on the Read access of a Read -
-Modify - Write sequence, the signal line defined in "Memory accessing" in the
-processor architecture documentation ("cpu_arch.rst") is used.
+- If the processor is implemented so it always performs a Read-Modify-Write
+  sequence for data writes, the Read access may be used to latch the 32 bit
+  PRAM cell for combining it when writing.
+
+- If the processor may optimize out Read accesses, the combining logic has to
+  be implemented over the write access if it lacked a corresponding Read,
+  without stalling the access. This case the Write access is latched while the
+  PRAM is read, then the read PRAM cell is combined with the latch, and
+  written back.
+
+To prevent post-incrementing the pointer on the Read access of a
+Read-Modify-Write sequence, the signal line defined in "Memory accessing" in
+the processor architecture documentation ("cpu_arch.rst") is used.
 
 In read direction, the sub-word data is returned aligned to the lower bits of
 the interface register, and in write direction the register accepts the data

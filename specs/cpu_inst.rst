@@ -65,6 +65,7 @@ Timing notations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - ai: 1 additional cycle if 2nd opcode word is used.
+- ma: 1 additional cycle if a memory access is performed.
 - wc: 1 additional cycle if carry write is necessary.
 
 
@@ -162,7 +163,7 @@ destination: ::
 If Carry was specified, it will store 1 if the add generated a carry, 0
 otherwise.
 
-Timing (cycles): 4 + ai + wc
+Timing (cycles): 3 + ai + ma + wc
 
 
 ADC
@@ -189,7 +190,7 @@ in the destination: ::
 If Carry was specified, it will store 1 if the add generated a carry, 0
 otherwise.
 
-Timing (cycles): 4 + ai + wc
+Timing (cycles): 3 + ai + ma + wc
 
 
 AND
@@ -209,7 +210,7 @@ the result in the destination: ::
     AND dst, src
     dst = dst & src;
 
-Timing (cycles): 4 + ai
+Timing (cycles): 3 + ai + ma
 
 
 ASR
@@ -245,7 +246,7 @@ from it's high end. ::
     |1|1|1|1|1|1|1|1|1|1|1|1|1|0|0|1| |1|1|0|0|1|1|1|1|0|0|0|1|0|0|0|0|
     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-Timing (cycles): 4 + ai + wc
+Timing (cycles): 3 + ai + ma + wc
 
 
 BTC
@@ -262,7 +263,7 @@ Clears the bit given in the immediate of the operand specified by adr. ::
     BTC dst, imm4
     dst = dst & ~(1 << imm4);
 
-Timing (cycles): 4 + ai
+Timing (cycles): 3 + ai + ma
 
 
 BTS
@@ -279,7 +280,7 @@ Sets the bit given in the immediate of the operand specified by adr. ::
     BTS dst, imm4
     dst = dst | (1 << imm4);
 
-Timing (cycles): 4 + ai
+Timing (cycles): 3 + ai + ma
 
 
 DIV
@@ -308,7 +309,7 @@ If Carry was specified, it receives the remainder.
 If the divisor is zero, both the destination and the remainder is zeroed; this
 condition does not trigger any supervisor action (trap).
 
-Timing (cycles): 21 + ai + wc
+Timing (cycles): 20 + ai + ma + wc
 
 
 JFR
@@ -400,7 +401,7 @@ supported parameter encodings are as follows:
 | --1j jjjj jeii iiii | 0000 jjjj jjii iiii (Examples: 0x0125; 0x0FED)       |
 +---------------------+------------------------------------------------------+
 
-Timing (cycles): 9 + ai; 4 + ai / parameter
+Timing (cycles): 5 + ai + ma; 2 + ai + ma / parameter
 
 
 JFA
@@ -416,7 +417,7 @@ Absolute function call (subroutine entry). The target address is the operand.
 
 See JFL for details.
 
-Timing (cycles): 9 + ai; 4 + ai / parameter
+Timing (cycles): 5 + ai + ma; 2 + ai + ma / parameter
 
 
 JNZ
@@ -436,7 +437,7 @@ an immediate of zero will generate an infinite loop. The 7 bit immediate is
 This instruction is basically a replacement for the commonly used "XEG rx, 0;
 JMS addr" sequence, mostly occurring in loop constructs.
 
-Timing (cycles): 3 (no jump) / 5 (jump)
+Timing (cycles): 2 (no jump) / 4 (jump)
 
 
 JMR
@@ -460,7 +461,7 @@ current PC which points to the JMR instruction.
 If a register (B, C or D) is specified, it receives the value of PC pointing
 after the jump opcode: this may be used to implement small subroutines.
 
-Timing (cycles): 6 + ai
+Timing (cycles): 5 + ai + ma
 
 
 JMA
@@ -483,7 +484,7 @@ Absolute jump. The target address is the operand.
 If a register (B, C or D) is specified, it receives the value of PC pointing
 after the jump opcode: this may be used to implement small subroutines.
 
-Timing (cycles): 6 + ai
+Timing (cycles): 4 + ai + ma
 
 
 JMS
@@ -555,7 +556,7 @@ then adds carry, and stores the result in the destination: ::
 
 If Carry was specified, it receives the high 16 bits of the result.
 
-Timing (cycles): 14 + ai + wc
+Timing (cycles): 13 + ai + ma + wc
 
 
 MOV
@@ -650,7 +651,7 @@ The values in table1 (64 words) are as follows: ::
 The "MOV SP, imm7" instruction allows loading values 0 - 127 in the Stack
 Pointer in one instruction word.
 
-Timing (cycles): 3 + ai
+Timing (cycles): 2 + ai + ma
 
 
 MUL
@@ -676,7 +677,7 @@ the destination: ::
 
 If Carry was specified, it receives the high 16 bits of the result.
 
-Timing (cycles): 13 + ai + wc
+Timing (cycles): 12 + ai + ma + wc
 
 
 NEG
@@ -696,7 +697,7 @@ destination: ::
     NEG dst, src
     dst = 0 - src;
 
-Timing (cycles): 4 + ai
+Timing (cycles): 3 + ai + ma
 
 
 NOP
@@ -730,7 +731,7 @@ destination: ::
     NOT dst, src
     dst = src ^ 0xFFFF;
 
-Timing (cycles): 3 + ai
+Timing (cycles): 2 + ai + ma
 
 
 OR
@@ -750,7 +751,7 @@ result in the destination: ::
     OR dst, src
     dst = dst | src;
 
-Timing (cycles): 4 + ai
+Timing (cycles): 3 + ai + ma
 
 
 POP
@@ -779,7 +780,7 @@ instructions:
 - 1000 0011 01xx xxxx: Popping XB without XM is not available.
 - 1000 0011 1xxx x000: Popping XM without a pointer register is not available.
 
-Timing (cycles): 2 + 2 / register
+Timing (cycles): 2 + 1 / register
 
 
 PSH
@@ -807,7 +808,7 @@ instructions:
 - 1000 0001 01xx xxxx: Pushing XB without XM is not available.
 - 1000 0001 1xxx x000: Pushing XM without a pointer register is not available.
 
-Timing (cycles): 2 + 2 / register
+Timing (cycles): 2 + 1 / register
 
 
 RFN
@@ -829,7 +830,7 @@ sources use the appropriate stack frame.
 For the associated mechanisms, check the JFR opcode and the "Stack Management"
 section in "cpu_arch.rst".
 
-Timing (cycles): 9 + ai + wc
+Timing (cycles): 6 + ai + ma
 
 
 SBC
@@ -856,7 +857,7 @@ result in the destination: ::
 If Carry was specified, it will store 0xFFFF if the subtraction generated a
 borrow, 0 otherwise.
 
-Timing (cycles): 4 + ai + wc
+Timing (cycles): 3 + ai + ma + wc
 
 
 SHL
@@ -892,7 +893,7 @@ from it's low end. ::
     |0|0|0|0|0|0|0|0|0|0|0|0|1|0|0|1| |1|1|0|0|1|1|1|1|0|0|0|1|0|0|0|0|
     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-Timing (cycles): 4 + ai + wc
+Timing (cycles): 3 + ai + ma + wc
 
 
 SHR
@@ -928,7 +929,7 @@ from it's high end. ::
     |0|0|0|0|0|0|0|0|0|0|0|0|1|0|0|1| |1|1|0|0|1|1|1|1|0|0|0|1|0|0|0|0|
     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-Timing (cycles): 4 + ai + wc
+Timing (cycles): 3 + ai + ma + wc
 
 
 SLC
@@ -968,7 +969,7 @@ from it's low end. ::
     |0|0|0|0|0|0|0|0|0|0|0|0|1|0|0|1| |1|1|0|0|1|1|1|1|0|0|0|1|1|0|1|1|
     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-Timing (cycles): 4 + ai + wc
+Timing (cycles): 3 + ai + ma + wc
 
 
 SRC
@@ -1008,7 +1009,7 @@ from it's high end. ::
     |0|1|0|1|0|0|1|1|0|0|0|1|1|0|0|1| |1|1|0|0|1|1|1|1|0|0|0|1|0|0|0|0|
     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-Timing (cycles): 4 + ai + wc
+Timing (cycles): 3 + ai + ma + wc
 
 
 SUB
@@ -1035,7 +1036,7 @@ the destination: ::
 If Carry was specified, it will store 0xFFFF if the subtraction generated a
 borrow, 0 otherwise.
 
-Timing (cycles): 4 + ai + wc
+Timing (cycles): 3 + ai + ma + wc
 
 
 XBC
@@ -1053,7 +1054,7 @@ works proper even if an addressing mode needing a second opcode word is used).
 Skips a single opcode only, so if the skipped instruction has more words, the
 tail of it is executed (normally these are NOPs).
 
-Timing (cycles): 4 + ai (no skip) / 5 + ai (skip)
+Timing (cycles): 3 + ai + ma (no skip) / 5 + ai + ma (skip)
 
 
 XBS
@@ -1070,7 +1071,7 @@ set.
 
 For more information on the skip mechanism, check XBC.
 
-Timing (cycles): 4 + ai (no skip) / 5 + ai (skip)
+Timing (cycles): 3 + ai + ma (no skip) / 5 + ai + ma (skip)
 
 
 XCH
@@ -1089,7 +1090,7 @@ the exact operation order in conflicting cases, check "Instruction execution".
 Note that by definition if the operand provided by an addressing mode is an
 immediate, the XCH executes like an appropriate MOV.
 
-Timing (cycles): 4 + ai
+Timing (cycles): 3 + ai + ma
 
 
 XEQ
@@ -1107,7 +1108,7 @@ Skips the next instruction if the value of the operands are equal.
 
 For more information on the skip mechanism, check XBC.
 
-Timing (cycles): 4 + ai (no skip) / 5 + ai (skip)
+Timing (cycles): 3 + ai + ma (no skip) / 5 + ai + ma (skip)
 
 
 XNE
@@ -1125,7 +1126,7 @@ Skips the next instruction if the value of the operands are not equal.
 
 For more information on the skip mechanism, check XBC.
 
-Timing (cycles): 4 + ai (no skip) / 5 + ai (skip)
+Timing (cycles): 3 + ai + ma (no skip) / 5 + ai + ma (skip)
 
 
 XOR
@@ -1145,7 +1146,7 @@ stores the result in the destination: ::
     XOR dst, src
     dst = dst ^ src;
 
-Timing (cycles): 4 + ai
+Timing (cycles): 3 + ai + ma
 
 
 XSG
@@ -1166,7 +1167,7 @@ be supported.
 
 For more information on the skip mechanism, check XBC.
 
-Timing (cycles): 4 + ai (no skip) / 5 + ai (skip)
+Timing (cycles): 3 + ai + ma (no skip) / 5 + ai + ma (skip)
 
 
 XUG
@@ -1191,7 +1192,7 @@ supported.
 
 For more information on the skip mechanism, check XBC.
 
-Timing (cycles): 4 + ai (no skip) / 5 + ai (skip)
+Timing (cycles): 3 + ai + ma (no skip) / 5 + ai + ma (skip)
 
 
 
