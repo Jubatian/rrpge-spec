@@ -48,10 +48,7 @@ See the "Display list definition & Process flags" register (0x0017) in
 - Ret.X3: Offset in Display List Definition format (size included)
 
 The Display list size parameter specifies display list sizes the same way like
-the low 2 bits of the Display list definition & Process flags register.
-
-Low bits of offset in the return are clipped according to the way the Graphics
-Display Generator ignores those bits depending on display list size.
+the bits 4-5 of the Display list definition register.
 
 
 0xE032: Convert to PRAM word offset
@@ -62,22 +59,6 @@ Display Generator ignores those bits depending on display list size.
 - Param0: Offset in Display List Definition format (size included and used)
 - Ret. C: Display list word offset in PRAM, high
 - Ret.X3: Display list word offset in PRAM, low
-
-Low bits of the input offset are clipped first according to the way the
-Graphics Display Generator ignores those bits depending on display list size.
-
-
-0xE040: Sanitize display list offset
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- F.name: us_dloff_clip
-- Cycles: 100
-- Param0: Offset in Display List Definition format (size included and used)
-- Ret.X3: Sanitized offset (size included)
-
-Low bits of the input offset are clipped according to the way the Graphics
-Display Generator ignores those bits depending on display list size. High
-(non-offset) bits are cleared.
 
 
 
@@ -144,10 +125,9 @@ aware of these.
 - Param0: Display list definition 1 (first displayed, provides size)
 - Param1: Display list definition 2 (first work buffer)
 - Param2: Display list clear controls to fill in
-- Ret.X3: Current work display list (size and mode flags included)
+- Ret.X3: Current work display list
 
-Sets up display for double buffering, also calling the init hooks. The display
-list definitions provided are sanitized with us_dloff_clip.
+Sets up display for double buffering, also calling the init hooks.
 
 The display lists themselves are not altered, so they should be set up as
 necessary before calling this.
@@ -158,10 +138,6 @@ frame (unless already reached, using the frame rate limiter flag of the
 Display List Definition & Process flags register), sets display list clear
 controls by the provided value, finally transferring to us_dbus_getlist to
 process frame hooks and to return the work display list.
-
-The display list parameters are written out in the respective CPU RAM
-variables after the current mode flags (4 / 8 bit mode, double scan) are added
-to them.
 
 
 0xE050: Flip pages
@@ -177,9 +153,6 @@ the Flip performed flag (0xFDFD in CPU RAM).
 
 Before starting the above described tasks, it may also call the frame hooks if
 calling us_dbuf_getlist was omitted after the last page flip.
-
-If necessary, the mode flags in the display list CPU RAM variables are updated
-according to the currently set display mode.
 
 
 0xE052: Get work display list
@@ -308,6 +281,10 @@ All functions populating the display list in some manner use the
 us_dlist_setptr function to initialize pointers to walk them, so the
 definition of this function applies to all.
 
+Note that these functions do not support display lists crossing PRAM page
+boundaries (where their processing would wrap around to the beginning of the
+same bank).
+
 
 0xE034: Set up PRAM pointers for list walking
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -316,8 +293,8 @@ definition of this function applies to all.
 - Cycles: 230
 - Param0: Display list column to use
 - Param1: Y position to start at (must be either 0 - 199 or 0 - 399)
-- Param2: Display List Definition & Process Flags to use
-- Ret.X3: Display list line size in bit units (128 / 256 / 512 / 1024 / 2048)
+- Param2: Display List Definition to use
+- Ret.X3: Display list line size in bit units (128 / 256 / 512 / 1024)
 
 Sets up PRAM pointers 2 and 3 for walking a specific column of the display
 list. Pointer 2 is set up to walk (incrementally) the high word of the entry,
@@ -325,13 +302,11 @@ Pointer 3 is set up to walk the low word.
 
 The double scan flag in parameter 2 is used to determine the display list's
 line size (in addition to the display list line size bits). See the definition
-of the Display List Definition & Process flags register (0x0017) in
-"vid_arch.rst".
+of the Display List Definition register (0x0016) in "vid_arch.rst".
 
 Note that the column and the Y position parameters are not checked in any
 manner, values out of range for a given display list produce undefined
-results. The display list definition's offset part is sanitized as defined for
-us_dloff_clip.
+results.
 
 
 0xE036: Add graphics component to display list
@@ -343,7 +318,7 @@ us_dloff_clip.
 - Param1: Render command low word
 - Param2: Height in lines
 - Param3: Display list column to add to
-- Param4: Display List Definition & Process Flags to use
+- Param4: Display List Definition to use
 - Param5: Y position to start at (signed 2's complement, can be off-display)
 
 The first source line position is taken from the Render command, subsequent
@@ -351,8 +326,7 @@ positions are calculated according to the source selected by the Render
 command, using the Source definition registers in the GDG (see registers
 0x0018 - 0x001F in "vid_arch.rst").
 
-The source is clipped to the display list's height (either 200 or 400 lines
-depending on whether the Double Scan flag in parameter 4 is set or not), first
+The source is clipped to the display list's height (400 lines), first
 line's source position adjusted accordingly. The display list column is not
 affected if the source falls entirely off-display.
 
@@ -368,7 +342,7 @@ PRAM pointers 2 and 3 are used and not preserved.
 - Param1: Render command low word
 - Param2: Height in lines
 - Param3: Display list column to add to
-- Param4: Display List Definition & Process Flags to use
+- Param4: Display List Definition to use
 - Param5: X position to start at (signed 2's complement, can be off-display)
 - Param6: Y position to start at (signed 2's complement, can be off-display)
 
@@ -376,14 +350,11 @@ The X position after determining whether the source is on-display at least
 partially is used to override the low 10 bits of the Render command low word,
 then us_dlist_add is called with the result.
 
-X position respects the 4 / 8 bit mode flag in parameter 4, in 8 bit mode
-on-display coordinates ranging from 0 - 319.
-
 Width of the source is calculated according to the selected Source definition
 register of the GDG (see registers 0x0018 - 0x001F in "vid_arch.rst"). Note
-that if the source is wider than 384 (4 bit) or 192 (8 bit) pixels, it may
-partially show on the "wrong" side of the display (this behavior is caused by
-the architecture of the Graphics Display Generator).
+that if the source is wider than 384 pixels, it may partially show on the
+"wrong" side of the display (this behavior is caused by the architecture of
+the Graphics Display Generator).
 
 Shift sources are not supported by this function, the behavior for attempting
 to add a shift source with this function is undefined.
@@ -399,14 +370,13 @@ PRAM pointers 2 and 3 are used and not preserved.
 - Param0: Background pattern high word
 - Param1: Background pattern low word
 - Param2: Height in lines
-- Param3: Display List Definition & Process Flags to use
+- Param3: Display List Definition to use
 - Param4: Y position to start at (signed 2's complement, can be off-display)
 
 Adds the provided background pattern to Display list column 0.
 
-The source is clipped to the display list's height (either 200 or 400 lines
-depending on whether the Double Scan flag in parameter 4 is set or not). The
-display list is not affected if the source falls entirely off-display.
+The source is clipped to the display list's height (400 lines). The display
+list is not affected if the source falls entirely off-display.
 
 PRAM pointers 2 and 3 are used and not preserved.
 
@@ -420,13 +390,12 @@ PRAM pointers 2 and 3 are used and not preserved.
 - Param1: PRAM word offset of render command list, low
 - Param2: Height in lines
 - Param3: Display list column to add to
-- Param4: Display List Definition & Process Flags to use
+- Param4: Display List Definition to use
 - Param5: Y position to start at (signed 2's complement, can be off-display)
 
-The source is clipped to the display list's height (either 200 or 400 lines
-depending on whether the Double Scan flag in parameter 4 is set or not), start
-offset of the render command list adjusted accordingly. The display list
-column is not affected if the source falls entirely off-display.
+The source is clipped to the display list's height (400 lines), start offset
+of the render command list adjusted accordingly. The display list column is
+not affected if the source falls entirely off-display.
 
 The render commands in the render command list take 2 words each, and are in
 Big Endian order (high word first).
@@ -439,7 +408,7 @@ PRAM pointers 1, 2 and 3 are used and not preserved.
 
 - F.name: us_dlist_clear
 - Cycles: 280 + 12 / entry
-- Param0: Display List Definition & Process Flags to use
+- Param0: Display List Definition to use
 
 Clears the entire display list to zero. The passed display list definition is
 sanitized as defined for us_dloff_clip.
@@ -458,8 +427,8 @@ Single buffered display list management
 
 
 The functions below are simple wrappers for the Basic display list management
-functions, using the current Display List Definition & Process flags register
-contents (see register 0x0017 is "vid_arch.rst") for the respective parameter.
+functions, using the current Display List Definition register contents (see
+register 0x0016 is "vid_arch.rst") for the respective parameter.
 
 
 0xE044: Set up PRAM pointers for list walking
@@ -468,11 +437,11 @@ contents (see register 0x0017 is "vid_arch.rst") for the respective parameter.
 - F.name: us_dlist_sb_setptr
 - Cycles: 250
 - Param0: Display list column to use
-- Param1: Y position to start at (must be either 0 - 199 or 0 - 399)
-- Ret.X3: Display list line size in bit units (128 / 256 / 512 / 1024 / 2048)
+- Param1: Y position to start at (must be 0 - 399)
+- Ret.X3: Display list line size in bit units (128 / 256 / 512 / 1024)
 
-Wrapper for us_dlist_setptr using the current Display List Definition &
-Process flags register contents.
+Wrapper for us_dlist_setptr using the current Display List Definition register
+contents.
 
 
 0xE046: Add graphics component to display list
@@ -486,8 +455,8 @@ Process flags register contents.
 - Param3: Display list column to add to
 - Param4: Y position to start at (signed 2's complement, can be off-display)
 
-Wrapper for us_dlist_add using the current Display List Definition & Process
-flags register contents.
+Wrapper for us_dlist_add using the current Display List Definition register
+contents.
 
 PRAM pointers 2 and 3 are used and not preserved.
 
@@ -504,8 +473,8 @@ PRAM pointers 2 and 3 are used and not preserved.
 - Param4: X position to start at (signed 2's complement, can be off-display)
 - Param5: Y position to start at (signed 2's complement, can be off-display)
 
-Wrapper for us_dlist_addxy using the current Display List Definition & Process
-flags register contents.
+Wrapper for us_dlist_addxy using the current Display List Definition register
+contents.
 
 PRAM pointers 2 and 3 are used and not preserved.
 
@@ -520,8 +489,8 @@ PRAM pointers 2 and 3 are used and not preserved.
 - Param2: Height in lines
 - Param3: Y position to start at (signed 2's complement, can be off-display)
 
-Wrapper for us_dlist_addbg using the current Display List Definition & Process
-flags register contents.
+Wrapper for us_dlist_addbg using the current Display List Definition register
+contents.
 
 PRAM pointers 2 and 3 are used and not preserved.
 
@@ -537,8 +506,8 @@ PRAM pointers 2 and 3 are used and not preserved.
 - Param3: Display list column to add to
 - Param4: Y position to start at (signed 2's complement, can be off-display)
 
-Wrapper for us_dlist_addlist using the current Display List Definition &
-Process flags register contents.
+Wrapper for us_dlist_addlist using the current Display List Definition
+register contents.
 
 PRAM pointers 1, 2 and 3 are used and not preserved.
 
@@ -548,10 +517,9 @@ PRAM pointers 1, 2 and 3 are used and not preserved.
 
 - F.name: us_dlist_sb_clear
 - Cycles: 300 + 12 / entry
-- Param0: Display List Definition & Process Flags to use
 
-Wrapper for us_dlist_clear using the current Display List Definition & Process
-flags register contents.
+Wrapper for us_dlist_clear using the current Display List Definition register
+contents.
 
 PRAM pointer 3 is used and not preserved.
 
@@ -576,11 +544,11 @@ the page flip was not completed yet.
 - F.name: us_dlist_db_setptr
 - Cycles: 270 + Wait for frame end
 - Param0: Display list column to use
-- Param1: Y position to start at (must be either 0 - 199 or 0 - 399)
-- Ret.X3: Display list line size in bit units (128 / 256 / 512 / 1024 / 2048)
+- Param1: Y position to start at (must be 0 - 399)
+- Ret.X3: Display list line size in bit units (128 / 256 / 512 / 1024)
 
 Wrapper for us_dlist_setptr using the return of us_dbuf_getlist for display
-list definition & process flags.
+list definition.
 
 
 0xE056: Add graphics component to display list
@@ -595,7 +563,7 @@ list definition & process flags.
 - Param4: Y position to start at (signed 2's complement, can be off-display)
 
 Wrapper for us_dlist_add using the return of us_dbuf_getlist for display list
-definition & process flags.
+definition.
 
 PRAM pointers 2 and 3 are used and not preserved.
 
@@ -613,7 +581,7 @@ PRAM pointers 2 and 3 are used and not preserved.
 - Param5: Y position to start at (signed 2's complement, can be off-display)
 
 Wrapper for us_dlist_addxy using the return of us_dbuf_getlist for display
-list definition & process flags.
+list definition.
 
 PRAM pointers 2 and 3 are used and not preserved.
 
@@ -629,7 +597,7 @@ PRAM pointers 2 and 3 are used and not preserved.
 - Param3: Y position to start at (signed 2's complement, can be off-display)
 
 Wrapper for us_dlist_addbg using the return of us_dbuf_getlist for display
-list definition & process flags.
+list definition.
 
 PRAM pointers 2 and 3 are used and not preserved.
 
@@ -646,7 +614,7 @@ PRAM pointers 2 and 3 are used and not preserved.
 - Param4: Y position to start at (signed 2's complement, can be off-display)
 
 Wrapper for us_dlist_addlist using the return of us_dbuf_getlist for display
-list definition & process flags.
+list definition.
 
 PRAM pointers 1, 2 and 3 are used and not preserved.
 
@@ -659,7 +627,7 @@ PRAM pointers 1, 2 and 3 are used and not preserved.
 - Param0: Display List Definition & Process Flags to use
 
 Wrapper for us_dlist_clear using the return of us_dbuf_getlist for display
-list definition & process flags.
+list definition.
 
 Note that on a double buffered layout using an appropriate Display List Clear
 is much more effective (see us_dbuf_init, and "Display list clear function"
@@ -703,7 +671,7 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | 0xE03E |     12U + 280 | 1 |      | us_dlist_clear                         |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE040 |           100 | 1 |  X3  | us_dloff_clip                          |
+| 0xE040 |               |   |      | <not used>                             |
 +--------+---------------+---+------+----------------------------------------+
 | 0xE042 |             W | 3 |  X3  | us_dbuf_init                           |
 +--------+---------------+---+------+----------------------------------------+

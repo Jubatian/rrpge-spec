@@ -43,8 +43,8 @@ To initialize and operate either, the double buffering manager must be
 initialized, paying attention to adding an appropriate Display list clear. The
 clear should target all columns selected to be managed by the sprite manager.
 Since the Display list clear is capable to clear only up to 24 columns in
-single scan modes, and 48 columns in double scanned modes, without other
-provisions at most only this many columns may be used by the sprite managers.
+a fully single scanned mode, without other provisions at most only this many
+columns may be used by the sprite managers.
 
 Note that not only the number of columns available can constrain the display
 of sprites. The Graphics Display Generator has a maximum amount of cycles
