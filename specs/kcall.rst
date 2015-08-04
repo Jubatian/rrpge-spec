@@ -332,12 +332,10 @@ Kernel functions, Video (0x08 - 0x0F)
 - Cycles: 100
 - Host:   Required.
 - N/S:    This function must be supported if the host produces display.
-- Param0: Palette index (only low 8 bits used).
+- Param0: Palette index (only low 4 bits used).
 - Param1: Color in 4-4-4 RGB format (only low 12 bits used in this layout).
 
-Changes an entry in the video palette. There are 256 palette entries even in
-4 bit mode (although this case the upper 240 entries don't contribute to
-display).
+Changes an entry in the video palette. There are 16 palette entries.
 
 Irrespective of whether the host actually produces display or not the palette
 data in the Application State (see "state.rst") is updated according the set
@@ -349,31 +347,6 @@ The change of a color may only affect display data produced after the call: a
 conforming implementation must strictly follow this rule (it may be an issue
 on true palettized display modes not in sync with the emulator). The actual
 palette updates may delay by multiple frames.
-
-
-0x09: Change video mode
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- F.name: kc_vid_mode
-- Cycles: - (up to one frame or more)
-- Host:   Required.
-- N/S:    This function must be supported if the host produces display.
-- Param0: Requested video mode.
-
-Changes the video mode. The action may include extra stalls to meet
-implementation-specific timing requirements during the video mode change.
-
-The contents of the Video RAM, the configuration of the Graphics Display
-Generator or the Accelerator, and the palette is not changed by this action.
-
-The following video modes are available:
-
-- 0: 640x400; 4 bit (16 colors).
-- 1: 320x400; 8 bit (256 colors).
-- 2: 640x200; 4 bit (16 colors), double scanned.
-- 3: 320x200; 8 bit (256 colors), double scanned.
-
-Other values passed in Param1 set mode 0 (640x400; 4 bit).
 
 
 0x0A: Set stereoscopic 3D
@@ -409,8 +382,7 @@ entire height of the half-image. The following values are possible:
 
 The application must vertically center the output (start it 0 / 40 / 80 / 100
 pixels from the top respectively), and should leave the top and bottom unused
-areas showing the darkest color of the current palette. In double scanned
-mode all these pixel counts are halved.
+areas showing the darkest color of the current palette.
 
 
 
@@ -944,8 +916,6 @@ abbreviations used in the table are:
 |   0x04 |    800 | X | O | 4 |  X3  | kc_sfi_move                           |
 +--------+--------+---+---+---+------+---------------------------------------+
 |   0x08 |    100 |   | M | 2 |      | kc_vid_setpal                         |
-+--------+--------+---+---+---+------+---------------------------------------+
-|   0x09 |     \- |   | M | 1 |      | kc_vid_mode                           |
 +--------+--------+---+---+---+------+---------------------------------------+
 |   0x0A |   2400 |   | O | 1 |      | kc_vid_setst3d                        |
 +--------+--------+---+---+---+------+---------------------------------------+

@@ -19,8 +19,7 @@ The RRPGE system provides some important blocks of constant data for the
 convenience of application developers. Most notably these cover the following
 fields:
 
-- Palette data providing useful basic color sets for both the 4 bit (16 color)
-  and 8 bit (256 color) modes.
+- Palette data providing an useful basic color set.
 
 - Small and large sine tables for use with various algorithms requiring
   trigonometric functions (such as rotations and navigation in a three
@@ -42,14 +41,9 @@ RRPGE Incremental palette
 ------------------------------------------------------------------------------
 
 
-The RRPGE Incremental palette is a generic any bit depth suitable palette. It
-is constructed by two major design goals:
-
-- Make it useful for most applications providing "good" colors.
-- Organize the colors in the most useful manner.
-
-The first goal is met for any bit depth while the second only for the first 64
-(6 bit depth) colors.
+The RRPGE Incremental palette is a basic 4 bit palette laid out in an
+incremental manner, that is also providing an useful color set for 1 bit,
+2 bit and 3 bit modes.
 
 Following some characteristics are described at each bit depth:
 
@@ -87,83 +81,14 @@ them except for the blues which are aligned so they produce a ramp using bit 2
 and bit 3.
 
 
-5 bit
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-From color index 16 to 19 the grayscale ramp is extended, also providing an
-additional black which may be used for colorkeying. The extra colors are laid
-out so they roughly align with the colors of the 4 bit palette where possible.
-
-
-6 bit
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-When using 64 colors with the Graphics Accelerator's destination based
-reindexing mode, it is impossible to distinguish by bit 5 (since this mode can
-only use up to 5 bits from the destination). To make this reindexing mode
-useful while retaining 64 colors, similar colors should be mapped on the upper
-half of the palette to the lower half.
-
-The palette is designed with this in mind having most of it's colors properly
-aligned for such use. The following indices do not match or match very poorly
-by this scheme and may be avoided when using the palette this way:
-
-- 33 (cyan, poor match with 1: bright gray)
-- 34 (cyan, does not match with 2: dark gray)
-- 47 (purple, does not match with 15: brown)
-- 48 (dark purple, poor match with 16: black)
-- 49 (dark cyan, poor match with 17: mid gray)
-- 50 (purple, does not match with 18: dark gray)
-- 51 (bright green, does not match with 19: bright gray)
-- 58 (dark brown, poor match with 26: mid brown)
-- 63 (bright purple, does not match with 15: bright brown)
-
-
-7 bit and 8 bit
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Additional colors are allocated in an incremental manner to cover the color
-space the best with each added color.
-
-
 Data dump
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The palette dump below provides the 256 colors of RRPGE Incremental as 0RGB
+The palette dump below provides the 16 colors of RRPGE Incremental as 0RGB
 4-4-4-4 bit entries, suitable for inclusion in C code: ::
 
     0x000U, 0xAAAU, 0x555U, 0xFFFU, 0x229U, 0x593U, 0xA42U, 0xEDBU,
-    0x35EU, 0x85FU, 0x430U, 0xCC4U, 0x6AFU, 0x073U, 0x730U, 0xA83U,
-    0x000U, 0x777U, 0x222U, 0xCCCU, 0x24AU, 0x6B1U, 0xD84U, 0x73DU,
-    0x38EU, 0xEABU, 0x760U, 0x140U, 0x8CFU, 0x180U, 0xB68U, 0xBA4U,
-    0x025U, 0x6AAU, 0x197U, 0xFF6U, 0x009U, 0x790U, 0xC53U, 0xED5U,
-    0x057U, 0x62AU, 0x300U, 0x9A2U, 0x68EU, 0x450U, 0x602U, 0x708U,
-    0x407U, 0x479U, 0xA18U, 0x8F6U, 0x079U, 0x6D4U, 0xEA5U, 0xA3BU,
-    0x2BBU, 0xF6FU, 0x533U, 0x250U, 0x5ECU, 0x490U, 0xB4DU, 0xC6FU,
-    0x65EU, 0xE4CU, 0xA60U, 0x0A1U, 0x20AU, 0xA6EU, 0xA20U, 0x51BU,
-    0x020U, 0x9FFU, 0x900U, 0xA8AU, 0x748U, 0x1B5U, 0xDEFU, 0x356U,
-    0x90AU, 0x772U, 0x5CFU, 0x279U, 0xBE4U, 0x102U, 0x8D3U, 0x427U,
-    0x037U, 0x305U, 0x940U, 0x884U, 0x3D6U, 0x650U, 0x3BDU, 0x04AU,
-    0x29BU, 0x3C1U, 0xD28U, 0x18CU, 0xDA2U, 0xC81U, 0x81CU, 0xDC2U,
-    0xA3EU, 0x16CU, 0xA1CU, 0xAB0U, 0x2DDU, 0x627U, 0xDF5U, 0xB9FU,
-    0x470U, 0x509U, 0xB70U, 0x574U, 0xC15U, 0x43EU, 0x045U, 0x733U,
-    0x68AU, 0x955U, 0xFB4U, 0x7FEU, 0xE39U, 0x990U, 0xD63U, 0xD9FU,
-    0x906U, 0x3F9U, 0x70CU, 0x2AEU, 0x92EU, 0x7F3U, 0x614U, 0xAC9U,
-    0xD3FU, 0x6D1U, 0x7BBU, 0x0BCU, 0xF77U, 0xF63U, 0xBF7U, 0x5A7U,
-    0xF4FU, 0xC1AU, 0x06AU, 0xCA7U, 0x30CU, 0x031U, 0xC40U, 0xFAFU,
-    0x274U, 0x3A8U, 0x84AU, 0x1D7U, 0x02CU, 0x9A6U, 0x95BU, 0x382U,
-    0xCC7U, 0xE1DU, 0x13EU, 0x27FU, 0xAD0U, 0xDE1U, 0x62FU, 0xF82U,
-    0x440U, 0x088U, 0x972U, 0x31DU, 0x415U, 0xACEU, 0x0C0U, 0x7B5U,
-    0xFB8U, 0x0AAU, 0x9F2U, 0x500U, 0x242U, 0xD01U, 0xDF9U, 0x00DU,
-    0x827U, 0x8AFU, 0x204U, 0xB93U, 0x5A0U, 0x2FFU, 0x487U, 0xB1EU,
-    0x5FFU, 0x05EU, 0xE50U, 0x51FU, 0x1F9U, 0xA0EU, 0x3E0U, 0xEB0U,
-    0x5F1U, 0x247U, 0xFF1U, 0x330U, 0xC88U, 0x0ECU, 0x861U, 0x969U,
-    0xA29U, 0xD90U, 0x0CEU, 0x751U, 0x73AU, 0xB02U, 0x253U, 0xB8DU,
-    0x460U, 0xF11U, 0xF8BU, 0x0D3U, 0x70AU, 0xD0EU, 0xC76U, 0x896U,
-    0x077U, 0x09FU, 0xF30U, 0xF60U, 0x80FU, 0x0FFU, 0x07FU, 0x10FU,
-    0x934U, 0x638U, 0xEFCU, 0x57FU, 0x757U, 0x212U, 0x207U, 0x05BU,
-    0x437U, 0xA4FU, 0x32FU, 0x423U, 0x068U, 0x46BU, 0x57BU, 0x9C7U,
-    0x98FU, 0x028U, 0x96CU, 0x7F0U, 0x780U, 0xA0BU, 0x359U, 0x0AEU
+    0x35EU, 0x85FU, 0x430U, 0xCC4U, 0x6AFU, 0x073U, 0x730U, 0xA83U
 
 
 
@@ -374,7 +299,11 @@ CPU data memory
 | 0xF9FF |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xFA00 |                                                                   |
-| \-     | The RRPGE Incremental palette.                                    |
+| \-     | RRPGE Incremental palette.                                        |
+| 0xFA0F |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0xFA10 |                                                                   |
+| \-     | Zero.                                                             |
 | 0xFAFF |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xFB00 |                                                                   |

@@ -90,21 +90,21 @@ The first 64 words of the Data address space.
 +--------+-------------------------------------------------------------------+
 | 0x000F | Graphics FIFO data word & store trigger (see "fifo.rst")          |
 +--------+-------------------------------------------------------------------+
-| 0x0010 | GDG Mask / Colorkey definition 0 (see "vid_arch.rst")             |
+| 0x0010 | GDG Unused (see "vid_arch.rst")                                   |
 +--------+-------------------------------------------------------------------+
-| 0x0011 | GDG Mask / Colorkey definition 1 (see "vid_arch.rst")             |
+| 0x0011 | GDG Unused (see "vid_arch.rst")                                   |
 +--------+-------------------------------------------------------------------+
-| 0x0012 | GDG Mask / Colorkey definition 2 (see "vid_arch.rst")             |
+| 0x0012 | GDG Double scan split (see "vid_arch.rst")                        |
 +--------+-------------------------------------------------------------------+
-| 0x0013 | GDG Mask / Colorkey definition 3 (see "vid_arch.rst")             |
+| 0x0013 | GDG Display list clear controls (see "vid_arch.rst")              |
 +--------+-------------------------------------------------------------------+
 | 0x0014 | GDG Shift mode region A (see "vid_arch.rst")                      |
 +--------+-------------------------------------------------------------------+
 | 0x0015 | GDG Shift mode region B (see "vid_arch.rst")                      |
 +--------+-------------------------------------------------------------------+
-| 0x0016 | GDG Display list clear controls (see "vid_arch.rst")              |
+| 0x0016 | GDG Display list definition (see "vid_arch.rst")                  |
 +--------+-------------------------------------------------------------------+
-| 0x0017 | GDG Display list definition & process flags (see "vid_arch.rst")  |
+| 0x0017 | GDG Status flags (see "vid_arch.rst")                             |
 +--------+-------------------------------------------------------------------+
 | 0x0018 | GDG Source definition A0 (see "vid_arch.rst")                     |
 +--------+-------------------------------------------------------------------+

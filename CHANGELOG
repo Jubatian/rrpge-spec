@@ -2,6 +2,7 @@ Version 00.018.000 ()
  - Simplified Graphics Display Generator removing 8 bit mode and some unused
    or less useful features in the remaining 4 bit mode, but introducing an X
    expansion feature.
+ - Support for 8 bit mode was removed from the Accelerator.
 
 
 Version 00.017.000 (2015.07.12)
