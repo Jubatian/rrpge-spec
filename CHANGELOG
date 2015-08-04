@@ -1,3 +1,9 @@
+Version 00.018.000 ()
+ - Simplified Graphics Display Generator removing 8 bit mode and some unused
+   or less useful features in the remaining 4 bit mode, but introducing an X
+   expansion feature.
+
+
 Version 00.017.000 (2015.07.12)
  - New PSH (Push) and POP instructions for loading and storing multiple
    registers from / to the stack, decreasing function prolog and epilog sizes

@@ -156,18 +156,12 @@ Video reset state
 ------------------------------------------------------------------------------
 
 
-Video mode
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The starting mode is mode 3 (320x200; 8 bit double scanned).
-
-
 Display layout
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The display list is up as follows:
 
-- 8 entries / line (smallest).
+- 4 entries / line (smallest).
 - Peripheral RAM offset 0xFF000.
 
 The display list is populated the following way:
@@ -178,43 +172,32 @@ The display list is populated the following way:
 
 Source definitions are set up as follows:
 
-- Source A0: 0x0082
-- Source A1: 0x4140
-- Source A2: 0x8140
-- Source A3: 0xC140
-- Source B0: 0x0260
-- Source B1: 0x8260
-- Source B2: 0x0360
-- Source B3: 0x8360
+- Source A0: 0x0050
+- Source A1: 0x0000
+- Source A2: 0x0000
+- Source A3: 0x0000
+- Source B0: 0x0000
+- Source B1: 0x0000
+- Source B2: 0x0000
+- Source B3: 0x0000
 
-Source 0 sets up positioned source on Peripheral RAM bank 0 of 80 cells width.
-This is useful for non-scrolling display.
+Source 0 sets up positioned source on Peripheral RAM bank 0 of 80 cells width,
+with zero as colorkey. This is useful for non-scrolling display.
 
-Sources 1-3 are set up 4 cell wide (16 pixels in 8 bit mode, 32 pixels in 4
-bit mode) positioned source on Video RAM bank 1, in a manner they may be
-continuously accessed through display list entries, useful for small sprites.
-
-Sources 4-7 are set up 8 cell wide (32 pixels in 8 bit mode, 64 pixels in 4
-bit mode) positioned source on Video RAM banks 2 and 3, in a manner they may
-be continuously accessed through display list entries, useful for larger
-sprites.
+The remainig sources remain uninitialized (PRAM bank 0, 128 cells wide
+positioned sources, colorkey set to zero).
 
 Entry 1 of the display list is populated as follows:
 
-Line 0 gets the value 0x0000C000. Line 1 is 0x0005C000. Subsequent lines get
-their entry values in a similar manner, adding 0x50000 to the previous line.
-This layout produces a simple 320x200 surface in the beginning of the
+Line 0 gets the value 0x00008000. Line 1 is 0x0050C000. Subsequent lines get
+their entry values in a similar manner, adding 0x500000 to the previous line.
+This layout produces a simple 640x400 surface in the beginning of the
 Peripheral RAM.
 
-Note that only the valid lines of the display list are populated (so 200
-lines), the rest of the area of the display list remains zero.
+Note that only the valid lines of the display list are populated (so 400
+lines).
 
-The mask / colorkey definitions are set up as follows:
-
-- Definition 0: 0x0102
-- Definition 1: 0x0408
-- Definition 2: 0x1020
-- Definition 3: 0x4080
+Double scanning is disabled (double scan split set zero).
 
 The shift mode regions are both set up for 80 cells width, beginning at cell
 0 (so filling entire display).
@@ -325,7 +308,7 @@ Application state, see "state.rst".
 | \-     | 0                                                                 |
 | 0x054  |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0x055  | 0x07F8                                                            |
+| 0x055  | 0xF00F                                                            |
 +--------+-------------------------------------------------------------------+
 | 0x056  |                                                                   |
 | \-     | 0                                                                 |
@@ -361,8 +344,8 @@ Application state, see "state.rst".
 | \-     | 0                                                                 |
 | 0x0CF  |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0x0D0  | 0x0102, 0x0408, 0x1020, 0x4080, 0x5000, 0x5000, 0x0000, 0x37F8,   |
-| \-     | 0x0082, 0x4140, 0x8140, 0xC140, 0x0260, 0x8260, 0x0360, 0x8360    |
+| 0x0D0  | 0x0000, 0x0000, 0x0000, 0x0000, 0x5000, 0x5000, 0xF00F, 0x0000,   |
+| \-     | 0x0050, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000    |
 | 0x0DF  |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0x0E0  |                                                                   |
