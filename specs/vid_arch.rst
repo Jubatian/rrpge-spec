@@ -27,9 +27,10 @@ Basic properties of the display
 ------------------------------------------------------------------------------
 
 
-The limits of the RRPGE system's display generator are set as follows:
+The basic properties of the RRPGE system's display generator are as follows:
 
 - 640x400 visible pixels of 1:1 pixel aspect ratio
+- 6 bits per pixel palettized, 64 palette entires of 4-4-4 RGB colors.
 - 16:10 display aspect ratio
 - 50Hz minimal / 70Hz maximal refresh rate
 - At least 49 vertical blank lines (for a total of at least 449 lines)
@@ -138,22 +139,23 @@ the video signal producing pixel data. ::
     |            V                                                           |
     |  +------------- Render side -------------+--------------------------+  |
     |  |                                       |                          |  |
-    |  +- 80 x 32 bit cells display data ------+- 48 x 32 bit cells void -+  |
+    |  +- 80 x 48 bit cells display data ------+- 48 x 48 bit cells void -+  |
     |  |                                       |                          |  |
     |  +------------- Display side ------------+--------------------------+  |
     |            |                                                           |
     +------------|-----------------------------------------------------------+
                  |
-                 |     +--------------+
-                 |<----| Palette data |
-                 |     +--------------+
+                 |     +--------------------------+
+                 |<----| Palette data (64 colors) |
+                 |     +--------------------------+
                  V
            Video signal
 
 
-A display line is 640 x 4 bit pixels, taking 80 x 32 bit Video RAM cells. One
-buffer in the Line double buffer accordingly is capable to hold 80 x 32 bits
-of data, while it's cells may have a 7 bit address. The cells addressable with
+A display line is 640 x 6 bit pixels. One buffer in the Line double buffer
+accordingly is capable to hold 80 x 48 bits of data (8 pixels per cell the
+same manner like 4 bit pixels are represented in the PRAM's 32 bit cells),
+while it's cells may have a 7 bit address. The extra cells addressable with
 these address bits (cells 80 - 127) do not contribute to the Video signal, and
 so they may not be implemented.
 
@@ -262,13 +264,43 @@ are accessible in the 0x0010 - 0x001F area in the User peripheral area.
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0x0010 | Unused, reads zero                                                |
+|        | Low half-palette select A                                         |
+| 0x0010 |                                                                   |
+|        | - bit    15: X expansion for source A0                            |
+|        | - bit 12-14: Half-palette for source A0                           |
+|        | - bit    11: X expansion for source A1                            |
+|        | - bit  8-10: Half-palette for source A1                           |
+|        | - bit     9: X expansion for source A2                            |
+|        | - bit  4- 7: Half-palette for source A2                           |
+|        | - bit     3: X expansion for source A3                            |
+|        | - bit  0- 2: Half-palette for source A3                           |
+|        |                                                                   |
+|        | The half-palette bits produce bits 3-5 of the resulting pixel in  |
+|        | the Line double buffer when rendering the source. The values in   |
+|        | this register apply if the source pixel's bit 3 is clear (so      |
+|        | selecting palette for color indices 0 - 7).                       |
+|        |                                                                   |
+|        | In X expanded mode every source pixel will expand to two          |
+|        | destination pixels, doubling the width of the source (both for    |
+|        | positioned and shift sources)                                     |
 +--------+-------------------------------------------------------------------+
-| 0x0011 | Unused, reads zero                                                |
+|        | Low half-palette select B                                         |
+| 0x0011 |                                                                   |
+|        | - bit    15: X expansion for source B0                            |
+|        | - bit 12-14: Half-palette for source B0                           |
+|        | - bit    11: X expansion for source B1                            |
+|        | - bit  8-10: Half-palette for source B1                           |
+|        | - bit     9: X expansion for source B2                            |
+|        | - bit  4- 7: Half-palette for source B2                           |
+|        | - bit     3: X expansion for source B3                            |
+|        | - bit  0- 2: Half-palette for source B3                           |
 +--------+-------------------------------------------------------------------+
 |        | Double scan split                                                 |
 | 0x0012 |                                                                   |
-|        | - bit  8-15: Unused, reads zero                                   |
+|        | - bit    15: Unused, reads zero                                   |
+|        | - bit 12-14: High half-palette select for Background pattern      |
+|        | - bit    11: Unused, reads zero                                   |
+|        | - bit  8-10: Low half-palette select for Background pattern       |
 |        | - bit  0- 7: Double scan split location                           |
 |        |                                                                   |
 |        | Defines how many double-scanned lines should appear on the top    |
@@ -311,9 +343,9 @@ are accessible in the 0x0010 - 0x001F area in the User peripheral area.
 +--------+-------------------------------------------------------------------+
 |        | Display list definition                                           |
 | 0x0016 |                                                                   |
-|        | - bit  6-15: Display list start offset high bits (6-15)           |
-|        | - bit  4- 5: Display list line size                               |
-|        | - bit  0- 3: Display list PRAM bank                               |
+|        | - bit 12-15: Display list PRAM bank                               |
+|        | - bit  2-11: Display list start offset high bits (6-15)           |
+|        | - bit  0- 1: Display list line size                               |
 |        |                                                                   |
 |        | Display list line sizes:                                          |
 |        |                                                                   |
@@ -400,16 +432,12 @@ The layout of a render command is as follows:
 |        | specified line size (for example 128 cells width ignores the low  |
 |        | 7 bits).                                                          |
 +--------+-------------------------------------------------------------------+
-| 15     | Render command is enabled if set                                  |
+| 13-15  | Source definition select                                          |
 +--------+-------------------------------------------------------------------+
-| 12-14  | Source definition select                                          |
-+--------+-------------------------------------------------------------------+
-|        | X expand if set                                                   |
-| 11     |                                                                   |
-|        | In X expanded mode every source pixel will expand to two          |
-|        | destination pixels, doubling the width of the source.             |
-+--------+-------------------------------------------------------------------+
-| 10     | Unused                                                            |
+|        | High half-palette select. If this field is zero, the render       |
+| 10-12  | command is disabled. Otherwise it specifies bits 3 - 5 of the     |
+|        | resulting pixel value in the Line buffer if source pixel bit 3    |
+|        | was set (so effectively selects palette for indices 8 - 15).      |
 +--------+-------------------------------------------------------------------+
 |        | Shift / Position amount. If the source is in shift mode, this     |
 | 0-9    | value shifts it to the left by the given number of (destination)  |
@@ -445,28 +473,32 @@ and is carried out according to the following guide: ::
     | Prev. src. |   Current source  |      | Shift register
     +----+----+----+----+----+----+----+----+
               |
-              |                                       Colorkey value
-              V                                              |
-    +----+----+----+----+           +----+----+----+----+    |
-    |    Data to blit   |---------->|   Colorkey mask   |<---+
-    +----+----+----+----+           +----+----+----+----+
-              |                               |
-              |                               |      +----+----+----+----+
-              |                               | +----|  Beg/Mid/End mask |
-              |                               | |    +----+----+----+----+
-              |                              _V_V_
-              |                             | AND |
-             _V_                             ~~|~~
-            |AND|<-----------------------------+
-             ~|~                               |
-             _V_     ___                      _V_
-            | OR|<--|AND|<-------------------|NEG|
-             ~|~     ~A~                      ~~~
-              |       |
-              V       |
-     ---+----+----+----+----+---
-        | Target r.buf cell |
-     ---+----+----+----+----+---
+              |                                           Colorkey value
+              V                                                  |
+    +----+----+----+----+               +----+----+----+----+    |
+    | Data to blit (32) |-------------->|   Colorkey mask   |<---+
+    +----+----+----+----+               +----+----+----+----+
+              |                                   |
+              |                                   |      +----+----+----+----+
+              |   +---- Half-palette selects      | +----|  Beg/Mid/End mask |
+              |   |                               | |    +----+----+----+----+
+              V   V                              _V_V_
+    +--+--+--+--+--+--+--+--+                   | AND |
+    |  48 bit output data   |                    ~~|~~
+    +--+--+--+--+--+--+--+--+                      |
+                |                                  | Pixel-level mask
+                |                                  | (8 x 6 bit pixels)
+               _V_                                 |
+              |AND|<-------------------------------+
+               ~|~                                 |
+               _V_     ___                        _V_
+              | OR|<--|AND|<---------------------|NEG|
+               ~|~     ~A~                        ~~~
+                |       |
+                V       |
+     ---+--+--+--+--+--+--+--+--+---
+        | Target line buf. cell |
+     ---+--+--+--+--+--+--+--+--+---
 
 
 The Beg/Mid/End mask is used in Position mode to mask the partially filled
@@ -485,6 +517,35 @@ allowing shifting the source at (display) pixel granularity. Note that for
 this, 128 cells width with X expansion is not useful since only 6 whole cell
 address bits remain. Positioned sources likewise will expand to 2 - 256 cells
 wide of which the larger widths have no practical uses.
+
+The half-palette selection is performed according to the following scheme
+(both for the background pattern and normal renders): ::
+
+
+    +----+----+----+----+
+    |   Source pixel    | One 4 bit pixel from a 32 bit cell
+    +----+----+----+----+
+      |         |
+      |         +-----------------------------------------------------+
+      |                                                               |
+      +----+----+                                                     |
+      V    V    V                                                     V
+    +----+----+----+             ___                          +----+----+----+
+    | b3 | b3 | b3 |------+---->|NEG|                         | b2 | b1 | b0 |
+    +----+----+----+      |      ~|~                          +----+----+----+
+                          |       |                                   |
+    +----+----+----+     _V_     _V_     +----+----+----+             |
+    | High h. pal. |--->|AND|   |AND|<---|  Low h. pal. |             |
+    +----+----+----+     ~|~     ~|~     +----+----+----+             |
+                          |       |                                   |
+                          |      _V_                                  |
+                          +---->| OR|             +-------------------+
+                                 ~|~              |
+                                  |               |
+                                  V               V
+                           +----+----+----+----+----+----+
+                           |     6 bit output pixel      |
+                           +----+----+----+----+----+----+
 
 
 

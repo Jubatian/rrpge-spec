@@ -181,6 +181,9 @@ Source definitions are set up as follows:
 - Source B2: 0x0000
 - Source B3: 0x0000
 
+The low half-palette registers are all set zero, so color indices 0 - 7 are
+used, and no X expansion takes place.
+
 Source 0 sets up positioned source on Peripheral RAM bank 0 of 80 cells width,
 with zero as colorkey. This is useful for non-scrolling display.
 
@@ -189,15 +192,16 @@ positioned sources, colorkey set to zero).
 
 Entry 1 of the display list is populated as follows:
 
-Line 0 gets the value 0x00008000. Line 1 is 0x0050C000. Subsequent lines get
+Line 0 gets the value 0x00000400. Line 1 is 0x00500400. Subsequent lines get
 their entry values in a similar manner, adding 0x500000 to the previous line.
 This layout produces a simple 640x400 surface in the beginning of the
-Peripheral RAM.
+Peripheral RAM using the first 16 colors of the palette.
 
 Note that only the valid lines of the display list are populated (so 400
 lines).
 
-Double scanning is disabled (double scan split set zero).
+Double scanning is disabled, however the background palette in the same
+register is set up so the first 16 colors are used (0x1000).
 
 The shift mode regions are both set up for 80 cells width, beginning at cell
 0 (so filling entire display).
@@ -308,7 +312,7 @@ Application state, see "state.rst".
 | \-     | 0                                                                 |
 | 0x054  |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0x055  | 0xF00F                                                            |
+| 0x055  | 0xFF00                                                            |
 +--------+-------------------------------------------------------------------+
 | 0x056  |                                                                   |
 | \-     | 0                                                                 |
@@ -344,7 +348,7 @@ Application state, see "state.rst".
 | \-     | 0                                                                 |
 | 0x0CF  |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0x0D0  | 0x0000, 0x0000, 0x0000, 0x0000, 0x5000, 0x5000, 0xF00F, 0x0000,   |
+| 0x0D0  | 0x0000, 0x0000, 0x1000, 0x0000, 0x5000, 0x5000, 0xFF00, 0x0000,   |
 | \-     | 0x0050, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000    |
 | 0x0DF  |                                                                   |
 +--------+-------------------------------------------------------------------+

@@ -1,7 +1,10 @@
 Version 00.018.000 ()
  - Simplified Graphics Display Generator removing 8 bit mode and some unused
-   or less useful features in the remaining 4 bit mode, but introducing an X
-   expansion feature.
+   or less useful features in the remaining 4 bit mode.
+ - Graphics Display Generator 4 bit mode was expanded to support a total of 64
+   colors with palette selectors.
+ - Graphics Display Generator got an X expansion feature making it possible to
+   use wide pixel sprites or modes (such as 320x200 with double scanning).
  - Support for 8 bit mode was removed from the Accelerator.
 
 
