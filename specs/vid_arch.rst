@@ -321,25 +321,23 @@ are accessible in the 0x0010 - 0x001F area in the User peripheral area.
 +--------+-------------------------------------------------------------------+
 |        | Shift mode region A                                               |
 | 0x0014 |                                                                   |
-|        | - bit    15: Unused, reads zero                                   |
+|        | - bit    15: Clip positioned sources A2 - A3 to region if set     |
 |        | - bit  8-14: Output width in cells (0: No output)                 |
-|        | - bit     7: Unused, reads zero                                   |
+|        | - bit     7: Clip positioned sources A0 - A1 to region if set     |
 |        | - bit  0- 6: Begin position in cells                              |
 |        |                                                                   |
 |        | Specifies the region of output for Shift mode sources in Source   |
 |        | definitions A0 - A3. The bus access cycles required are one more  |
-|        | than the output width.                                            |
+|        | than the output width. Positioned sources may also be clipped to  |
+|        | this region (note: positioned sources always use display column   |
+|        | 0 as base irrespective of this setting).                          |
 +--------+-------------------------------------------------------------------+
 |        | Shift mode region B                                               |
 | 0x0015 |                                                                   |
-|        | - bit    15: Unused, reads zero                                   |
+|        | - bit    15: Clip positioned sources B2 - B3 to region if set     |
 |        | - bit  8-14: Output width in cells (0: No output)                 |
-|        | - bit     7: Unused, reads zero                                   |
+|        | - bit     7: Clip positioned sources B0 - B1 to region if set     |
 |        | - bit  0- 6: Begin position in cells                              |
-|        |                                                                   |
-|        | Specifies the region of output for Shift mode sources in Source   |
-|        | definitions B0 - B3. The bus access cycles required are one more  |
-|        | than the output width.                                            |
 +--------+-------------------------------------------------------------------+
 |        | Display list definition                                           |
 | 0x0016 |                                                                   |
@@ -482,18 +480,19 @@ and is carried out according to the following guide: ::
               |                                   |      +----+----+----+----+
               |   +---- Half-palette selects      | +----|  Beg/Mid/End mask |
               |   |                               | |    +----+----+----+----+
-              V   V                              _V_V_
-    +--+--+--+--+--+--+--+--+                   | AND |
-    |  48 bit output data   |                    ~~|~~
-    +--+--+--+--+--+--+--+--+                      |
-                |                                  | Pixel-level mask
-                |                                  | (8 x 6 bit pixels)
-               _V_                                 |
-              |AND|<-------------------------------+
-               ~|~                                 |
-               _V_     ___                        _V_
-              | OR|<--|AND|<---------------------|NEG|
-               ~|~     ~A~                        ~~~
+              V   V                               | |
+    +--+--+--+--+--+--+--+--+                     | | +--- Clip mask (0 / 1)
+    |  48 bit output data   |                     | | |
+    +--+--+--+--+--+--+--+--+                    _V_V_V_
+                |                               |  AND  |
+                |                                ~~~|~~~
+                |                                   | Pixel-level mask
+               _V_                                  | (8 x 6 bit pixels)
+              |AND|<--------------------------------+
+               ~|~                                  |
+               _V_     ___                         _V_
+              | OR|<--|AND|<----------------------|NEG|
+               ~|~     ~A~                         ~~~
                 |       |
                 V       |
      ---+--+--+--+--+--+--+--+--+---
@@ -503,6 +502,10 @@ and is carried out according to the following guide: ::
 
 The Beg/Mid/End mask is used in Position mode to mask the partially filled
 cells on the beginning and the end of the rendered streak of data.
+
+The Clip mask is sourced from the Shift mode region registers in Position mode
+as needed, generated to indicate whether the target line buffer cell can be
+filled or not.
 
 In Shift mode the fractional part (low 3 bits) of the Shift / Position amount
 is 2's complement negated to produce the alignment shift. In Shift mode
@@ -568,6 +571,7 @@ Bus access cycles are taken by the following rules:
 - 1 cycle for reading a display list command.
 - The Shift mode region's Output width count of cycles plus one for sources in
   Shift mode.
+- An extra cycle for every tile descriptor fetch in Tiled mode.
 - The positioned source width count of cycles for sources in Position mode (1
   to 128 cycles).
 
