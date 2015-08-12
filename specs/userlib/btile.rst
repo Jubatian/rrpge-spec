@@ -33,10 +33,10 @@ formed as follows, on top of the tileset interface:
 
 The Blit configuration composes as follows:
 
-- bit  9-15: Bits 1 - 7 of Pixel AND mask (bit 0 is always 1)
-- bit     8: If set, colorkey is Pixel AND mask, otherwise it is 0
+- bit 12-15: Colorkey
+- bit  8-11: Pixel AND mask
 - bit  5- 7: Tile index layout
-- bit     4: If set, 8 bit mode, otherwise 4 bit mode
+- bit     4: Unused
 - bit     3: If set, colorkey is enabled
 - bit  0- 2: Pixel barrel rotate right
 
@@ -48,10 +48,10 @@ following layouts are possible:
 - 1: bit 11-15: Reindex bank (0: no reindexing;  1-31); bit 0-10: Index
 - 2: bit 12-15: Reindex bank (0: no reindexing; 17-31); bit 0-11: Index
 - 3: bit 13-15: Reindex bank (0: no reindexing; 25-31); bit 0-12: Index
-- 4: bit 12-15: OR mask (low 4 bits); bit 0-11: Index
-- 5: bit  8-15: OR mask (all bits); bit 0-7: Index
-- 6: bit 12-15: OR mask (high 4 bits); bit 0-11: Index
-- 7: bit 13-15: OR mask (high 3 bits); bit 0-12: Index
+- 4: bit 12-15: OR mask; bit 0-11: Index
+- 5: bit  0-15: Index
+- 6: bit  0-15: Index
+- 7: bit  0-15: Index
 
 The Index bits select a tile image within the tileset. Tiles within the
 tileset are laid out row by row, each tile on one contiguous area of Width *

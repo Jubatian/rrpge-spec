@@ -114,8 +114,6 @@ affect how the accelerator stages are chained together:
 - (VDR) Reindex using destination. This extends the reindex stage by involving
   the destination data to select from a larger table.
 
-- (VBT) Display mode to work for: either 4 bit mode or 8 bit mode.
-
 The Accelerator has two major stages as follows:
 
 - Source fetch. This stage is performed according to the the selected mode
@@ -136,8 +134,8 @@ possible on it without the knowledge of the destination. For each Peripheral
 RAM cell necessarily affected it prepares a PRAM cell aligned data and a cell
 begin / middle / end mask.
 
-The mode selector (VMD) defines the path to take executing this stage. VMR and
-VBT may have effect on the execution otherwise.
+The mode selector (VMD) defines the path to take executing this stage. VMR may
+have effect on the execution otherwise.
 
 
 The begin / middle / end mask

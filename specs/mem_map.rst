@@ -90,9 +90,9 @@ The first 64 words of the Data address space.
 +--------+-------------------------------------------------------------------+
 | 0x000F | Graphics FIFO data word & store trigger (see "fifo.rst")          |
 +--------+-------------------------------------------------------------------+
-| 0x0010 | GDG Unused (see "vid_arch.rst")                                   |
+| 0x0010 | GDG Colorkey values A (see "vid_arch.rst")                        |
 +--------+-------------------------------------------------------------------+
-| 0x0011 | GDG Unused (see "vid_arch.rst")                                   |
+| 0x0011 | GDG Colorkey values B (see "vid_arch.rst")                        |
 +--------+-------------------------------------------------------------------+
 | 0x0012 | GDG Double scan split (see "vid_arch.rst")                        |
 +--------+-------------------------------------------------------------------+

@@ -264,36 +264,19 @@ are accessible in the 0x0010 - 0x001F area in the User peripheral area.
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-|        | Low half-palette select A                                         |
+|        | Colorkey values A                                                 |
 | 0x0010 |                                                                   |
-|        | - bit    15: X expansion for source A0                            |
-|        | - bit 12-14: Half-palette for source A0                           |
-|        | - bit    11: X expansion for source A1                            |
-|        | - bit  8-10: Half-palette for source A1                           |
-|        | - bit     9: X expansion for source A2                            |
-|        | - bit  4- 7: Half-palette for source A2                           |
-|        | - bit     3: X expansion for source A3                            |
-|        | - bit  0- 2: Half-palette for source A3                           |
-|        |                                                                   |
-|        | The half-palette bits produce bits 3-5 of the resulting pixel in  |
-|        | the Line double buffer when rendering the source. The values in   |
-|        | this register apply if the source pixel's bit 3 is clear (so      |
-|        | selecting palette for color indices 0 - 7).                       |
-|        |                                                                   |
-|        | In X expanded mode every source pixel will expand to two          |
-|        | destination pixels, doubling the width of the source (both for    |
-|        | positioned and shift sources)                                     |
+|        | - bit 12-15: Colorkey value for source A0                         |
+|        | - bit  8-11: Colorkey value for source A1                         |
+|        | - bit  4- 7: Colorkey value for source A2                         |
+|        | - bit  0- 3: Colorkey value for source A3                         |
 +--------+-------------------------------------------------------------------+
-|        | Low half-palette select B                                         |
+|        | Colorkey values B                                                 |
 | 0x0011 |                                                                   |
-|        | - bit    15: X expansion for source B0                            |
-|        | - bit 12-14: Half-palette for source B0                           |
-|        | - bit    11: X expansion for source B1                            |
-|        | - bit  8-10: Half-palette for source B1                           |
-|        | - bit     9: X expansion for source B2                            |
-|        | - bit  4- 7: Half-palette for source B2                           |
-|        | - bit     3: X expansion for source B3                            |
-|        | - bit  0- 2: Half-palette for source B3                           |
+|        | - bit 12-15: Colorkey value for source B0                         |
+|        | - bit  8-11: Colorkey value for source B1                         |
+|        | - bit  4- 7: Colorkey value for source B2                         |
+|        | - bit  0- 3: Colorkey value for source B3                         |
 +--------+-------------------------------------------------------------------+
 |        | Double scan split                                                 |
 | 0x0012 |                                                                   |
@@ -379,7 +362,8 @@ are accessible in the 0x0010 - 0x001F area in the User peripheral area.
 |        | Source definition A0                                              |
 | 0x0018 |                                                                   |
 |        | - bit 12-15: PRAM bank select                                     |
-|        | - bit  8-11: Colorkey value                                       |
+|        | - bit    11: X expansion if set                                   |
+|        | - bit  8-10: Low half-palette select                              |
 |        | - bit     7: If set, shift source. If clear, positioned source.   |
 |        | - bit  0- 6: Source line size (0: 128 cells)                      |
 |        |                                                                   |
@@ -398,6 +382,15 @@ are accessible in the 0x0010 - 0x001F area in the User peripheral area.
 |        | Shift sources wrap around on their end when rendering, always     |
 |        | producing the output width defined in the appropriate Shift mode  |
 |        | region register.                                                  |
+|        |                                                                   |
+|        | The half-palette bits produce bits 3-5 of the resulting pixel in  |
+|        | the Line double buffer when rendering the source. The values in   |
+|        | this register apply if the source pixel's bit 3 is clear (so      |
+|        | selecting palette for color indices 0 - 7).                       |
+|        |                                                                   |
+|        | In X expanded mode every source pixel will expand to two          |
+|        | destination pixels, doubling the width of the source (both for    |
+|        | positioned and shift sources)                                     |
 +--------+-------------------------------------------------------------------+
 | 0x0019 | Source definition A1                                              |
 +--------+-------------------------------------------------------------------+

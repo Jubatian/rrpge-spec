@@ -33,13 +33,11 @@ Layout in Peripheral RAM
 ------------------------------------------------------------------------------
 
 
-The font uses the 0xFC500 - 0xFDFFF range in the Peripheral RAM. In this area
-four instances of the font are defined using the following ranges:
+The font uses the 0xFC500 - 0xFD27F range in the Peripheral RAM. In this area
+two instances of the font are defined using the following ranges:
 
 - 0xFC500 - 0xFCBBF: Normal font for 4 bit mode
 - 0xFCBC0 - 0xFD27F: Inverted font for 4 bit mode
-- 0xFD280 - 0xFD93F: Normal font for 8 bit mode
-- 0xFD940 - 0xFDFFF: Inverted font for 8 bit mode
 
 While the font itself contains only 512 characters (taking 1536 or 0x600 PRAM
 cells), 64 characters worth of empty space is provided after each for a
@@ -49,13 +47,9 @@ The inverted variants produce set bits for the background. This is useful for
 coloring characters, using the Accelerator's OR mask feature, and colorkeying
 the background (so essentially the OR mask value can become the color).
 
-
-4 bit mode font
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-For 4 bit mode, the font tile width is 1 cell, the height is 12 rows. One
-pixel shares data for 4 font tiles, the first cell of the font data being
-laid out as follows: ::
+The font tile width is 1 cell, the height is 12 rows. One pixel shares data
+for four font tiles, the first cell of the font data being laid out as
+follows: ::
 
     Bit 31                              Bit 0
     +----+----+----+----+----+----+----+----+
@@ -65,24 +59,6 @@ laid out as follows: ::
     +----+----+----+----+----+----+----+----+
 
 The next cell would contain the next row for tiles 0 - 3 the same way.
-
-
-8 bit mode font
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-For 8 bit mode, the font tile width is 2 cells, the height is 12 rows. One
-pixel shares data for 8 font tiles, the first cell of the font data being
-laid out as follows: ::
-
-    Bit 31                          Bit 0
-    +--------+--------+--------+--------+
-    |76543210|76543210|76543210|76543210| Tile ID each bit belongs to
-    +--------+--------+--------+--------+
-    | Pixel 0| Pixel 1| Pixel 2| Pixel 3| Pixels in first row
-    +--------+--------+--------+--------+
-
-The next cell would contain pixels 4 - 7 of the first row, then the next row
-for tiles 0 - 7 would come the same way.
 
 
 

@@ -6,6 +6,7 @@ Version 00.018.000 ()
  - Graphics Display Generator got an X expansion feature making it possible to
    use wide pixel sprites or modes (such as 320x200 with double scanning).
  - Support for 8 bit mode was removed from the Accelerator.
+ - Some changes in the User Library reflecting the removal of the 8 bit mode.
 
 
 Version 00.017.000 (2015.07.12)

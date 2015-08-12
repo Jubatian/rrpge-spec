@@ -181,14 +181,14 @@ Source definitions are set up as follows:
 - Source B2: 0x0000
 - Source B3: 0x0000
 
-The low half-palette registers are all set zero, so color indices 0 - 7 are
-used, and no X expansion takes place.
+The colorkey value registers are all set zero.
 
 Source 0 sets up positioned source on Peripheral RAM bank 0 of 80 cells width,
-with zero as colorkey. This is useful for non-scrolling display.
+with zero as low half-palette and X expansion turned off. This is useful for
+non-scrolling display.
 
 The remainig sources remain uninitialized (PRAM bank 0, 128 cells wide
-positioned sources, colorkey set to zero).
+positioned sources, zero as low half-palette, X expansion off).
 
 Entry 1 of the display list is populated as follows:
 
