@@ -39,116 +39,148 @@ Input device type summary
 ------------------------------------------------------------------------------
 
 
-The RRPGE system is capable to use the following types of input devices:
+The RRPGE system supports the following types of input devices:
 
-- Pointing devices. Two major types are supported: Mice or similar devices
-  which require an on-screen cursor for feeding back position information to
-  the user and typically have multiple buttons, and Touch devices which
-  operate on the concept of the user interacting with the display itself or a
-  surface representing the display, not always requiring an on-screen cursor
-  but typically having only a single press information ("button").
+- 0x0: Pointing device. Typically a mouse. These devices provide a single
+  position information which the application should indicate with a cursor,
+  two (or more) buttons, and optionally a scroll wheel.
 
-- Digital gamepads. These typically provide four buttons for directions, and
-  typically four or more additional buttons. They have no capability for
+- 0x1: Touch device. Somewhat similar to pointing devices. No cursor is
+  required. If a touch device is present, it may indicate that it is the
+  preferred form of input, see the description of this device type.
+
+- 0x2: Digital gamepad. These provide four buttons for directions, and
+  typically three or more additional buttons. They have no capability for
   producing analog inputs. The host may use a physical keyboard to simulate
-  one, however on a keyboardless device it may be difficult to emulate.
+  one.
 
-- Analog joysticks. A generic analog device usually meant to be used for
+- 0x3: Analog joystick. A generic analog device usually meant to be used for
   flight simulators and similar applications.
 
-- Text input. This device is meant to provide a stream of characters and
+- 0x4: Text input. This device is meant to provide a stream of characters and
   optionally control codes, not necessarily from a physical keyboard.
 
-- Keyboards. The keyboard is supported for those situations where the text
+- 0x5: Keyboard. The keyboard is supported for those situations where the text
   input feature is not adequate since the application's requirement is rather
   a larger set of buttons in a deterministic layout.
 
+A physical RRPGE system may relaized in the following forms:
+
+- Microcomputer. This provides a keyboard (see the keyboard device for its
+  layout), which also represents a single digital gamepad or a text input
+  device. Applications targeting this may expect these being present. If
+  digital gampads are connected to this machine, the first of these would
+  (normally) share identifier with the keyboard, mapping to the CTRL (primary
+  action button), ALT (secondary action button), ESC (menu button) and the
+  directional keys. A pointing device (mouse) is optional.
+
+- Handheld console. This form only provides a digital gamepad.
+
+In addition, RRPGE may be realized by emulation over a mobile phone or tablet
+which only provides a touch device. A text input device should only be
+provided unless it is realized as an on-screen keyboard which would obscure
+the RRPGE system's display (it may still be provided if the display is shrunk
+this case, so remains entirely visible).
 
 
 
-Multiple devices, combinations
+
+Supporting the Request device kernel call
 ------------------------------------------------------------------------------
 
 
-While the most simple applications may work well with a single type of input
-device, some may find it beneficial to work with multiple devices either for
-easing the use (such as by a keyboard and a mouse), or for providing better
-support for a wider number of devices (such as supporting both mice and touch
-devices).
+The "0x10: Request device" kernel call binds physical devices seen by the
+kernel to IDs expected by the application. The application must only receive
+events from devices it requested.
 
-When multiple devices are present, the host may decide to provide multiple
-logical presentations for a single physical device. This condition can be
-detected using the 0x0410 "Get device properties" kernel call, on bits 0-4 of
-the return value. If a valid target device is provided here, it indicates that
-device representing better the actual physical device.
+The application can only request devices by their type, it is up to the kernel
+or host to decide which device should it provide upon a call. As a general
+rule, a single device must never appear under two identifiers for the
+application, that is, for example if the application requests a keyboard, then
+a digital gamepad, the latter can not be provided using the keyboard (that is,
+it must be a physical gamepad, or maybe another keyboard if a second happens
+to be attached to the machine).
 
-This feature may be used to provide very different abstractions to the same
-physical device facilitating the use from applications. A typical example
-would be a text input device and a keyboard, both supported by a physical
-keyboard.
+Devices should be provided in a consistent manner, that is if two devices of
+the same type (or capable to service the given type) are present, they should
+always be provided to the application in the same order.
+
+The following special situations should be considered:
+
+- If a keyboard is present, it should be the first device to select when
+  serving requests for Digital gamepad, Text input and Keyboard devices. Note
+  that if a physical gamepad is also present, it will also be used for input
+  by the next condition.
+
+- If a keyboard is present and at least one physical gamepad, by default the
+  physical gamepad should be part of the keyboard (as the Microcomputer form
+  described in the "Input device type summary" defined).
+
+- If only one physical gamepad is present, and the application requests both a
+  keyboard and a digital gampead (or two digital gamepads), it should be
+  detached from the keyboard to be able to serve such a request (typically may
+  be used for two player games). This detachment should only persist until the
+  combination requiring it is dropped by the application (by appropriate Drop
+  Device calls).
+
+- If more than one text input capable devices are present, they should map to
+  a single text input device by default.
+
+- If more than one pointing devices are present, they should map to a single
+  pointing device by default (usually this behaviour is expected on most
+  contemporary personal computers).
+
+- If a touch device is present, and it is not explicitly requested by the
+  application, it should operate as a pointing device (providing events for
+  the single pointing device as described above).
+
+As a general rule unless more than one of a given device type is requested by
+the application, all suitable physical devices may provide events for the
+bound indentifier. Implementing in this manner offers a more pleasant user
+experience since any physical device may be used for control without the need
+for additional configuration.
 
 
 
 
-Hotplug support
+Emulation on touch oriented devices
 ------------------------------------------------------------------------------
 
 
-Devices may be plugged in and out in an RRPGE application's lifetime
-(especially indirectly through an application state save and later reload).
-The system is capable to support this adequately, even without the awareness
-of the application.
+The RRPGE system may be emulated over mobile (smart) phones or tablets, which
+are touch oriented devices without a keyboard. Normally these devices should
+only provide a touch device for input (and optionally a text input device
+unless it would be provided by an on-screen keyboard obscuring the RRPGE
+system's display).
 
-When the 0x10 "Get device properties" kernel call is called, the kernel also
-populates the appropriate field in the application state (see "state.rst")
-with the return value. This indicates the type of the device at the given
-device ID (or the fact that the device is absent). The 0x0411 "Drop device"
-kernel call may be used to drop out devices from this state indicating they
-are no longer used.
+Applications which aim to support such hosts in addition to the more
+conventional targets with at least digital gamepads (optionally as part of a
+keyboard) present should try to allocate a digital gamepad first. This request
+should fail on a touch oriented device. Then the allocation of a touch device
+should succeed, and the application may go on.
 
-When an used device is removed, the application might still be expecting it to
-function. A removed device however returns complete inactivity (just as a
-nonexistent device does) which is the intended behavior.
+Note that requesting a keyboard is not adequate if the application would
+normally require only a digital gamepad: a handheld console may not have one.
+Requesting a pointing device is neither adequate since the touch device would
+normally operate as one. Requesting a touch device right away should neither
+be done as some conventional systems with keyboards and mice might have a
+touch capable display while their user usually might rather prefer not using
+that.
 
+Applications which aim to be touch-centric should attempt to request a touch
+device right away, only falling back to other devices if none is present.
 
-Host side
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+An application which aims to support a minimal pointing or touch device
+oriented interface should request a touch device, which if fails, should fall
+back to requesting a pointing device (this path indicating it requires a
+cursor). Then it may use the events of the device like a single button mouse,
+only using X and Y location updates to draw the cursor (if necessary).
 
-When a device is plugged in, the host should normally check the application
-state (0x070 - 0x07F in the state), to see if there is a device ID where the
-application expects no device, and add the new device there. If the host is
-capable to identify that the device added matches (at least by type) one
-previously removed, it may reuse the device ID.
-
-When restoring a state, the host should repopulate the device ID's by simple
-type matching (as it has no information on the application's previous device
-layout).
-
-If during adding devices, the device ID's are exhausted, the host should
-restrain from adding new devices until a device ID frees up naturally (the
-application polls with the 0x0410 "Get device properties" kernel call, so
-earlier removed devices may be dropped out).
-
-To always utilize the devices the best way even across state saves and
-loads, the host should allocate the device ID's incrementally, with the "best"
-devices first as far as possible.
-
-
-Application side
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-If an application needs an input device of a particular type, it should use
-the device with the lowest ID which matches (it should be the best).
-
-To make an application hotplug aware, it simply needs to call the 0x10 "Get
-device properties" kernel call regularly for the devices it uses. This way it
-can detect the absence of a previously used device, and may act accordingly.
-
-It is not strictly required, but beneficial to also call the 0x0411 "Drop
-device" kernel call on any device the application does not want to use. By
-this the host can get a more exact image on what the application actually
-uses, so may manage the devices better especially across state saves and
-reloads.
+An application only requiring a single button should attempt to request both a
+pointing device and a digital gamepad, accepting presses and releases with
+button ID of 1 from each. This way the application would respond proper to
+touches (providing pointing device input), mouse presses and digital gamepad
+or keyboard buttons.
 
 
 
@@ -157,115 +189,100 @@ The description of device types
 ------------------------------------------------------------------------------
 
 
-Here each of the supported input devices are described with their digital and
-analog input mappings.
+The following section provides descriptions for each of the device types,
+defining the format of their events. Long event messages (see "0x12: Pop input
+event queue" kernel call) are provided by defining content for data indices 1
+and 2 in addition to data index 0. The specified input devices never provide
+messages longer than 3 events. The "Msgt" column of the tables provide the
+value of the Event message type field of the event.
+
+If a physical device is uncapable to send some of the described event message
+types, it should never send such a type. Message types not marked as
+"Optional" or "(O)" in the table should always be provided, if necessary, by
+some sort of emulation.
 
 
-0x0: Mouse pointing device
+0x0: Pointing device
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The mouse pointing device provides a normal computer mouse requiring a cursor
-presented for the user to assist tracking it's position. The "0x19: Return
-area activity" kernel call should be activated by any button click with the
-pointer on the queried area.
+The pointing device supports a normal computer mouse or similar devices
+requiring a cursor presented for the user to assist tracking it's position.
 
-Digital input mapping:
+Associated message types:
 
-+------+-------+-------------------------------------------------------------+
-| Bank | Input | Description                                                 |
-+======+=======+=============================================================+
-|      | 0     | Scroll up (if there is any button in this role)             |
-| 0    +-------+-------------------------------------------------------------+
-|      | 1     | Scroll right (if there is any button in this role)          |
-|      +-------+-------------------------------------------------------------+
-|      | 2     | Scroll down (if there is any button in this role)           |
-|      +-------+-------------------------------------------------------------+
-|      | 3     | Scroll left (if there is any button in this role)           |
-|      +-------+-------------------------------------------------------------+
-|      | 4     | Primary (left) mouse button                                 |
-|      +-------+-------------------------------------------------------------+
-|      | 5     | Secondary (right) mouse button (if any)                     |
-|      +-------+-------------------------------------------------------------+
-|      | 6     | Middle mouse button (if any)                                |
-|      +-------+-------------------------------------------------------------+
-|      | 7-15  | Additional mouse buttons (if any)                           |
-+------+-------+-------------------------------------------------------------+
++------+------------------------+--------------+--------------+--------------+
+| Msgt | Description            | Data index 0 | Data index 1 | Data index 2 |
++======+========================+==============+==============+==============+
+| 0    | Button press           | Button ID    | X location   | Y location   |
++------+------------------------+--------------+--------------+--------------+
+| 1    | Button release         | Button ID    |              |              |
++------+------------------------+--------------+--------------+--------------+
+| 2    | X location update      | X location   |              |              |
++------+------------------------+--------------+--------------+--------------+
+| 3    | Y location update      | Y location   |              |              |
++------+------------------------+--------------+--------------+--------------+
+| 4    | Scrollwheel action (O) | Amount       |              |              |
++------+------------------------+--------------+--------------+--------------+
 
-Analog input mapping:
+The following button codes are defined:
 
-+-------+--------------------------------------------------------------------+
-| Input | Description                                                        |
-+=======+====================================================================+
-| 0     | Position X (0-639, even in 8 bit mode)                             |
-+-------+--------------------------------------------------------------------+
-| 1     | Position Y (0-399)                                                 |
-+-------+--------------------------------------------------------------------+
-| 2     | Scroll wheel X (infinite, wrapping)                                |
-+-------+--------------------------------------------------------------------+
-| 3     | Scroll wheel Y (infinite, wrapping)                                |
-+-------+--------------------------------------------------------------------+
+- 1: Left (primary) button
+- 2: Right button (Optional)
+- 3: Middle button (Optional)
 
-The scroll wheel inputs represent distance traveled compared to a 0 point
-sampled on the device's initialization. Negative values should relate to
-scrolling up (Y) or left (X). On a typical mouse Scroll wheel Y is available,
-and there are no scroll buttons. On some mice a horizontal scroll wheel, or
-buttons associated with left / right scroll are available.
+The X and Y locations are absolute coordinates on the display, ranging from
+0 - 639 and 0 - 399 respectively.
 
-Device specific flags (returned by 0x10: Get device properties):
-
-- bit 5: Set if a cursor should be displayed to track the device.
+The scrollwheel action provides a signed 2's complement number indicating the
+relative amount of scroll. On a typical mouse a full revolution of the
+scrollwheel should correspond to the values 0x7FFF (+32767; downwards; towards
+the hand scroll) or 0x8000 (-32768; upwards; away from the hand scroll).
 
 
-0x1: Touch pointing device
+0x1: Touch device
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The touch pointing device assumes a touch display or surface representing the
-display. The device may support multi-touch which may be exploited through the
-"0x19: Return area activity" kernel call.
+The touch device assumes a touch display, that is, the user interacting with
+the display surface itself by touch, not requiring a cursor.
 
-Hover activities may be returned if the physical device supports it. These
-indicate that the user did not actually press, but the respective analog
-inputs are valid.
+Associated message types:
 
-Digital input mapping:
++------+------------------------+--------------+--------------+--------------+
+| Msgt | Description            | Data index 0 | Data index 1 | Data index 2 |
++======+========================+==============+==============+==============+
+| 0    | Touch press            | Touch ID     | X location   | Y location   |
++------+------------------------+--------------+--------------+--------------+
+| 1    | Touch release          | Touch ID     |              |              |
++------+------------------------+--------------+--------------+--------------+
+| 2    | X location update 1    | X location   |              |              |
++------+------------------------+--------------+--------------+--------------+
+| 3    | Y location update 1    | Y location   |              |              |
++------+------------------------+--------------+--------------+--------------+
+| 2    | X location update 2    | X location   |              |              |
++------+------------------------+--------------+--------------+--------------+
+| 3    | Y location update 2    | Y location   |              |              |
++------+------------------------+--------------+--------------+--------------+
 
-+------+-------+-------------------------------------------------------------+
-| Bank | Input | Description                                                 |
-+======+=======+=============================================================+
-|      | 4     | Primary touch press activity                                |
-| 0    +-------+-------------------------------------------------------------+
-|      | 5     | Secondary touch press activity (if supported)               |
-|      +-------+-------------------------------------------------------------+
-|      | 12    | Primary touch hover activity (if supported)                 |
-|      +-------+-------------------------------------------------------------+
-|      | 13    | Secondary touch hover activity (if supported)               |
-+------+-------+-------------------------------------------------------------+
+The Touch press event supports multi-touch by allocating new IDs for
+subsequent touches, beginning with 1 for the first touch. The X and Y
+locations provided in the message locate the touch. The first two touches (ID
+1 and 2) may be tracked by X and Y location update events.
 
-Other inputs may be available if the device has additional buttons.
+The X and Y location update 1 events may arrive without a touch being present
+in case the device supports the detection of hovering.
 
-Analog input mapping:
+Before Touch press events of ID 1 and 2, the appropriate X and Y location
+update events are sent, so the location of these touches can be identified
+without reading the location data in the Touch press event (and more
+conveniently supports using the Touch device as a Pointing device).
 
-+-------+--------------------------------------------------------------------+
-| Input | Description                                                        |
-+=======+====================================================================+
-| 0     | Primary touch last position X (0-639, even in 8 bit mode)          |
-+-------+--------------------------------------------------------------------+
-| 1     | Primary touch last position Y (0-399)                              |
-+-------+--------------------------------------------------------------------+
-| 2     | Secondary touch last position X (0-639, even in 8 bit mode)        |
-+-------+--------------------------------------------------------------------+
-| 3     | Secondary touch last position Y (0-399)                            |
-+-------+--------------------------------------------------------------------+
-| 4     | Primary touch pressure (0-0xFFFF)                                  |
-+-------+--------------------------------------------------------------------+
-| 5     | Secondary touch pressure (0-0xFFFF)                                |
-+-------+--------------------------------------------------------------------+
+The X and Y locations are absolute coordinates on the display, ranging from
+0 - 639 and 0 - 399 respectively.
 
-Pressure information should be zero if there is no touch activity.
-
-Device specific flags (returned by 0x10: Get device properties):
-
-- bit 5: Set if a cursor should be displayed to track the device.
+Multi-touch support and hovering are not required features, if neither is
+present, only touch ID 1 events may be generated, X and Y location update 2
+events never arriving, and X and Y location update 1 events only arriving when
+touch ID 1 is active.
 
 
 0x2: Digital gamepad
@@ -273,80 +290,119 @@ Device specific flags (returned by 0x10: Get device properties):
 
 The usual digital gamepad with a direction pad and a set of buttons.
 
-Digital input mapping:
+Associated message types:
 
-+------+-------+-------------------------------------------------------------+
-| Bank | Input | Description                                                 |
-+======+=======+=============================================================+
-| 0    | 0     | Direction up                                                |
-+------+-------+-------------------------------------------------------------+
-| 0    | 1     | Direction right                                             |
-+------+-------+-------------------------------------------------------------+
-| 0    | 2     | Direction down                                              |
-+------+-------+-------------------------------------------------------------+
-| 0    | 3     | Direction left                                              |
-+------+-------+-------------------------------------------------------------+
-| 0    | 4     | Primary action button                                       |
-+------+-------+-------------------------------------------------------------+
-| 0    | 5     | Secondary action button (if any)                            |
-+------+-------+-------------------------------------------------------------+
-| 0    | 6     | Additional button (if any; "Menu" if possible)              |
-+------+-------+-------------------------------------------------------------+
-| 0    | 7-15  | Additional buttons (if any)                                 |
-+------+-------+-------------------------------------------------------------+
++------+------------------------+--------------+--------------+--------------+
+| Msgt | Description            | Data index 0 | Data index 1 | Data index 2 |
++======+========================+==============+==============+==============+
+| 0    | Button press           | Button ID    |              |              |
++------+------------------------+--------------+--------------+--------------+
+| 1    | Button release         | Button ID    |              |              |
++------+------------------------+--------------+--------------+--------------+
+
+The following button codes are defined:
+
+- 1: Primary action button
+- 2: Secondary action button
+- 3: Menu button
+- 4: Up direction
+- 5: Right direction
+- 6: Down direction
+- 7: Left direction
+
+A digital gamepad, as described above, may provide keyboard events for a
+keyboard which it shares identifier with. The following keyboard events are
+also provided by the gamepad this case:
+
+- CTRL:  Primary action button
+- ALT:   Secondary action button
+- ESC:   Menu button
+- UP:    Up direction
+- RIGHT: Right direction
+- DOWN:  Down direction
+- LEFT:  Left direction
 
 
 0x3: Analog joystick
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The usual at least 2 axis plus at least one fire button analog stick.
+The usual at least two axis plus at least two fire button analog stick.
 
-Digital input mapping:
+Associated message types:
 
-+------+-------+-------------------------------------------------------------+
-| Bank | Input | Description                                                 |
-+======+=======+=============================================================+
-|      | 0     | Hat/POV switch up (if any)                                  |
-| 0    +-------+-------------------------------------------------------------+
-|      | 1     | Hat/POV switch right (if any)                               |
-|      +-------+-------------------------------------------------------------+
-|      | 2     | Hat/POV switch down (if any)                                |
-|      +-------+-------------------------------------------------------------+
-|      | 3     | Hat/POV switch left (if any)                                |
-|      +-------+-------------------------------------------------------------+
-|      | 4     | Primary (left) action button                                |
-|      +-------+-------------------------------------------------------------+
-|      | 5     | Secondary (right) action button (if any)                    |
-|      +-------+-------------------------------------------------------------+
-|      | 6     | Additional button (if any; "Menu" if possible)              |
-|      +-------+-------------------------------------------------------------+
-|      | 7-15  | Additional buttons (if any)                                 |
-+------+-------+-------------------------------------------------------------+
++------+------------------------+--------------+--------------+--------------+
+| Msgt | Description            | Data index 0 | Data index 1 | Data index 2 |
++======+========================+==============+==============+==============+
+| 0    | Button press           | Button ID    |              |              |
++------+------------------------+--------------+--------------+--------------+
+| 1    | Button release         | Button ID    |              |              |
++------+------------------------+--------------+--------------+--------------+
+| 2    | X location update      | X location   |              |              |
++------+------------------------+--------------+--------------+--------------+
+| 3    | Y location update      | Y location   |              |              |
++------+------------------------+--------------+--------------+--------------+
+| 4    | Throttle update (O)    | Throttle     |              |              |
++------+------------------------+--------------+--------------+--------------+
 
-Analog input mapping:
+The following button codes are defined:
 
-+-------+--------------------------------------------------------------------+
-| Input | Description                                                        |
-+=======+====================================================================+
-| 0     | Position X (-0x8000 - 0x7FFF)                                      |
-+-------+--------------------------------------------------------------------+
-| 1     | Position Y (-0x8000 - 0x7FFF)                                      |
-+-------+--------------------------------------------------------------------+
-| 2     | Position Z (-0x8000 - 0x7FFF; usually twisting the stick)          |
-+-------+--------------------------------------------------------------------+
-| 3     | Throttle controller (-0x8000 - 0x7FFF)                             |
-+-------+--------------------------------------------------------------------+
+- 1: Primary action button
+- 2: Secondary action button
+- 3: Menu button (Optional)
+
+The X and Y locations are signed 2's complement numbers ranging from -0x4000
+to 0x4000. Positive referst to rightwards and downwards directions.
+
+The throttle is a value ranging from 0x0000 to 0x4000. Positive refers to
+increasing, direction depending on the construction of the stick.
+
+Calibration, proper centering should be done by the host. The value of 0x0000
+indicating center should be stable, and the stick should be capable to reach
+all of the limits.
 
 
 0x4: Text input
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The text input device is special in that it is accessible through a separate
-kernel call (0x18: "Pop text input FIFO"). It provides no digital or analog
-inputs. It may typically be backed by a keyboard, but other physical devices
-might be possible.
+The text input device is provided for reading UTF text from arbitrary sources,
+typically a keyboard (but not limited to it).
 
-More on this device can be found in the "Text input control codes" chapter.
+Associated message types:
+
++------+------------------------+--------------+--------------+--------------+
+| Msgt | Description            | Data index 0 | Data index 1 | Data index 2 |
++======+========================+==============+==============+==============+
+| 8    | Control input          | Value        |              |              |
++------+------------------------+--------------+--------------+--------------+
+| 9    | UTF32 character input  | Value, high  | Value, low   |              |
++------+------------------------+--------------+--------------+--------------+
+
+The control input provides commands to direct cursor movement and text
+editing, while the UTF32 character input provides the characters themselves.
+
+When providing text input from a keyboard, the host should implement key
+repeating as needed.
+
+The following values are defined for control input:
+
+- 1: Toggle insertion mode between insert and overwrite
+- 2: Up one row of text
+- 3: Right one character
+- 4: Down one row of text
+- 5: Left one character
+- 6: Up one page of text
+- 7: Jump to the beginning of a row (home)
+- 8: Down one page of text
+- 9: Jump to the end of a row (end)
+
+The following special characters should be provided (and recognized) as UTF32
+input:
+
+- 0x00000008: Backspace: Delete character before the cursor
+- 0x00000009: TAB: A horizontal TAB character
+- 0x0000000A: New line
+- 0x00000020: Whitespace
+- 0x0000007F: Delete: Delete character after the cursor
 
 
 0x5: Keyboard
@@ -356,198 +412,94 @@ The keyboard device is provided as a large array of buttons for application
 requiring such an input device. Note that for text input, the Text input
 device is more suitable.
 
-The descriptions for the digital inputs should be applied by the standard US
-QWERTY layout as below (only the alphanumeric portion shown): ::
+Associated message types:
 
-    +----------------------------------------------------------------...
-    | +---+   +---+---+---+---+ +---+---+---+---+ +---+---+---+---+
-    | |ESC|   | F1| F2| F3| F4| | F5| F6| F7| F8| | F9|F10|F11|F12|
-    | +---+   +---+---+---+---+ +---+---+---+---+ +---+---+---+---+
-    | +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-    | | ~ | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 0 | - | + | | |BKS|
-    | +---+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+---+
-    | | TAB | Q | W | E | R | T | Y | U | I | O | P | { | } |     |
-    | +-----++--++--++--++--++--++--++--++--++--++--++--++--+ENTER|
-    | | CAPS | A | S | D | F | G | H | J | K | L | : | " |        |
-    | +------+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+--------+
-    | | SHIFT  | Z | X | C | V | B | N | M | < | > | ? |  SHIFT   |
-    | +----+---++--+-+-+---+---+---+---+---+--++---+---+-----+----+
-    | |CTRL|    |ALT |         SPACE          |ALTG|         |CTRL|
-    | +----+    +----+------------------------+----+         +----+
-    +----------------------------------------------------------------...
++------+------------------------+--------------+--------------+--------------+
+| Msgt | Description            | Data index 0 | Data index 1 | Data index 2 |
++======+========================+==============+==============+==============+
+| 0    | Button press           | Button ID    |              |              |
++------+------------------------+--------------+--------------+--------------+
+| 1    | Button release         | Button ID    |              |              |
++------+------------------------+--------------+--------------+--------------+
 
-If necessary, the actual labeling of the keys may be requestable using the
-0x12 "Get digital input description symbols" kernel call.
+The RRPGE keyboard has the following layout: ::
 
-The first input bank is a combined button state, provided for easing some
-typical keyboard uses, and to make it possible to support these uses with
-touch in touch aware applications.
+    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+    | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | + | - | / | * |BKS|
+    +---+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+---++---+   +---+
+    | TAB | Q | W | E | R | T | Y | U | I | O | P | [ | ] |     ||INS|   |ESC|
+    +-----++--++--++--++--++--++--++--++--++--++--++--++--+     |+---+   +---+
+    | SHLC | A | S | D | F | G | H | J | K | L | : | ; | ENTER  ||DEL|   |FN |
+    +------+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+--------++---+---+---+
+    | SHIFT  | Z | X | C | V | B | N | M | , | . | = |  SHIFT   |    | A |
+    +--------+---+---++--+---+---+---+---+---++--+---+-+--------++---+---+---+
+    |  CTRL  |  ALT   |          SPACE        |  ALT   |  CTRL  || < | V | > |
+    +--------+--------+-----------------------+--------+--------++---+---+---+
 
-Digital input mapping of bank zero:
+By hardware it is realized as a 8x8 matrix with 63 positions used. The two
+ALT, CTRL and SHIFT keys share the same intersection each, so it is not
+possible to distinguish which one was pressed of these. Moreover the SHIFT,
+CTRL, ALT, SPACE and directional keys share the same row to allow for the
+detection of simultaneous presses on keyfoils, so the keyboard can be useful
+as a digital gamepad.
 
-+------+-------+-------------------------------------------------------------+
-| Bank | Input | Description                                                 |
-+======+=======+=============================================================+
-|      | 0     | Direction key up; Numpad 8; key 8                           |
-| 0    +-------+-------------------------------------------------------------+
-|      | 1     | Direction key right; Numpad 6; key 6                        |
-|      +-------+-------------------------------------------------------------+
-|      | 2     | Direction key down; Numpad 2; key 2                         |
-|      +-------+-------------------------------------------------------------+
-|      | 3     | Direction key left; Numpad 4; key 4                         |
-|      +-------+-------------------------------------------------------------+
-|      | 4     | SPACE; ENTER; Numpad Enter                                  |
-|      +-------+-------------------------------------------------------------+
-|      | 5     | ALT; ALTG; Numpad 0; key 0; Insert                          |
-|      +-------+-------------------------------------------------------------+
-|      | 6     | ESC; Numpad Del; Delete (+ Optionally "menu" if available)  |
-|      +-------+-------------------------------------------------------------+
-|      | 7     | F1; Numpad 5; key 5                                         |
-|      +-------+-------------------------------------------------------------+
-|      | 8     | Numpad 9, key 9, Page Up                                    |
-|      +-------+-------------------------------------------------------------+
-|      | 9     | Numpad 3, key 3, Page Down                                  |
-|      +-------+-------------------------------------------------------------+
-|      | 10    | Numpad 1, key 1, End                                        |
-|      +-------+-------------------------------------------------------------+
-|      | 11    | Numpad 7, key 7, Home                                       |
-|      +-------+-------------------------------------------------------------+
-|      | 12    | Numpad /                                                    |
-|      +-------+-------------------------------------------------------------+
-|      | 13    | Numpad *                                                    |
-|      +-------+-------------------------------------------------------------+
-|      | 14    | Numpad -                                                    |
-|      +-------+-------------------------------------------------------------+
-|      | 15    | Numpad +                                                    |
-+------+-------+-------------------------------------------------------------+
+The FN key is used to access some alternate functions. When held down, the
+upper row becomes function keys (F0 - F14 from key "0" to Backspace), and the
+directional keys operate as Page Up, Page Down, Home and End.
 
-The mapping of the individual keys are shown on the following tables. Empty
-indicates unused slots. If the keyboard does not contain a numeric pad, but a
-switch, then the switch should be interpreted by the host and keys should be
-returned accordingly. Notes (#x) in the table are described below it.
+The Button IDs are normally formed by providing the ASCII value of the
+appropriate keys as above. The following special keys are returned:
 
-+---+--------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-|Bnk|  Area  | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |10 |11 |12 |13 |14 |15 |
-+===+========+===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+
-| 1 | Numpad | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |ENT|Del| / | * | - | + |
-+---+--------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-| 2 | F-Row  |ESC| F1| F2| F3| F4| F5| F6| F7| F8| F9|F10|F11|F12| #0        |
-+---+--------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-| 3 | NumRow | ~ | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 0 | - | + | | |BKS|   |
-+---+--------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-| 4 | UpRow  |TAB| Q | W | E | R | T | Y | U | I | O | P | { | } |           |
-+---+--------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+-------+
-| 5 | HomeRow|#1 | A | S | D | F | G | H | J | K | L | : | " |#2 |ENT|       |
-+---+--------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+-------+
-| 6 | BotRow |SHL|#3 | Z | X | C | V | B | N | M | < | > | ? |#3 |SHR|       |
-+---+--------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+-------+
-| 7 | Control|CTL|#4 |ALT|SPC|ALG| #4    |CTR|#5 |                           |
-+---+--------+---+---+---+---+---+---+---+---+---+---+-----------------------+
-| 8 | Dirs   |Up |Rig|Dwn|Lft|Ins|Del|Hom|End|PgU|PgD|                       |
-+---+--------+---+---+---+---+---+---+---+---+---+---+-----------------------+
-| 9 | Extra  | #6                                                            |
-+---+--------+---------------------------------------------------------------+
+- 0x0008: BKS (Backspace)
+- 0x0009: TAB
+- 0x000A: ENTER
+- 0x0020: SPACE
+- 0x007F: DEL (Delete)
+- 0x0081: INS (Insert)
+- 0x0082: UP
+- 0x0083: RIGHT
+- 0x0084: DOWN
+- 0x0085: LEFT
+- 0x0086: Page Up (FN + UP)
+- 0x0087: End (FN + RIGHT)
+- 0x0088: Page Down (FN + DOWN)
+- 0x0089: Home (FN + LEFT)
+- 0x0090: SHLC (Shift Lock)
+- 0x0091: SHIFT (Either left or right)
+- 0x0092: CTRL (Either left or right)
+- 0x0093: ALT (Either left or right)
+- 0x0094: ESC
+- 0x0095: FN (Note that its normal function is also performed!)
+- 0x00A0: F0 (FN + '0')
+- 0x00A1: F1 (FN + '1')
+- 0x00A2: F2 (FN + '2')
+- 0x00A3: F3 (FN + '3')
+- 0x00A4: F4 (FN + '4')
+- 0x00A5: F5 (FN + '5')
+- 0x00A6: F6 (FN + '6')
+- 0x00A7: F7 (FN + '7')
+- 0x00A8: F8 (FN + '8')
+- 0x00A9: F9 (FN + '9')
+- 0x00AA: F10 (FN + '+')
+- 0x00AB: F11 (FN + '-')
+- 0x00AC: F12 (FN + '/')
+- 0x00AD: F13 (FN + '*')
+- 0x00AE: F14 (FN + BKS)
 
-- #0: If the host supports returning presses for the Print Screen, Scroll Lock
-  and Break keys, they may be provided here.
+When emulating, optionally the native layout of the host's keyboard may also
+be used.
 
-- #1: If the host supports returning presses for the Caps Lock key, it may be
-  returned here.
+When the keyboard is used as a digital gamepad device, the following keys are
+used for controls:
 
-- #2: Place for an extra key in the Home row if any.
+- CTRL:  Primary action button
+- SPACE: Primary action button
+- ALT:   Secondary action button
+- ESC:   Menu button
+- UP:    Up direction
+- RIGHT: Right direction
+- DOWN:  Down direction
+- LEFT:  Left direction
 
-- #3: Places for extra keys in the Bottom row if any.
-
-- #4: If the host supports returning presses for the menu keys, they may be
-  returned here.
-
-- #5: If the host supports returning presses for the Num Lock key, it may be
-  returned here.
-
-- #6: If the keyboard contains additional keys to those defined, they may be
-  implemented in this area.
-
-On banks 17 - 25 a similar map must be made available, but mapping by symbol
-correspondence (so for example a QWERTZ keyboard's 'Z' would produce an
-activity on bank 4, bit 6, and bank 22, bit 2). If the host is not capable to
-support symbol correspondence, it is allowed to replicate the same mapping
-like used for banks 1 - 9.
-
-
-
-
-Get digital / analog input descriptor
-------------------------------------------------------------------------------
-
-
-The kernel functions 0x12 and 0x13 ("Get digital input descriptor" and "Get
-analog input descriptor") can be used to gather information about the controls
-provided by a device.
-
-The purpose of these functions are twofold:
-
-- They can return whether the input is available or not: the application may
-  use this information to fine-tune it's controls, such as by not expecting
-  input from a non-existent point.
-
-- The textual representations may provide feedback for the user (if printed by
-  the application), so the user may easier find the appropriate buttons on his
-  device.
-
-
-
-
-Text input control codes
-------------------------------------------------------------------------------
-
-
-The kernel function 0x18 "Pop text input FIFO" returns the next character or
-control code in the text input buffer if any.
-
-Normally the input is an UTF-32 character, however special control codes also
-need to be supplied to serve for text editing.
-
-Note that the text input device is not necessarily a keyboard.
-
-The host may or may not provide control codes to position a text cursor.
-Initially applications which want to handle a text cursor should assume the
-cursor is after the last received character. Applications which do not want to
-realize a text cursor may simply discard cursor control codes if any arrives.
-Unsupported characters or control codes may always be simply discarded by
-applications.
-
-Following the special codes are listed:
-
-+--------------+-------------------------------------------------------------+
-| Code (32bit) | Description                                                 |
-+==============+=============================================================+
-| 0x00000000   | Text input FIFO is empty                                    |
-+--------------+-------------------------------------------------------------+
-| 0x00000008   | Backspace: Delete character before text cursor              |
-+--------------+-------------------------------------------------------------+
-| 0x00000009   | TAB: May produce a horizontal tabulation                    |
-+--------------+-------------------------------------------------------------+
-| 0x0000000A   | New line                                                    |
-+--------------+-------------------------------------------------------------+
-| 0x00000020   | Whitespace                                                  |
-+--------------+-------------------------------------------------------------+
-| 0x0000007F   | Delete: Delete character after the text cursor (if any)     |
-+--------------+-------------------------------------------------------------+
-| 0x80000090   | Up: Move text cursor up a line                              |
-+--------------+-------------------------------------------------------------+
-| 0x80000091   | Right: Move text cursor right a character                   |
-+--------------+-------------------------------------------------------------+
-| 0x80000092   | Down: Move text cursor down a line                          |
-+--------------+-------------------------------------------------------------+
-| 0x80000093   | Left: Move text cursor left a character                     |
-+--------------+-------------------------------------------------------------+
-| 0x80000094   | Insert: Toggle insertion mode                               |
-+--------------+-------------------------------------------------------------+
-| 0x80000096   | Home: Position the text cursor at the beginning of the line |
-+--------------+-------------------------------------------------------------+
-| 0x80000097   | End: Position the text cursor at the end of the line        |
-+--------------+-------------------------------------------------------------+
-| 0x80000098   | Page Up: Move text cursor up a page                         |
-+--------------+-------------------------------------------------------------+
-| 0x80000099   | Page Down: Move text cursor down a page                     |
-+--------------+-------------------------------------------------------------+
+For more information on the implementation and properties of a physical RRPGE
+keyboard, see the hardware details ("impl_hw/keyboard.rst").

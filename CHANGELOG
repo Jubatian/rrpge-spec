@@ -7,6 +7,8 @@ Version 00.018.000 ()
    use wide pixel sprites or modes (such as 320x200 with double scanning).
  - Support for 8 bit mode was removed from the Accelerator.
  - Some changes in the User Library reflecting the removal of the 8 bit mode.
+ - New, simpler event based input concept, completely redesigning the input
+   interface.
 
 
 Version 00.017.000 (2015.07.12)

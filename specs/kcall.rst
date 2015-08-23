@@ -391,43 +391,29 @@ Kernel functions, Input devices (0x10 - 0x1E)
 ------------------------------------------------------------------------------
 
 
-0x10: Get device properties
+0x10: Request device
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- F.name: kc_inp_getprops
+- F.name: kc_inp_reqdev
 - Cycles: 800
 - Host:   Required.
-- N/S:    May always return 0 indicating the device is not available.
-- Param0: Device to query (only low 4 bits used).
-- Ret.X3: Device properties.
+- N/S:    May always return 0 if the host doesn't support input.
+- Param0: Device ID to request at (only low 4 bits used).
+- Param1: Device type to request (only low 4 bits used).
+- Ret.X3: Zero if no suitable device exists, one otherwise.
 
-The return value provides the properties of the device queried. It is composed
-of the following fields:
+Requests the usage of a device, binding it to the given Device ID. Upon this
+call the host should allocate an appropriate device for the application's use,
+and subsequently return events for it.
 
-- bit 12-15: Input device type.
-- bit    11: Nonzero indicating the device is available.
-- bit  5-10: Device-specific flags (zero unless specified otherwise).
-- bit     4: Set if bits 0-3 contain a valid device ID.
-- bit  0- 3: Device ID which this device maps to.
+If multiple devices of a given type exist, their order of allocation should be
+consistent, that is for example the same (preferably the most suitable) device
+should be returned first.
 
-If the device is not available, the return value is zero.
+Requesting a device at an already occupied ID drops the previously allocated
+device on that ID as if the kc_inp_dropdev function was called on it.
 
-Only device types allowed in the Application Header (see "bin_rpa.rst") may be
-returned.
-
-If bit 4 is set, it indicates that the device maps to the same physical device
-as an another, and that another device is a more accurate representation (for
-example a device type of text input may map to a keyboard).
-
-Before first calling this function, the given device ID behaves like there is
-no device behind (all functions returning according to N/S). By calling, the
-application notifies the kernel (and by it, the host) that it might want to
-use the device, so the device (if any) may come live. The kernel the same time
-updates the application state (0x070 - 0x07F, see "state.rst") according to
-the return.
-
-For the layout of Device-specific flags and more on the behavior and handling
-of input devices, see "inputdev.rst".
+For more information, see "inputdev.rst".
 
 
 0x11: Drop device
@@ -436,164 +422,84 @@ of input devices, see "inputdev.rst".
 - F.name: kc_inp_dropdev
 - Cycles: 800
 - Host:   Required.
-- N/S:    May ignore it if this functionality is not necessary for the host.
-- Param0: Device to drop (only low 4 bits used).
+- N/S:    May be ignored if the host doesn't support input.
+- Param0: Device ID to drop (only low 4 bits used).
 
-Notifies the kernel that the application does not need the given device any
-more. When encountering this call, the kernel discards the device from the
-application state, resetting it's field to zero (0x070 - 0x07F, see
-"state.rst"). Furthermore the given device will behave as non-existent (all
-functions returning according to N/S).
+Ceases using the passed device. The host should stop sending events relating
+to it. The event queue is flushed.
 
-For more on the behavior and handling of input devices, see "inputdev.rst".
-
-
-0x12: Get digital input descriptor
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- F.name: kc_inp_getdidesc
-- Cycles: 2400
-- Host:   Required.
-- N/S:    May always return 0 indicating the input does not exist.
-- Param0: Device to query (only low 4 bits used).
-- Param1: Input group to query.
-- Param2: Input to query within the group (only low 4 bits used).
-- Param3: Target offset in CPU Data memory to load the description into.
-- Param4: Size limit for the description in words.
-- Ret.X3: 0 if the input does not exist, 1 otherwise.
-
-Returns a description for the given input point of the given device, or the
-information that the input is not available. This function may assist users
-using their physical controllers within the application by providing
-information by which they may identify the appropriate controls on their
-hardware.
-
-An UTF-8 description text is loaded into the target if the input exists (it
-may not terminate properly if truncated by size limit). Otherwise the target
-is not altered.
-
-See "inputdev.rst" for more information.
-
-
-0x13: Get analog input descriptor
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- F.name: kc_inp_getaidesc
-- Cycles: 2400
-- Host:   Required.
-- N/S:    May always return 0 indicating the input does not exist.
-- Param0: Device to query (only low 4 bits used).
-- Param1: Analog input to query.
-- Param2: Target offset in CPU Data memory to load the description into.
-- Param3: Size limit for the description in words.
-- Ret.X3: 0 if the input does not exist, 1 otherwise.
-
-Returns a description for the given input point of the given device, or the
-information that the input is not available. This function may assist users
-using their physical controllers within the application by providing
-information by which they may identify the appropriate controls on their
-hardware.
-
-An UTF-8 description text is loaded into the target if the input exists (it
-may not terminate properly if truncated by size limit). Otherwise the target
-is not altered.
-
-See "inputdev.rst" for more information.
-
-
-0x14: Get device name
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- F.name: kc_inp_getname
-- Cycles: 2400
-- Host:   Required.
-- N/S:    May always return 0 indicating the name does not exist.
-- Param0: Device to query (only low 4 bits used).
-- Param1: Target offset in CPU Data memory to load the name into.
-- Param2: Size limit for the name in words.
-- Ret.X3: 0 if the name does not exist, 1 otherwise.
-
-Returns a descriptive UTF-8 device name if possible (it may not terminate
-properly if truncated by size limit). Note that even an existing device may
-have no name information. If the name does not exist, the target is not
-altered.
-
-
-0x16: Get digital inputs
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- F.name: kc_inp_getdi
-- Cycles: 800
-- Host:   Required.
-- N/S:    May always return 0 indicating none of the inputs are active.
-- Param0: Device to query (only low 4 bits used).
-- Param1: Input group to query.
-- Ret.X3: Digital inputs.
-
-The exact role and layout of the directions and buttons vary by device type.
-For more information see "inputdev.rst".
-
-
-0x17: Get analog inputs
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- F.name: kc_inp_getai
-- Cycles: 800
-- Host:   Required.
-- N/S:    May always return 0 indicating the device is centered / idle.
-- Param0: Device to query (only low 4 bits used).
-- Param1: Analog input to query.
-- Ret.X3: 2's complement input value.
-
-The exact role an layout of the analog inputs vary by device type. For more
-information see "inputdev.rst".
-
-
-0x18: Pop text input FIFO
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- F.name: kc_inp_popchar
-- Cycles: 800
-- Host:   Required.
-- N/S:    May always return 0 indicating the FIFO is empty.
-- Param0: Device to query (only low 4 bits used).
-- Ret. C: High 16 bits of UTF-32 character.
-- Ret.X3: Low 16 bits of UTF-32 character.
-
-Note that the text input also returns some text-related control codes which
-may be used to assist editing the text. For more information, see
-"inputdev.rst".
-
-
-0x19: Return area activity
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- F.name: kc_inp_checkarea
-- Cycles: 1200
-- Host:   Required.
-- N/S:    May always return 0 indicating the area is inactive.
-- Param0: Device to query (only low 4 bits used).
-- Param1: Upper left corner, X (0 - 639).
-- Param2: Upper left corner, Y (0 - 399).
-- Param3: Width.
-- Param4: Height.
-- Ret.X3: Area activity flags.
-
-The kernel truncates the rectangle to fit on the display treating the upper
-left corners as 2's complement values. Note that valid X positions range from
-0 - 639 even on 8bit (320 pixels wide) display mode, 639 specifying the
-rightmost valid location. A width or height of zero turns off the touch
-sensitive area.
-
-The return value may provide the following information:
-
-- bit 0: Set if the area is activated (mouse clicked, touched).
-- bit 1: Set if the pointer hovers over the area.
-
-Hover might not be available, so it is possible that an activation is present
-without hover (bit 0 set while bit 1 is clear).
+This function should be used to indicate that a device is no longer used, so
+it may be available for further Request Device calls. This is important for
+devices supporting multiple types since one physical device can only serve one
+type at once.
 
 For more information, see "inputdev.rst".
+
+
+0x12: Pop input event queue
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- F.name: kc_inp_pop
+- Cycles: 800
+- Host:   Required.
+- N/S:    May always return 0 if the host doesn't support input.
+- Ret. C: High 16 bits of event. Zero if the queue is empty.
+- Ret.X3: Low 16 bits of event.
+
+Pops next event off the input event queue. This function will always return
+zero unless a device is successfully requested using kc_inp_reqdev.
+
+The high 16 bits are structured as follows:
+
+- bit 12-15: Source device ID
+- bit    11: Set if Data index is zero, clear otherwise
+- bit  8-10: Data index
+- bit  4- 7: Device type
+- bit  0- 3: Event message type
+
+The Device type and the Event message type together determine the content.
+
+The Data index is provided for supporting more than 16 event bits by sending
+it in up to 8 distinct events (long event message). This index indicates which
+part of the event message is received.
+
+Bit 11 may be used to detect the beginning of a new event after silence or a
+long event message.
+
+A long event message is always delivered in an uninterrupted burst (so no new
+event will arrive until all its components are delivered in correct order).
+The delivery however may fail skipping some trailing events.
+
+For more information, the types of events supported, see "inputdev.rst".
+
+
+0x13: Peek input event queue
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- F.name: kc_inp_peek
+- Cycles: 800
+- Host:   Required.
+- N/S:    May always return 0 if the host doesn't support input.
+- Ret. C: High 16 bits of event. Zero if the queue is empty.
+- Ret.X3: Low 16 bits of event.
+
+Peeks the event queue, checking the next event coming off from it. It doesn't
+remove this event from the queue.
+
+Once a peek is made, it is guaranteed that subsequent peeks will return the
+same event until a call to kc_inp_pop removes it from the queue, or a call to
+kc_inp_dropdev or kc_inp_flush flushing the entire queue.
+
+
+0x14: Flush input event queue
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- F.name: kc_inp_flush
+- Cycles: 800
+- Host:   Required.
+- N/S:    May be ignored if the host doesn't support input.
+
+Flushes the event queue removing all pending events from it.
 
 
 
@@ -919,23 +825,15 @@ abbreviations used in the table are:
 +--------+--------+---+---+---+------+---------------------------------------+
 |   0x0A |   2400 |   | O | 1 |      | kc_vid_setst3d                        |
 +--------+--------+---+---+---+------+---------------------------------------+
-|   0x10 |    800 |   | O | 1 |  X3  | kc_inp_getprops                       |
+|   0x10 |    800 |   | O | 2 |  X3  | kc_inp_reqdev                         |
 +--------+--------+---+---+---+------+---------------------------------------+
 |   0x11 |    800 |   | O | 1 |      | kc_inp_dropdev                        |
 +--------+--------+---+---+---+------+---------------------------------------+
-|   0x12 |   2400 |   | O | 5 |  X3  | kc_inp_getdidesc                      |
+|   0x12 |    800 |   | O | 0 | C:X3 | kc_inp_pop                            |
 +--------+--------+---+---+---+------+---------------------------------------+
-|   0x13 |   2400 |   | O | 4 |  X3  | kc_inp_getaidesc                      |
+|   0x13 |    800 |   | O | 0 | C:X3 | kc_inp_peek                           |
 +--------+--------+---+---+---+------+---------------------------------------+
-|   0x14 |   2400 |   | O | 3 |  X3  | kc_inp_getname                        |
-+--------+--------+---+---+---+------+---------------------------------------+
-|   0x16 |    800 |   | O | 2 |  X3  | kc_inp_getdi                          |
-+--------+--------+---+---+---+------+---------------------------------------+
-|   0x17 |    800 |   | O | 1 |  X3  | kc_inp_getai                          |
-+--------+--------+---+---+---+------+---------------------------------------+
-|   0x18 |    800 |   | O | 1 | C:X3 | kc_inp_popchar                        |
-+--------+--------+---+---+---+------+---------------------------------------+
-|   0x19 |   1200 |   | O | 5 |      | kc_inp_checkarea                      |
+|   0x14 |    800 |   | O | 0 |      | kc_inp_flush                          |
 +--------+--------+---+---+---+------+---------------------------------------+
 |   0x1F |  Param |   |   | 1 |      | kc_dly_delay                          |
 +--------+--------+---+---+---+------+---------------------------------------+
