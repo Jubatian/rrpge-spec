@@ -503,3 +503,30 @@ used for controls:
 
 For more information on the implementation and properties of a physical RRPGE
 keyboard, see the hardware details ("impl_hw/keyboard.rst").
+
+
+
+
+Event frequency management
+------------------------------------------------------------------------------
+
+
+The kernel (or host) should ensure that no redundant events arrive during a
+display frame wherever this is necessary. If combining events is necessary to
+achieve this, it should be done on the application interface (so if multiple
+sources are present, those should be sent combined in this manner).
+
+Combining events should proceed by the following principles:
+
+- Event message types 0 and 1 for every device type are press and release
+  events. It should be ensured that for any button ID, at most one such event
+  (either press or release) arrives. In general if either source's appropriate
+  button is pressed, the application should receive events so it interprets it
+  as pressed.
+
+- Event message types 2 to 7 for every device type are analog style inputs,
+  receiving state changes. Of these the last event should be retained,
+  discarding the rest.
+
+Implementing this feature is not critical, however lessens probable load on
+the application trying to interpret unnecessarily frequent events.
