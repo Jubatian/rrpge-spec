@@ -310,11 +310,11 @@ The following button codes are defined:
 - 6: Down direction
 - 7: Left direction
 
-A digital gamepad, as described above, may provide keyboard events for a
-keyboard which it shares identifier with. The following keyboard events are
-also provided by the gamepad this case:
+When a digital gamepad device is requested and is served by a keyboard, the
+following keys should map to digital gamepad controls:
 
 - CTRL:  Primary action button
+- SPACE: Primary action button
 - ALT:   Secondary action button
 - ESC:   Menu button
 - UP:    Up direction
@@ -383,26 +383,35 @@ editing, while the UTF32 character input provides the characters themselves.
 When providing text input from a keyboard, the host should implement key
 repeating as needed.
 
-The following values are defined for control input:
-
-- 1: Toggle insertion mode between insert and overwrite
-- 2: Up one row of text
-- 3: Right one character
-- 4: Down one row of text
-- 5: Left one character
-- 6: Up one page of text
-- 7: Jump to the beginning of a row (home)
-- 8: Down one page of text
-- 9: Jump to the end of a row (end)
+For control input, the same codes are used like for Keyboard, in the range
+0x0081 - 0x00AE. SHIFTLOCK, SHIFT, CTRL, ALT and FN are not returned as these
+are meaningless for text input. INS, and navigational actions (Directionals,
+Page Up / Down, Home, End) are provided in particular.
 
 The following special characters should be provided (and recognized) as UTF32
 input:
 
 - 0x00000008: Backspace: Delete character before the cursor
 - 0x00000009: TAB: A horizontal TAB character
-- 0x0000000A: New line
+- 0x0000000A: New line (ENTER, also used for confirm in such contexts)
 - 0x00000020: Whitespace
 - 0x0000007F: Delete: Delete character after the cursor
+
+When a physical gamepad is used to provide text input events, its buttons map
+to the following events:
+
+- Primary action: 0x9 / 0x0000000A; New line or ENTER
+- Secondary action: Same effect like FN key on the directionals
+- Menu: 0x8 / 0x0094; ESC
+- Directionals: Either directionals or Page up / down, Home and End.
+
+When the Secondary action button is held down, the directionals so provide the
+following events:
+
+- UP: Page Up (0x8 / 0x0086)
+- RIGHT: End (0x8 / 0x0087)
+- DOWN: Page Down (0x8 / 0x0088)
+- LEFT: Home (0x8 / 0x0089)
 
 
 0x5: Keyboard
@@ -489,17 +498,21 @@ appropriate keys as above. The following special keys are returned:
 When emulating, optionally the native layout of the host's keyboard may also
 be used.
 
-When the keyboard is used as a digital gamepad device, the following keys are
-used for controls:
+When a physical gamepad is used to provide keyboard events, its buttons map to
+the following events:
 
-- CTRL:  Primary action button
-- SPACE: Primary action button
-- ALT:   Secondary action button
-- ESC:   Menu button
-- UP:    Up direction
-- RIGHT: Right direction
-- DOWN:  Down direction
-- LEFT:  Left direction
+- Primary action: 0x000A; ENTER
+- Secondary action: 0x0095: FN (Changes function of directionals)
+- Menu: 0x0094; ESC
+- Directionals: Either directionals or Page up / down, Home and End.
+
+When the Secondary action button is held down, the directionals so provide the
+following events:
+
+- UP: Page Up (0x0086)
+- RIGHT: End (0x0087)
+- DOWN: Page Down (0x0088)
+- LEFT: Home (0x0089)
 
 For more information on the implementation and properties of a physical RRPGE
 keyboard, see the hardware details ("impl_hw/keyboard.rst").
