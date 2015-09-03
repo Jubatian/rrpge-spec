@@ -372,35 +372,36 @@ Associated message types:
 +------+------------------------+--------------+--------------+--------------+
 | Msgt | Description            | Data index 0 | Data index 1 | Data index 2 |
 +======+========================+==============+==============+==============+
-| 8    | Control input          | Value        |              |              |
+| 8    | ASCII & Control input  | Value        |              |              |
 +------+------------------------+--------------+--------------+--------------+
 | 9    | UTF32 character input  | Value, high  | Value, low   |              |
 +------+------------------------+--------------+--------------+--------------+
 
-The control input provides commands to direct cursor movement and text
-editing, while the UTF32 character input provides the characters themselves.
+The ASCII & Control input provides ASCII characters (range 0x00 - 0x7F) and
+commands to direct cursor movement and text editing, while the UTF32 character
+input provides character with code points above 0x7F.
 
 When providing text input from a keyboard, the host should implement key
 repeating as needed.
 
-For control input, the same codes are used like for Keyboard, in the range
-0x0081 - 0x00AE. SHIFTLOCK, SHIFT, CTRL, ALT and FN are not returned as these
-are meaningless for text input. INS, and navigational actions (Directionals,
-Page Up / Down, Home, End) are provided in particular.
+For ASCII & Control input, the same codes are used like for Keyboard, in the
+range 0x0081 - 0x00AE. SHIFTLOCK, SHIFT, CTRL, ALT and FN are not returned as
+these are meaningless for text input. INS, and navigational actions
+(Directionals, Page Up / Down, Home, End) are provided in particular.
 
-The following special characters should be provided (and recognized) as UTF32
+The following special characters should be provided (and recognized) as ASCII
 input:
 
-- 0x00000008: Backspace: Delete character before the cursor
-- 0x00000009: TAB: A horizontal TAB character
-- 0x0000000A: New line (ENTER, also used for confirm in such contexts)
-- 0x00000020: Whitespace
-- 0x0000007F: Delete: Delete character after the cursor
+- 0x0008: Backspace: Delete character before the cursor
+- 0x0009: TAB: A horizontal TAB character
+- 0x000A: New line (ENTER, also used for confirm in such contexts)
+- 0x0020: Whitespace
+- 0x007F: Delete: Delete character after the cursor
 
 When a physical gamepad is used to provide text input events, its buttons map
 to the following events:
 
-- Primary action: 0x9 / 0x0000000A; New line or ENTER
+- Primary action: 0x8 / 0x000A; New line or ENTER
 - Secondary action: Same effect like FN key on the directionals
 - Menu: 0x8 / 0x0094; ESC
 - Directionals: Either directionals or Page up / down, Home and End.
