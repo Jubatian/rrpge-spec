@@ -159,6 +159,9 @@ while it's cells may have a 7 bit address. The extra cells addressable with
 these address bits (cells 80 - 127) do not contribute to the Video signal, and
 so they may not be implemented.
 
+The Line double buffer cells are accessed in pairs, so it is effectively
+addressed using a 6 bit address.
+
 The filling of the render side starts in line -2 (2 lines before the first
 display line), then a buffer flip happens on advancing to line 0. Subsequently
 buffer flips happen either every second line or every line depending on the
@@ -304,10 +307,12 @@ are accessible in the 0x0010 - 0x001F area in the User peripheral area.
 +--------+-------------------------------------------------------------------+
 |        | Shift mode region A                                               |
 | 0x0014 |                                                                   |
-|        | - bit    15: Clip positioned sources A2 - A3 to region if set     |
-|        | - bit  8-14: Output width in cells (0: No output)                 |
-|        | - bit     7: Clip positioned sources A0 - A1 to region if set     |
-|        | - bit  0- 6: Begin position in cells                              |
+|        | - bit    15: Clip positioned source A3 to region if set           |
+|        | - bit    14: Clip positioned source A2 to region if set           |
+|        | - bit  8-13: Output width in cell pairs (0: No output)            |
+|        | - bit     7: Clip positioned source A1 to region if set           |
+|        | - bit     6: Clip positioned source A0 to region if set           |
+|        | - bit  0- 5: Begin position in cell pairs                         |
 |        |                                                                   |
 |        | Specifies the region of output for Shift mode sources in Source   |
 |        | definitions A0 - A3. The bus access cycles required are one more  |
@@ -317,10 +322,12 @@ are accessible in the 0x0010 - 0x001F area in the User peripheral area.
 +--------+-------------------------------------------------------------------+
 |        | Shift mode region B                                               |
 | 0x0015 |                                                                   |
-|        | - bit    15: Clip positioned sources B2 - B3 to region if set     |
-|        | - bit  8-14: Output width in cells (0: No output)                 |
-|        | - bit     7: Clip positioned sources B0 - B1 to region if set     |
-|        | - bit  0- 6: Begin position in cells                              |
+|        | - bit    15: Clip positioned source B3 to region if set           |
+|        | - bit    14: Clip positioned source B2 to region if set           |
+|        | - bit  8-13: Output width in cell pairs (0: No output)            |
+|        | - bit     7: Clip positioned source B1 to region if set           |
+|        | - bit     6: Clip positioned source B0 to region if set           |
+|        | - bit  0- 5: Begin position in cell pairs                         |
 +--------+-------------------------------------------------------------------+
 |        | Display list definition                                           |
 | 0x0016 |                                                                   |
@@ -365,19 +372,20 @@ are accessible in the 0x0010 - 0x001F area in the User peripheral area.
 |        | - bit    11: X expansion if set                                   |
 |        | - bit  8-10: Low half-palette select                              |
 |        | - bit     7: If set, shift source. If clear, positioned source.   |
-|        | - bit  0- 6: Source line size (0: 128 cells)                      |
+|        | - bit     6: Unused                                               |
+|        | - bit  0- 5: Source line size in cell pairs (0: 64 cell pairs)    |
 |        |                                                                   |
 |        | Shift sources use the source line size field differently, only    |
 |        | the low 3 bits:                                                   |
 |        |                                                                   |
-|        | - 0: 1 cell (8 pixels)                                            |
-|        | - 1: 2 cells                                                      |
-|        | - 2: 4 cells                                                      |
-|        | - 3: 8 cells                                                      |
-|        | - 4: 16 cells                                                     |
-|        | - 5: 32 cells                                                     |
-|        | - 6: 64 cells                                                     |
-|        | - 7: 128 cells                                                    |
+|        | - 0: 1 cell pair (16 pixels)                                      |
+|        | - 1: 2 cell pairs                                                 |
+|        | - 2: 4 cell pairs                                                 |
+|        | - 3: 8 cell pairs                                                 |
+|        | - 4: 16 cell pairs                                                |
+|        | - 5: 32 cell pairs                                                |
+|        | - 6: 64 cell pairs                                                |
+|        | - 7: 128 cell pairs                                               |
 |        |                                                                   |
 |        | Shift sources wrap around on their end when rendering, always     |
 |        | producing the output width defined in the appropriate Shift mode  |
@@ -430,18 +438,46 @@ The layout of a render command is as follows:
 |        | resulting pixel value in the Line buffer if source pixel bit 3    |
 |        | was set (so effectively selects palette for indices 8 - 15).      |
 +--------+-------------------------------------------------------------------+
-|        | Shift / Position amount. If the source is in shift mode, this     |
-| 0-9    | value shifts it to the left by the given number of (destination)  |
-|        | pixels. If the source is in position mode, this value determines  |
-|        | its start position on the Render side of the Line double buffer.  |
+| 4-9    | Mode specific bits                                                |
++--------+-------------------------------------------------------------------+
+| 0-3    | Cell pair right shift amount (0 - 15 pixels)                      |
 +--------+-------------------------------------------------------------------+
 
-A render command may be disabled by leaving its bit 15 zero. Such a render
-command does not contribute to the line's contents, and only takes one bus
-access cycle (the cycle in which it was fetched).
+The mode specific bits in Shift mode:
+
++--------+-------------------------------------------------------------------+
+| Bits   | Description                                                       |
++========+===================================================================+
+|        | Negated source start offset in cell pairs. Offset is generated as |
+| 4-9    | (this_value ^ 0x3F), shifted left by one if X expansion is off.   |
+|        | Note that the source fetches for the first cell pair don't        |
+|        | directly generate output, only populate the output shift          |
+|        | register. This way, combined with bits 0 - 3 of the render        |
+|        | command, this forms a source start offset in pixels on the        |
+|        | display.                                                          |
++--------+-------------------------------------------------------------------+
+
+The mode specific bits in Positioned mode:
+
++--------+-------------------------------------------------------------------+
+| Bits   | Description                                                       |
++========+===================================================================+
+| 4-9    | Start offset on display (in cell pairs). Combined with bits 0 - 3 |
+|        | of the render command, this is essentially a pixel position.      |
++--------+-------------------------------------------------------------------+
+
+A render command may be disabled by leaving its bits 10 - 12 zero. Such a
+render command does not contribute to the line's contents, and only takes one
+bus access cycle (the cycle in which it was fetched).
 
 PRAM boundaries can not be crossed by source fetches: the addressing wraps
 around to the beginning of the given PRAM bank on such event.
+
+Note that if the source line size field is set to 128 cell pairs for Shift
+mode, infinite scrolling using bits 0 - 9 of the render command becomes
+impossible. This setup however remains useful for panning over a 1664 pixels
+wide surface (2048 pixels effective width, but 384 pixels of this can not be
+made visible).
 
 
 
@@ -500,19 +536,14 @@ The Clip mask is sourced from the Shift mode region registers in Position mode
 as needed, generated to indicate whether the target line buffer cell can be
 filled or not.
 
-In Shift mode the fractional part (low 3 bits) of the Shift / Position amount
-is 2's complement negated to produce the alignment shift. In Shift mode
-typically a source cell has to be fetched in advance (without producing
-destination for it), so the shift register may be properly filled for the
-first output data.
+In normal Positioned or Shift modes (no X expansion), 2 such source fetches
+are performed to populate the two target Line buffer cells.
 
-X expansion introduces an additional fractional bit in the source addressing
-logic, identifying the high or low half of the source cell to use after
-fetching it. In Shift mode the shift is applied to this expanded address, thus
-allowing shifting the source at (display) pixel granularity. Note that for
-this, 128 cells width with X expansion is not useful since only 6 whole cell
-address bits remain. Positioned sources likewise will expand to 2 - 256 cells
-wide of which the larger widths have no practical uses.
+If X expansion is set, only one source fetch is performed, which is expanded
+(from 32 bits to 64 bits by duplicating each 4 bit pixel) before writing into
+the Shift register in two passes of the above algorithm. This way half as many
+source fetches are performed than in no X expansion modes, thus halving the
+total width of the source data.
 
 The half-palette selection is performed according to the following scheme
 (both for the background pattern and normal renders): ::
@@ -561,19 +592,15 @@ and there are bus access cycles remaining for the render.
 
 Bus access cycles are taken by the following rules:
 
-- 1 cycle for reading a display list command.
-- The Shift mode region's Output width count of cycles plus one for sources in
-  Shift mode.
-- An extra cycle for every tile descriptor fetch in Tiled mode.
-- The positioned source width count of cycles for sources in Position mode (1
-  to 128 cycles).
+- 1 cycle for reading a render command.
+- In Shift mode, twice the Output width of cycles, plus two for the initial
+  source fetch.
+- In positioned mode, twice the Source line size of cycles, plus one for an
+  extra Line buffer write (actually two, but one of these cycles should be
+  pipelined with the reading of a subsequent render command).
 
 Note that the renderer is not capable to optimize out access cycles which
 would be used to render into off-screen area.
-
-(Pipelining notes: if a source is in Position mode, to render it on the Line
-double buffer, one more cycle is necessary than it's width. This extra cycle
-should be performed in parallel with a display list command fetch)
 
 
 
