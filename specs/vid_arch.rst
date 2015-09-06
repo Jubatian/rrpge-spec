@@ -486,9 +486,9 @@ The mode specific bits in Tiled mode:
 | 8-11   | unused otherwise, but this case either bit 10 or 11 should be set |
 |        | to enable the render command (so bits 10 - 12 remain nonzero).    |
 +--------+-------------------------------------------------------------------+
-|        | Tile row select. In X expanded mode this is OR combined with bits |
-| 4-7    | 0 - 3 of the tile address, otherwise it is OR combined with bits  |
-|        | 1 - 4.                                                            |
+|        | Tile row select. In X expanded mode this is XOR combined with     |
+| 4-7    | bits 0 - 3 of the tile address, otherwise it is XOR combined with |
+|        | bits 1 - 4.                                                       |
 +--------+-------------------------------------------------------------------+
 
 A render command may be disabled by leaving its bits 10 - 12 zero. Such a
@@ -606,101 +606,61 @@ Tiled mode
 ------------------------------------------------------------------------------
 
 
-Sources can be configured to generate a tiled mode by setting them in Shift
-mode with bit 6 also set. In this mode a tile map (tile descriptor source) is
-used to retrieve source locations. The high half-palette can be set for each
-individual tile, thus supporting using more than 16 colors on a tiled mode
-surface.
+Sources can be configured to generate a tiled mode. In this mode a tile map
+(tile descriptor source) is used to retrieve source locations. The
+half-palettes can be set for each individual tile, thus supporting using more
+than 16 colors on a tiled mode surface. Alternatively, tile mode can be used
+to produce a pseudo 6 bit mode, which combined with X expansion and a tile
+height of one, is capable to assign any of the 64 palette colors to every
+pixel.
 
-The lower bits of the source definitions are as follows:
+It basically uses the Positioned source logic for display, with the addition
+of tile source fetches for each cell pair (so a tile is always two cells
+wide). Actual source fetches are performed after producing the source offset
+from the tile source. The tile source is read in the same manner as a normal
+X expanded source would.
 
-- bit     7: 1 (Selects Shift mode)
-- bit     6: 1 (Selects Tiled mode)
-- bit  4- 5: Tile width: 1, 2, 4 or 8 cells
-- bit  0- 3: Tile source PRAM bank
+The tile source defines the address and palettes for the tiles. Its low 16
+bits provide the tile address, which is XOR combined with the Tile row select
+to generate the actual offset. If X expansion is off, the source is 2 cells
+wide. The second cell this case is fetched by setting the lowest bit of the
+address to 1 (so if the address was odd, the same cell will be fetched).
 
-The Line size of the Shift source is fixed to 128 cells, or 64 cells if X
-expansion is set.
+The high 16 bits are as follows in normal mode (pseudo 6 bit off):
 
-The render command is used to select the tile descriptor source (the
-appropriate row of the tile map), also providing the row counter for
-generating offsets within a tile. It is laid out as follows:
++--------+-------------------------------------------------------------------+
+| Bits   | Description                                                       |
++========+===================================================================+
+|    31  | Unused                                                            |
++--------+-------------------------------------------------------------------+
+| 28-30  | High half-palette select                                          |
++--------+-------------------------------------------------------------------+
+|    27  | Unused                                                            |
++--------+-------------------------------------------------------------------+
+| 24-26  | Low half-palette select                                           |
++--------+-------------------------------------------------------------------+
+| 20-23  | Unused                                                            |
++--------+-------------------------------------------------------------------+
+| 16-19  | PRAM bank select for the tile                                     |
++--------+-------------------------------------------------------------------+
 
-- bit 19-31: Start offset in PRAM bank.
-- bit 16-18: Bits 0 - 2 of tile Row select.
-- bit 13-15: Source definition select.
-- bit    12: Unused. Should be set to enable the render command.
-- bit 10-11: Bits 3 - 4 of tile Row select.
-- bit  0- 9: Shift amount.
+The high 16 bits in Pseudo 6 bit mode provide the two high palette index bits
+for 8 pixel pairs, bits 30 and 31 for the leftmost pixel's bit 4 and 5
+respectively. If X expansion is set, this layout corresponds to that of the
+pixels, thus allowing supplying a 6 bit color for every "wide" pixel.
 
-Note that the low 3 bits of the Start offset are taken away. More bits may be
-ineffective depending on the combination of the Line size and Tile width:
+A probable way of building a pseudo 6 bit 320 x 200 display is using double
+scanning (setting Double Scan Split to 200), then using a tile height of one
+row (so every row has its own tile source, allowing to specify the high two
+bits for each individual pixel). If the same time the tile offsets are laid
+out horizontally incrementing, the resulting 4 bit portion of the display
+surface will allow using the Accelerator normally on it.
 
-+-------------+------------+-----------------------+-------------------------+
-| X expansion | Tile width | Effective offset bits | Line size in tiles      |
-+=============+============+=======================+=========================+
-| NO          | 1 cell     | 10 (bits 6 - 15)      | 128                     |
-+-------------+------------+-----------------------+-------------------------+
-| NO          | 2 cells    | 11 (bits 5 - 15)      | 64                      |
-+-------------+------------+-----------------------+-------------------------+
-| NO          | 4 cells    | 12 (bits 4 - 15)      | 32                      |
-+-------------+------------+-----------------------+-------------------------+
-| NO          | 8 cells    | 13 (bits 3 - 15)      | 16                      |
-+-------------+------------+-----------------------+-------------------------+
-| YES         | 1 cell     | 11 (bits 5 - 15)      | 64                      |
-+-------------+------------+-----------------------+-------------------------+
-| YES         | 2 cells    | 12 (bits 4 - 15)      | 32                      |
-+-------------+------------+-----------------------+-------------------------+
-| YES         | 4 cells    | 13 (bits 3 - 15)      | 16                      |
-+-------------+------------+-----------------------+-------------------------+
-| YES         | 8 cells    | 13 (bits 3 - 15) (*)  | 8                       |
-+-------------+------------+-----------------------+-------------------------+
-
-If X expansion is set with 8 cells Tile width (marked with '*'), the tile map
-can not be laid out contiguously in memory due to the lack of an offset bit.
-
-Bits 10 - 12 enable the render command if they are nonzero, keeping bit 12 set
-is sufficient to enforce this.
-
-The tile descriptor source specifies rows of the tile map. One cell of it
-contains descriptions for two tiles, the high half the first (leftmost on the
-display), the low half the second. The layout of each half is as follows:
-
-- bit  3-15: Tile source offset.
-- bit  0- 2: High half-palette select.
-
-The low 3 bits of Tile source offset is zero, so only offsets of multiples of
-eight can be selected.
-
-Cell offsets during the rendering of a line are composed as follows: ::
-
-
-                                        +---------------------+--------------+
-                                        | Row select (5 bits) | Shift source |
-    +-----------------------------------+--------+------------+ offset       |
-    | Tile source offset (13 - 10 bits)          | 0 (3 bits) | (0 - 3 bits) |
-    +--------------------------------------------+------------+--------------+
-
-
-The Row select is OR combined with the Tile source offset. The number of Shift
-source offset bits depend on the Tile width. These offset bits are taken from
-the internal offset calculator which normally addresses source cells. The Tile
-width shifts the entire offset left, thus shifting out bits from the Tile
-source offset: those bits are lost (and won't be used to alter the Tile source
-PRAM bank).
-
-X expansion can be combined with Tile mode. This affects rendering as
-described for X expansion.
-
-
-Fetches and Cycle allocation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-In general only as many fetches and extra cycles are taken to render a Tile
-mode source as necessary to read the tile descriptor source entries. One such
-source read occurs before starting the render of the line, then new source
-reads happen only when crossing tile boundaries. No optimization takes place
-for low halves of cells: the entire cell is read in again.
+Using Tiled mode normally adds one cycle for processing each cell pair
+compared to the cycle budget of Positioned sources (due to the additional
+tile source fetch from the PRAM). In X expanded mode however the extra PRAM
+accesses replace the access which would have to be done to fetch two source
+cells, so this case Tiled mode is "free" on term of cycles consumed.
 
 
 
@@ -723,12 +683,15 @@ Bus access cycles are taken by the following rules:
 - 1 cycle for reading a render command.
 - In Shift mode, twice the Output width of cycles, plus two for the initial
   source fetch.
-- In positioned mode, twice the Source line size of cycles, plus one for an
+- In Positioned mode, twice the Source line size of cycles, plus one for an
   extra Line buffer write (actually two, but one of these cycles should be
   pipelined with the reading of a subsequent render command).
+- In Tiled mode with X expansion off, three times the Source line size of
+  cycles, plus one for an extra Line buffer write (see above).
+- In Tiled mode with X expansion, the same as in Positioned mode.
 
 Note that the renderer is not capable to optimize out access cycles which
-would be used to render into off-screen area.
+would be used to render into non-displayed area (off-screen or clipped).
 
 
 
