@@ -512,7 +512,7 @@ Rendering process
 
 
 The rendering process for cells are identical for Shift and Position modes,
-and is carried out according to the following guide: ::
+and is carried out according to the following simplified guide: ::
 
 
     +----+----+----+----+
@@ -570,6 +570,15 @@ the Shift register in two passes of the above algorithm. This way half as many
 source fetches are performed than in no X expansion modes, thus halving the
 total width of the source data.
 
+If X expansion is clear, two source fetches are performed. The address for the
+second is generated OR combining one onto the source offset. This produces no
+differences in Shift mode, however in Positioned mode it affects how odd start
+offsets are handled.
+
+The simplification in the above chart means that it describes a single cell
+operation. To operate with cell pairs as required, the shift register has to
+be twice as wide (128 bits).
+
 The half-palette selection is performed according to the following scheme
 (both for the background pattern and normal renders): ::
 
@@ -611,20 +620,20 @@ Sources can be configured to generate a tiled mode. In this mode a tile map
 half-palettes can be set for each individual tile, thus supporting using more
 than 16 colors on a tiled mode surface. Alternatively, tile mode can be used
 to produce a pseudo 6 bit mode, which combined with X expansion and a tile
-height of one, is capable to assign any of the 64 palette colors to every
-pixel.
+height of one, is capable to assign (almost) any of the 64 palette colors to
+every pixel.
 
 It basically uses the Positioned source logic for display, with the addition
-of tile source fetches for each cell pair (so a tile is always two cells
-wide). Actual source fetches are performed after producing the source offset
-from the tile source. The tile source is read in the same manner as a normal
-X expanded source would.
+of tile descriptor source fetches for each cell pair (so a tile is always two
+cells wide). Actual source fetches are performed after producing the source
+offset from the tile descriptor source. The tile descriptor source is read in
+the same manner as a normal X expanded source would.
 
-The tile source defines the address and palettes for the tiles. Its low 16
-bits provide the tile address, which is XOR combined with the Tile row select
-to generate the actual offset. If X expansion is off, the source is 2 cells
-wide. The second cell this case is fetched by setting the lowest bit of the
-address to 1 (so if the address was odd, the same cell will be fetched).
+The tile descriptor source defines the address and palettes for the tiles. Its
+low 16 bits provide the tile address, which is XOR combined with the Tile row
+select to generate the actual offset. If X expansion is off, the source is 2
+cells wide. The second cell this case is fetched by setting the lowest bit of
+the address to 1 (so if the address was odd, the same cell will be fetched).
 
 The high 16 bits are as follows in normal mode (pseudo 6 bit off):
 
@@ -639,7 +648,7 @@ The high 16 bits are as follows in normal mode (pseudo 6 bit off):
 +--------+-------------------------------------------------------------------+
 | 24-26  | Low half-palette select                                           |
 +--------+-------------------------------------------------------------------+
-| 20-23  | Unused                                                            |
+| 20-23  | Colorkey value                                                    |
 +--------+-------------------------------------------------------------------+
 | 16-19  | PRAM bank select for the tile                                     |
 +--------+-------------------------------------------------------------------+
@@ -648,6 +657,11 @@ The high 16 bits in Pseudo 6 bit mode provide the two high palette index bits
 for 8 pixel pairs, bits 30 and 31 for the leftmost pixel's bit 4 and 5
 respectively. If X expansion is set, this layout corresponds to that of the
 pixels, thus allowing supplying a 6 bit color for every "wide" pixel.
+
+Note that in Pseudo 6 bit mode the Colorkey matching is still done on the low
+4 bits only, so essentially four 6 bit indices will produce a transparent
+pixel, thus only allowing selecting 60 colors (plus one if laid over a plain
+background).
 
 A probable way of building a pseudo 6 bit 320 x 200 display is using double
 scanning (setting Double Scan Split to 200), then using a tile height of one

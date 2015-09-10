@@ -172,7 +172,7 @@ The display list is populated the following way:
 
 Source definitions are set up as follows:
 
-- Source A0: 0x0050
+- Source A0: 0x0028
 - Source A1: 0x0000
 - Source A2: 0x0000
 - Source A3: 0x0000
@@ -204,7 +204,8 @@ Double scanning is disabled, however the background palette in the same
 register is set up so the first 16 colors are used (0x1000).
 
 The shift mode regions are both set up for 80 cells width, beginning at cell
-0 (so filling entire display).
+0 (so filling entire display). Position mode clipping is disabled for all
+sources.
 
 
 Palette
@@ -348,8 +349,8 @@ Application state, see "state.rst".
 | \-     | 0                                                                 |
 | 0x0CF  |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0x0D0  | 0x0000, 0x0000, 0x1000, 0x0000, 0x5000, 0x5000, 0xFF00, 0x0000,   |
-| \-     | 0x0050, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000    |
+| 0x0D0  | 0x0000, 0x0000, 0x1000, 0x0000, 0x2800, 0x2800, 0xFF00, 0x0000,   |
+| \-     | 0x0028, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000    |
 | 0x0DF  |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0x0E0  |                                                                   |
