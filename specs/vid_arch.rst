@@ -32,8 +32,8 @@ The basic properties of the RRPGE system's display generator are as follows:
 - 640x400 visible pixels of 1:1 pixel aspect ratio
 - 6 bits per pixel palettized, 64 palette entires of 4-4-4 RGB colors.
 - 16:10 display aspect ratio
-- 50Hz minimal / 70Hz maximal refresh rate
-- At least 49 vertical blank lines (for a total of at least 449 lines)
+- 50Hz minimal / 60Hz maximal refresh rate
+- At least 71 vertical blank lines (for a total of at least 471 lines)
 - At least 400 main clock cycles per display line
 - Interlaced display generation is supported for standards requiring it
 - Accesses the 32 bit Peripheral bus
@@ -46,8 +46,8 @@ programming from the user like non-interlaced modes. The only exception is
 that the user needs to be aware of that it might need two frames to produce a
 complete image. See the "Interlaced rendering" chapter for more information.
 
-Note that faster rates than 70Hz may be provided by an implementation if it
-meets the at least 449 line, and at least 400 main clock cycles per line
+Note that faster rates than 60Hz may be provided by an implementation if it
+meets the at least 471 line, and at least 400 main clock cycles per line
 constraints. This implies that such an implementation uses a faster clock than
 required by this specification.
 
@@ -56,19 +56,6 @@ required by this specification.
 
 Display standards and RRPGE system compatibility
 ------------------------------------------------------------------------------
-
-
-VGA 400 line / 70Hz
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This is the display mode with the fastest refresh rate the RRPGE system
-supports: it's minimal display related timings are set out based on this mode.
-To produce it a 25.175MHz base clock is necessary from which a slightly faster
-than the minimal 12.5MHz main clock can be derived.
-
-Normally this mode's aspect ratio is not suitable for the system, however if
-used with a CRT monitor, it's aspect ratio can be corrected manually to fit,
-offering a more eye friendly visual experience.
 
 
 VGA 480 line / 60Hz
@@ -199,9 +186,9 @@ the Peripheral RAM onto the Render side of the Line double buffer.
 The processing is adequately pipelined so no Peripheral bus access cycles are
 spent idle as long as there is data to render for the line. From the user's
 point of view the Line renderer may be seen as fetching a display list
-command, then processing it. Up to 8 bus access cycles per line or line pair
-is however lost for overhead, so up to 192 bus access cycles remain available
-for processing by this scheme (392 in double scanned mode).
+command, then processing it. Up to 16 bus access cycles per line or line pair
+is however lost for overhead and PRAM refresh, so up to 184 bus access cycles
+remain available for processing by this scheme (368 in double scanned mode).
 
 (Implementations are allowed to deviate from the strictly sequential scheme in
 favor of meeting the bus access cycle requirement by pipelining, such as by
@@ -242,11 +229,9 @@ either 1600, 3200, 6400 or 12800 cells (depending on the Display List entry
 / line size). The Clear controls register defines which cells may be cleared,
 and which may be preserved in this range.
 
-Up to 9600 cells may be written in the clearing process (that is using 48
-lines, 200 cycles each line). If by the Clear controls register more cells
-would be necessary to be cleared, the clearing process terminates when 9600
-cells are cleared (this means on the largest display list in 400 line graphics
-modes up to 24 cells may be cleared each line).
+By the above up to 12800 cells may be written in the clearing process,
+requiring 70 lines if 184 cycles are given to the clearing process each line.
+This produces the 71 line minimum requirement for the VBlank interval.
 
 Using the Clear controls it is possible to preserve parts of a Display list,
 such as a constant background pattern.
@@ -684,8 +669,8 @@ Renderer cycle budget
 
 
 As defined in the "Display List" chapter, in single scanned mode from the
-user's point of view there are at least 192 useful Video bus access cycles,
-and in doubly scanned mode, there are 392.
+user's point of view there are at least 184 useful Video bus access cycles,
+and in doubly scanned mode, there are 368.
 
 The rendering from the user's point of view may be interpreted as being
 sequential: the renderer fetches a display list command, then processes it,
@@ -694,7 +679,7 @@ and there are bus access cycles remaining for the render.
 
 Bus access cycles are taken by the following rules:
 
-- 1 cycle for reading a render command.
+- 1 cycle for reading a render command (including the background pattern).
 - In Shift mode, twice the Output width of cycles, plus two for the initial
   source fetch.
 - In Positioned mode, twice the Source line size of cycles, plus one for an
@@ -739,6 +724,14 @@ Colors are expressed as 16 bit RGB values in the following layout:
 The scale must be according to a gamma of 2.2, such as an interlacing pattern
 of colors 0xFFF (white) and 0x000 (black) should produce approximately the
 same luminance as color 0xBBB (grey).
+
+
+PRAM refresh
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The Graphics Display Generator should also provide Peripheral RAM refresh
+logic to handle Dynamic RAM chips. These are taken from the 16 overhead cycles
+allowed in each line (including within VBLANK).
 
 
 Implementation defined
