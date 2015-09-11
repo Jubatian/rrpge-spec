@@ -330,6 +330,8 @@ The source is clipped to the display list's height (400 lines), first
 line's source position adjusted accordingly. The display list column is not
 affected if the source falls entirely off-display.
 
+The source added may be in either mode (Positioned, Shift or Tiled).
+
 PRAM pointers 2 and 3 are used and not preserved.
 
 
@@ -356,8 +358,8 @@ that if the source is wider than 384 pixels, it may partially show on the
 "wrong" side of the display (this behavior is caused by the architecture of
 the Graphics Display Generator).
 
-Shift sources are not supported by this function, the behavior for attempting
-to add a shift source with this function is undefined.
+Shift and Tiled mode sources are not supported by this function, the behavior
+for attempting to add such a source with this function is undefined.
 
 PRAM pointers 2 and 3 are used and not preserved.
 

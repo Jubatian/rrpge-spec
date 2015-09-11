@@ -164,6 +164,8 @@ the dirty flag (indicating dirty), then transfers to us_dlist_db_add.
 
 If the two locations are equal when calling, no sprite is added.
 
+Only Positioned sources are supported.
+
 PRAM pointers 2 and 3 are used and not preserved.
 
 
@@ -181,6 +183,8 @@ PRAM pointers 2 and 3 are used and not preserved.
 
 Processes identically to us_sprite_add except that it transfers to
 us_dlist_db_addxy if the sprite can be added.
+
+Only Positioned sources are supported.
 
 PRAM pointers 2 and 3 are used and not preserved.
 
@@ -282,6 +286,8 @@ occupation data (0xF800 - 0xF98F), operating by the same principles described
 at us_sprite_add. If the locations are equal, only the affected row of the
 sprite is skipped.
 
+Only Positioned sources are supported.
+
 PRAM pointer 3 is used and not preserved.
 
 
@@ -299,6 +305,8 @@ PRAM pointer 3 is used and not preserved.
 
 Processes identically to us_smux_add except that it operates according to
 us_dlist_addxy for rows on which the sprite can be added.
+
+Only Positioned sources are supported.
 
 PRAM pointer 3 is used and not preserved.
 
