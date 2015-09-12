@@ -16,9 +16,9 @@ Introduction
 
 
 The Mixer DMA peripheral assists audio generation by providing hardware
-accelerated sample mixing capabilities including amplitude modulation. It
-operates on the Peripheral bus accessing the Peripheral RAM, and is driven by
-the Mixer FIFO. By this it is capable to work in parallel with the RRPGE CPU.
+accelerated sample mixing capabilities. It operates on the Peripheral bus
+accessing the Peripheral RAM, and is driven by the Mixer FIFO. By this it is
+capable to work in parallel with the RRPGE CPU.
 
 
 
@@ -27,86 +27,121 @@ Mixer architecture
 ------------------------------------------------------------------------------
 
 
-The mixer operates on up to two 8 bit sources and one 8 bit destination within
-the Peripheral RAM. One of the sources is optional, used for amplitude
-modulation. The sources may have individual frequency settings.
+The mixer generates 16 bit (unsigned) digital audio suitable for output from
+an arbitrary bit depth source (1 to 16 bits unsigned) within the Peripheral
+RAM. It is capable to reduce the rate of the source using linear
+interpolation.
 
-The following block diagram depicts the overall architecture of the mixer: ::
+Rate reduction works by a 16 bit register (Sample pointer fraction) which can
+be incremented with an arbitrary value between 1 and 0x10000, triggering a
+sample fetch when it wraps around.
 
+Arbitrary source bit depth is realized using a 64 bit wide source input
+register latching the source (32 bit) cell at the current bit offset and the
+next cell, allowing to cross cell boundaries with a sample.
 
-    +----DRAM----+
-    |            |
-    | +--------+ |
-    | | Sample |-------------Data-----------------------------------------+
-    | | source | |  +------+   _  +----------------------+                |
-    | |        |<---| Ptr. |<-|+|-|   Sample frequency   |                |
-    | +--------+ |  +------+   ~  +----------------------+                |
-    |            |                                                        |
-    | +--------+ |                                                        |
-    | |   AM   |-------------Data--------------------------+              |
-    | | source | |  +------+   _  +----------------------+ |              |
-    | |        |<---| Ptr. |<-|+|-|     AM frequency     | |              |
-    | +--------+ |  +------+   ~  +----------------------+ |              |
-    |            |                                 :       |              |
-    |            |          +-------------+  +-----------+ V  +--------+  |
-    |            |          | Add On/Off  |  | AM On/Off |-+->| A. mul |>|*|
-    |            |          +-------------+  +-----------+    +--------+  |
-    | +--------+ |                 |   _                                  |
-    | | Sample |-------------Data->+<-|0|                                 |
-    | | dest.  | |                 V   ~                                  |
-    | |        |<------------Data-|+|-------------------------------------+
-    | +--------+ |                 ~
-    |            |
-    +------------+
+The logic of sample fetching could be realized as follows: ::
 
 
-In one pass, 4 samples are processed to produce a 32 bit destination in one
-operation. The AM source however is read only once each pass. To negate the
-difference in processing rate, the AM frequency is multiplied by 4 (shifted
-left by 2). Step by step, the following actions are performed during a pass:
+    Sample bit offset
+       low 5 bits
+            |
+            V
+    +----+----+----+----+----+----+----+----+
+    | 32 bit curr. src. | 32 bit next src.  |  64 bit source input register
+    +----+----+----+----+----+----+----+----+
+            |     |
+            V     V
+            +-----+
+            |     |  Source sample (1 - 16 bits)
+            +-----+
+               |
+               |  Sample expansion to 16 bits
+               V
+          +----+----+
+          | 16 bits |  Expanded sample
+          +----+----+
+               |
+               |    +----+----+     +----+----+
+               |    | Current |---->|  Prev.  |  Samples latched for
+               |    +----+----+     +----+----+  interpolation
+               |         A
+               |         | (After loading Prev.)
+               +---------+
 
-- Fetch first sample.
-- Increment sample pointer with Sample frequency.
-- Fetch second sample.
-- Increment sample pointer with Sample frequency.
-- Fetch third sample.
-- Increment sample pointer with Sample frequency.
-- Fetch fourth sample.
-- Increment sample pointer with Sample frequency.
-- Merge the fetched sample values in a 32 bit holding register.
-- Fetch AM source, update Amplitude multiplier with it (if AM is enabled).
-- Increment AM source pointer with AM frequency * 4 (if AM is enabled).
-- Packed multiply the 32 bit holding register with Amplitude multiplier.
-- Read sample destination (32 bits).
-- Packed add the read value to the 32 bit holding register (if it is enabled).
-- Write the 32 bit holding register in the sample destination.
-- Increment destination pointer.
 
-The actual order of memory accesses within a pass may be different, and may
-interleave with other passes in an implementation defined manner.
+The Sample bit offset afterwards is incremented by the Sample bit width, then,
+if the low 5 bits wrapped, the Source input register is shifted left by 32.
 
-For both sources and the destination a partition size setting is provided, one
-for each. This allows for selecting sample data sizes from 8 samples (2 cells)
-to 256K samples (64K cells) in power of 2 increments. The pointers
-automatically wrap to the beginning of the partition when passing it's end.
+Sample expansion is performed by copying the sample repeatedely into the lower
+bits until all bits are filled. For example a 6 bit input is expanded as
+follows: ::
 
-The Amplitude multiplier is applied to the 8 bit source data as follows:
 
-src_a = (((src - 128) * amp) / 256) + 128
+    +---+---+---+---+---+---+
+    | 0 | 1 | 2 | 3 | 4 | 5 | Source sample (6 bits)
+    +---+---+---+---+---+---+
+                |
+                +-----------------------+-----------------------+
+                |                       |                       |
+                V           |           V           |           V
+    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+    | 0 | 1 | 2 | 3 | 4 | 5 | 0 | 1 | 2 | 3 | 4 | 5 | 0 | 1 | 2 | 3 |
+    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+
+
+Linear interpolation works from the latched previous and current samples,
+using the Sample pointer fraction register for multiplier (as-is for the
+current sample, negated for the previous sample).
+
+In every processing cycle, two destination samples are produced to fill a PRAM
+cell, accordingly the necessary source logic is also performed twice.
+
+Before starting a mixer operation, the following initialization steps are
+performed:
+
+- Generate PRAM cell offset from Sample bit offset.
+- Fetch current source cell.
+- Increment PRAM cell offset.
+- Fetch next source cell, completing the 64 bit source input register.
+- Fetch current sample (using the sample fetch logic).
+- Fetch next sample (using the sample fetch logic).
+
+Then the main processing is started, performing as many processing cycles
+(sample pairs) as required. The logic of a processing cycle is as follows:
+
+- Fetch next source (32 bit PRAM cell), done even if it is not necessary.
+- Update next source bits in the 64 bit source input register.
+- Perform interpolation to generate first result sample.
+- Increment Sample pointer fraction.
+- If wrapped, do a Sample fetch.
+- Perform interpolation to generate second result sample.
+- Increment Sample pointer fraction.
+- If wrapped, do a Sample fetch.
+- Combine the two result samples (2 x 16 bits).
+- Apply amplitude on the result samples.
+- Add (saturated) Amplitude multiplier add value to amplitude.
+- Fetch next destination (32 bit PRAM cell).
+- Add (saturated) result samples to destination (if enabled).
+- Write back destination.
+
+The actual order of memory accesses within a processing cycle may be
+different, and may interleave with other passes in an implementation defined
+manner.
+
+The Amplitude multiplier is applied to the 16 bit source data as follows:
+
+src_a = (((src - 32768) * amp) / 65535) + 32768
 
 Without relying on signed arithmetic this may be expressed as:
 
-src_a = (((src * amp) >> 7) + 256 - amp) >> 1
-
-Note that this algorithm implies that the maximal valid amplitude of 0xFF can
-not reproduce the original data. The Amplitude multiplier has to be turned off
-to keep the data as-is.
+src_a = (((src * amp) >> 15) + 65536 - amp) >> 1
 
 If adding to the destination is enabled, the result forms as follows:
 
-dest = satu(src_a + dest - 128)
+dest = satu(src_a + dest - 32768)
 
-The saturation trims the result to the 8 bit range (0x00 - 0xFF).
+The saturation trims the result to the 16 bit range (0x0000 - 0xFFFF).
 
 
 
@@ -115,15 +150,19 @@ Mixer operation timing
 ------------------------------------------------------------------------------
 
 
-The timing of the mixer operations is consistent for all configurations,
-dominated by the necessary memory accesses (7 for each pass). A mixer
-operation takes the following amount of main clock cycles:
+The mixer should be designed so the necessary memory accesses dominate its
+timing using appropriate pipelining and implementation. Note that the layout
+of memory accesses is implementation defined.
 
-16 + (14 * n)
+To perform a processing cycle (2 samples), 3 memory accesses (one source read,
+one destination read, and one destination write) are necessary, which makes
+6 main clock cycles. In overall the following formula should give the cycles
+necessary for a mixer operation:
 
-'n' is the number of passes to process (so the operation takes 3.5 cycles /
-sample). Note that the two cycles necessary for reading the Amplitude source
-are present even when the AM source is turned off.
+20 + (6 * n)
+
+Where 'n' is the count of processing cycles to perform (so taking 3 cycles /
+sample).
 
 
 
@@ -139,101 +178,94 @@ details).
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0x0000 | Amplitude source partition select bits. Used in AM mode for       |
-|        | reading the amplitude source.                                     |
+| 0x0000 |                                                                   |
+| \-     | Unused.                                                           |
+| 0x0004 |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0x0001 | Amplitude source start pointer whole part (addresses 32 bit cell  |
-|        | units). Used in AM mode for reading the amplitude source.         |
-+--------+-------------------------------------------------------------------+
-| 0x0002 | Amplitude source start pointer fractional part. Used in AM mode   |
-|        | for reading the amplitude source.                                 |
-+--------+-------------------------------------------------------------------+
-| 0x0003 | Frequency for AM source read, whole part. Provides the increment  |
-|        | for the AM source pointer.                                        |
-+--------+-------------------------------------------------------------------+
-| 0x0004 | Frequency for AM source read, fractional part. Provides the       |
-|        | increment for the AM source pointer.                              |
-+--------+-------------------------------------------------------------------+
-|        | Destination Partitioning & Bank selection settings.               |
+|        | Destination bank select.                                          |
 | 0x0005 |                                                                   |
-|        | - bit 12-15: Unused                                               |
-|        | - bit  8-11: Destination partitioning.                            |
-|        | - bit  4- 7: Unused                                               |
+|        | - bit  4-15: Unused                                               |
 |        | - bit  0- 3: Destination bank select.                             |
-|        |                                                                   |
-|        | Encoding of partition sizes for partitioning settings:            |
-|        |                                                                   |
-|        | - 0x0: 2 Cells (8 samples)                                        |
-|        | - 0x1: 4 Cells (16 samples)                                       |
-|        | - 0x2: 8 Cells (32 samples)                                       |
-|        | - 0x3: 16 Cells (64 samples)                                      |
-|        | - 0x4: 32 Cells (128 samples)                                     |
-|        | - 0x5: 64 Cells (256 samples)                                     |
-|        | - 0x6: 128 Cells (512 samples)                                    |
-|        | - 0x7: 256 Cells (1K samples)                                     |
-|        | - 0x8: 512 Cells (2K samples)                                     |
-|        | - 0x9: 1 KCells (4K samples)                                      |
-|        | - 0xA: 2 KCells (8K samples)                                      |
-|        | - 0xB: 4 KCells (16K samples)                                     |
-|        | - 0xC: 8 KCells (32K samples)                                     |
-|        | - 0xD: 16 KCells (64K samples)                                    |
-|        | - 0xE: 32 KCells (128K samples)                                   |
-|        | - 0xF: 64 KCells (256K samples)                                   |
-|        |                                                                   |
-|        | The bank selects provide the high 4 bits of PRAM address          |
-|        | allowing to address the entire 1M * 32 bits Peripheral RAM.       |
 +--------+-------------------------------------------------------------------+
-| 0x0006 | Destination partition select bits.                                |
+| 0x0006 | Destination start pointer (addresses 32 bit cell units).          |
 +--------+-------------------------------------------------------------------+
-| 0x0007 | Destination start pointer (addresses 32 bit cell units).          |
+|        | Destination cell count.                                           |
+| 0x0007 |                                                                   |
+|        | - bit    15: Destination overwrite if clear (otherwise sat. add). |
+|        | - bit 12-14: Unused                                               |
+|        | - bit  0-11: Number of cells to process; 0: 4096 (8192 samples).  |
+|        |                                                                   |
+|        | Bit 15 becomes set after a Mixer operation. This simplifies       |
+|        | usual mixing processes, only necessiting a single write to this   |
+|        | register.                                                         |
 +--------+-------------------------------------------------------------------+
-|        | Source Partitioning & Bank selection settings.                    |
+|        | Source configuration.                                             |
 | 0x0008 |                                                                   |
-|        | - bit 12-15: Amplitude source partitioning.                       |
-|        | - bit  8-11: Sample source partitioning.                          |
-|        | - bit  4- 7: Amplitude source bank select.                        |
-|        | - bit  0- 3: Sample source bank select.                           |
+|        | - bit 12-15: Sample width in bits (0: 1 bit; 15: 16 bits).        |
+|        | - bit  5-11: Unused                                               |
+|        | - bit     4: If set, no partitioning is used (full PRAM).         |
+|        | - bit  0- 3: Source partition size.                               |
 |        |                                                                   |
-|        | Partitioning settings and bank select is encoded in a similar     |
-|        | manner like for register 0x0005 (Destination).                    |
-+--------+-------------------------------------------------------------------+
-|        | Amplitude multiplier.                                             |
-| 0x0009 |                                                                   |
-|        | - bit  9-15: Unused                                               |
-|        | - bit     8: If set, the multiplier is not effective.             |
-|        | - bit  0- 7: Amplitude multiplier.                                |
+|        | Narrower than 16 bits samples are expanded to 16 bits by copying  |
+|        | them repeatedely on the lower bits (for example a 6 bit sample of |
+|        | 0x20: 0b100000 would give 0x8208: 0b1000001000001000 in 16 bits). |
 |        |                                                                   |
-|        | Used only if AM mode is disabled.                                 |
+|        | Source partition sizes are as follows:                            |
 |        |                                                                   |
-|        | Note that the layout of this register allows writing 0x100 (one   |
-|        | higher than the greatest valid multiplier) to turn this           |
-|        | multiplication off.                                               |
+|        | - 0x0: 1 Cell (32 bits)                                           |
+|        | - 0x1: 1 Cell (32 bits)                                           |
+|        | - 0x2: 1 Cell (32 bits)                                           |
+|        | - 0x3: 1 Cell (32 bits)                                           |
+|        | - 0x4: 1 Cell (32 bits)                                           |
+|        | - 0x5: 2 Cells (64 bits)                                          |
+|        | - 0x6: 4 Cells (128 bits)                                         |
+|        | - 0x7: 8 Cells (256 bits)                                         |
+|        | - 0x8: 16 Cells (512 bits)                                        |
+|        | - 0x9: 32 Cells (1K bits)                                         |
+|        | - 0xA: 64 Cells (2K bits)                                         |
+|        | - 0xB: 128 Cells (4K bits)                                        |
+|        | - 0xC: 256 Cells (8K bits)                                        |
+|        | - 0xD: 512 Cells (16K bits)                                       |
+|        | - 0xE: 1024 Cells (32K bits)                                      |
+|        | - 0xF: 2048 Cells (64K bits)                                      |
+|        |                                                                   |
+|        | If bit 4 is set (partitioning is turned off), the whole Sample    |
+|        | bit pointer increments, covering the full Peripheral RAM. If the  |
+|        | bit is clear, partitioning is used, disabling carry-over into bit |
+|        | 16, and using as many high bits from Sample partition select as   |
+|        | required to produce the desired partition size.                   |
 +--------+-------------------------------------------------------------------+
-| 0x000A | Sample source partition select bits.                              |
+|        | Sample partition select bits. Aligns with Sample bit pointer,     |
+| 0x0009 | low, providing the higher fixed bits of it in partitioned modes.  |
+|        | If partitioning is enabled, only the low 16 bits of the Sample    |
+|        | bit pointer increment (there is no carry-over to Sample bit       |
+|        | pointer, high).                                                   |
 +--------+-------------------------------------------------------------------+
-| 0x000B | Sample source start pointer whole part (addresses 32 bit cell     |
-|        | units).                                                           |
+|        | Sample pointer fraction add value, 0: 65536. The sample bit       |
+| 0x000A | pointer is incremented with sample width when the sample pointer  |
+|        | fraction wraps.                                                   |
 +--------+-------------------------------------------------------------------+
-| 0x000C | Sample source start pointer fractional part.                      |
+| 0x000B | Sample pointer fraction.                                          |
 +--------+-------------------------------------------------------------------+
-| 0x000D | Frequency, whole part. Provides the increment for the Sample      |
-|        | source pointer.                                                   |
+|        | Amplitude multiplier add value.                                   |
+| 0x000C |                                                                   |
+|        | Signed 2's complement value which is added to the amplitude       |
+|        | multiplier after each destination write (so after every two       |
+|        | samples). This operation is performed with saturation, limiting   |
+|        | amplitude between 0 and 0x10000 inclusive (1 and 0x10000 is also  |
+|        | acceptable).                                                      |
 +--------+-------------------------------------------------------------------+
-| 0x000E | Frequency, fractional part. Provides the increment for the Sample |
-|        | source pointer.                                                   |
+|        | Initial amplitude multiplier.                                     |
+| 0x000D |                                                                   |
+|        | If it is zero, the multiplier is not effective (source goes into  |
+|        | destination unchanged). Otherwise the 16 bit source is multiplied |
+|        | with this value into 32 bits, then the high 16 bits of that is    |
+|        | propagated towards the destination.                               |
 +--------+-------------------------------------------------------------------+
-|        | Mode & Start trigger.                                             |
-| 0x000F |                                                                   |
-|        | - bit    15: Destination overwrite if set (otherwise sat. add).   |
-|        | - bit    14: AM mode enabled if set, the AM source is used.       |
-|        | - bit 10-13: Unused                                               |
-|        | - bit  0-11: Number of cells to process; 0: 4096 (16384 samples). |
+| 0x000E | Sample bit pointer, high (Low 9 bits effective).                  |
 +--------+-------------------------------------------------------------------+
-
-If partitioning settings are set to anything other than 64 KCells for a
-pointer, the appropriate (high) bits of the matching whole part register are
-ignored, and the partition select's matching bits are used instead for
-generating the address.
+| 0x000F | Sample bit pointer, low & Start trigger.                          |
++--------+-------------------------------------------------------------------+
 
 Note that no interface register changes it's value during the course of a
 Mixer DMA operation, so retriggering the mixer performs the exact same
