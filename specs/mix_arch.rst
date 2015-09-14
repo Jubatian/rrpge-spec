@@ -53,7 +53,7 @@ The logic of sample fetching could be realized as follows: ::
             |     |
             V     V
             +-----+
-            |     |  Source sample (1 - 16 bits)
+            |     |  Source sample (1 - 8 bits or 16 bits)
             +-----+
                |
                |  Sample expansion to 16 bits
@@ -91,8 +91,9 @@ follows: ::
 
 
 Linear interpolation works from the latched previous and current samples,
-using the Sample pointer fraction register for multiplier (as-is for the
-current sample, negated for the previous sample).
+using the high 3 bits of the Sample pointer fraction register. It so realizes
+7 intermediate steps between the two points (the previous and current sample
+values).
 
 In every processing cycle, two destination samples are produced to fill a PRAM
 cell, accordingly the necessary source logic is also performed twice.
@@ -159,7 +160,7 @@ one destination read, and one destination write) are necessary, which makes
 6 main clock cycles. In overall the following formula should give the cycles
 necessary for a mixer operation:
 
-20 + (6 * n)
+30 + (6 * n)
 
 Where 'n' is the count of processing cycles to perform (so taking 3 cycles /
 sample).
@@ -187,7 +188,8 @@ details).
 |        | - bit  4-15: Unused                                               |
 |        | - bit  0- 3: Destination bank select.                             |
 +--------+-------------------------------------------------------------------+
-| 0x0006 | Destination start pointer (addresses 32 bit cell units).          |
+| 0x0006 | Destination start pointer (addresses 32 bit cell units). Note     |
+|        | that destination wraps around on PRAM bank boundary.              |
 +--------+-------------------------------------------------------------------+
 |        | Destination cell count.                                           |
 | 0x0007 |                                                                   |
@@ -201,7 +203,8 @@ details).
 +--------+-------------------------------------------------------------------+
 |        | Source configuration.                                             |
 | 0x0008 |                                                                   |
-|        | - bit 12-15: Sample width in bits (0: 1 bit; 15: 16 bits).        |
+|        | - bit    15: If set, sample width is 16 bits.                     |
+|        | - bit 12-14: Sample width in bits (0: 1 bit; 7: 8 bits).          |
 |        | - bit  5-11: Unused                                               |
 |        | - bit     4: If set, no partitioning is used (full PRAM).         |
 |        | - bit  0- 3: Source partition size.                               |
