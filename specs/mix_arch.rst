@@ -63,10 +63,10 @@ The logic of sample fetching could be realized as follows: ::
           +----+----+
                |
                |    +----+----+     +----+----+
-               |    | Current |---->|  Prev.  |  Samples latched for
+               |    |  Next   |---->| Current |  Samples latched for
                |    +----+----+     +----+----+  interpolation
                |         A
-               |         | (After loading Prev.)
+               |         | (After loading Current)
                +---------+
 
 
@@ -90,9 +90,9 @@ follows: ::
     +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
 
-Linear interpolation works from the latched previous and current samples,
-using the high 3 bits of the Sample pointer fraction register. It so realizes
-7 intermediate steps between the two points (the previous and current sample
+Linear interpolation works from the latched current and next samples, using
+the high 3 bits of the Sample pointer fraction register. It so realizes 7
+intermediate steps between the two points (the current and next sample
 values).
 
 In every processing cycle, two destination samples are produced to fill a PRAM
@@ -101,12 +101,14 @@ cell, accordingly the necessary source logic is also performed twice.
 Before starting a mixer operation, the following initialization steps are
 performed:
 
-- Generate PRAM cell offset from Sample bit offset.
 - Fetch current source cell.
-- Increment PRAM cell offset.
 - Fetch next source cell, completing the 64 bit source input register.
 - Fetch current sample (using the sample fetch logic).
 - Fetch next sample (using the sample fetch logic).
+
+Note that sample fetching this way is always one sample ahead. The PRAM cell
+offset at source fetches is 32 bits (one cell) ahead compared to the sample
+pointer (it may be generated from the sample pointer in this manner).
 
 Then the main processing is started, performing as many processing cycles
 (sample pairs) as required. The logic of a processing cycle is as follows:
@@ -255,8 +257,7 @@ details).
 |        | Signed 2's complement value which is added to the amplitude       |
 |        | multiplier after each destination write (so after every two       |
 |        | samples). This operation is performed with saturation, limiting   |
-|        | amplitude between 0 and 0x10000 inclusive (1 and 0x10000 is also  |
-|        | acceptable).                                                      |
+|        | amplitude between 1 and 0x10000 inclusive.                        |
 +--------+-------------------------------------------------------------------+
 |        | Initial amplitude multiplier.                                     |
 | 0x000D |                                                                   |
