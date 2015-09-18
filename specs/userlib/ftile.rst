@@ -73,11 +73,11 @@ for working with the built-in font:
 | 0xFD94 | Memorized Start offset of source (Word6).                         |
 +--------+-------------------------------------------------------------------+
 | 0xFD9C |                                                                   |
-| \-     | Tileset using Normal 4 bit font (up_font_4).                      |
+| \-     | Tileset using Normal 4 bit font (up_font).                        |
 | 0xFDA3 |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xFDA4 |                                                                   |
-| \-     | Tileset using Inverted 4 bit font (up_font_4i).                   |
+| \-     | Tileset using Inverted 4 bit font (up_fonti).                     |
 | 0xFDAB |                                                                   |
 +--------+-------------------------------------------------------------------+
 

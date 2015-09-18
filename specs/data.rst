@@ -81,6 +81,25 @@ them except for the blues which are aligned so they produce a ramp using bit 2
 and bit 3.
 
 
+Complete palette
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+As complete, the palette provides 8 sets of 8 colors each, suitable for half
+palette selection. The 8 sets are as follows:
+
+- 0: Low half, the 3 bit RRPGE Incremental with colors for a grey ramp.
+- 1: High half, complementing for 4 bit RRPGE Incremental, generic palette.
+- 2: Low half, alternative of 0 in a brownish tone.
+- 3: High half, providing more greens.
+- 4: High half, greyscale(ish) ramp.
+- 5: High half, providing primarily browns and yellows.
+- 6: Sky-blue ramp, suitable to be used for background pattern.
+- 7: High half, providing primarily blues.
+
+The palette is designed so either low half can be combined with either high
+half to produce a sensible set of colors.
+
+
 Data dump
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -116,22 +135,22 @@ The key values of the sine table are as follows:
 
 The first quarter of the table, suitable for inclusion in C code: ::
 
-    0x0000U, 0x00C9U, 0x0192U, 0x025BU, 0x0323U, 0x03ECU, 0x04B5U, 0x057DU,
-    0x0645U, 0x070DU, 0x07D5U, 0x089CU, 0x0964U, 0x0A2AU, 0x0AF1U, 0x0BB6U,
-    0x0C7CU, 0x0D41U, 0x0E05U, 0x0EC9U, 0x0F8CU, 0x104FU, 0x1111U, 0x11D3U,
-    0x1294U, 0x1354U, 0x1413U, 0x14D1U, 0x158FU, 0x164CU, 0x1708U, 0x17C3U,
-    0x187DU, 0x1937U, 0x19EFU, 0x1AA6U, 0x1B5DU, 0x1C12U, 0x1CC6U, 0x1D79U,
-    0x1E2BU, 0x1EDCU, 0x1F8BU, 0x2039U, 0x20E7U, 0x2192U, 0x223DU, 0x22E6U,
-    0x238EU, 0x2434U, 0x24DAU, 0x257DU, 0x261FU, 0x26C0U, 0x275FU, 0x27FDU,
-    0x2899U, 0x2934U, 0x29CDU, 0x2A65U, 0x2AFAU, 0x2B8EU, 0x2C21U, 0x2CB2U,
-    0x2D41U, 0x2DCEU, 0x2E5AU, 0x2EE3U, 0x2F6BU, 0x2FF1U, 0x3076U, 0x30F8U,
-    0x3179U, 0x31F7U, 0x3274U, 0x32EEU, 0x3367U, 0x33DEU, 0x3453U, 0x34C6U,
-    0x3536U, 0x35A5U, 0x3612U, 0x367CU, 0x36E5U, 0x374BU, 0x37AFU, 0x3811U,
-    0x3871U, 0x38CFU, 0x392AU, 0x3983U, 0x39DAU, 0x3A2FU, 0x3A82U, 0x3AD2U,
-    0x3B20U, 0x3B6CU, 0x3BB6U, 0x3BFDU, 0x3C42U, 0x3C84U, 0x3CC5U, 0x3D02U,
-    0x3D3EU, 0x3D77U, 0x3DAEU, 0x3DE2U, 0x3E14U, 0x3E44U, 0x3E71U, 0x3E9CU,
-    0x3EC5U, 0x3EEBU, 0x3F0EU, 0x3F2FU, 0x3F4EU, 0x3F6AU, 0x3F84U, 0x3F9CU,
-    0x3FB1U, 0x3FC3U, 0x3FD3U, 0x3FE1U, 0x3FECU, 0x3FF4U, 0x3FFBU, 0x3FFEU
+    0x0000U, 0x00C9U, 0x0192U, 0x025BU, 0x0324U, 0x03EDU, 0x04B5U, 0x057EU,
+    0x0646U, 0x070EU, 0x07D6U, 0x089DU, 0x0964U, 0x0A2BU, 0x0AF1U, 0x0BB7U,
+    0x0C7CU, 0x0D41U, 0x0E06U, 0x0ECAU, 0x0F8DU, 0x1050U, 0x1112U, 0x11D3U,
+    0x1294U, 0x1354U, 0x1413U, 0x14D2U, 0x1590U, 0x164CU, 0x1709U, 0x17C4U,
+    0x187EU, 0x1937U, 0x19EFU, 0x1AA7U, 0x1B5DU, 0x1C12U, 0x1CC6U, 0x1D79U,
+    0x1E2BU, 0x1EDCU, 0x1F8CU, 0x203AU, 0x20E7U, 0x2193U, 0x223DU, 0x22E7U,
+    0x238EU, 0x2435U, 0x24DAU, 0x257EU, 0x2620U, 0x26C1U, 0x2760U, 0x27FEU,
+    0x289AU, 0x2935U, 0x29CEU, 0x2A65U, 0x2AFBU, 0x2B8FU, 0x2C21U, 0x2CB2U,
+    0x2D41U, 0x2DCFU, 0x2E5AU, 0x2EE4U, 0x2F6CU, 0x2FF2U, 0x3076U, 0x30F9U,
+    0x3179U, 0x31F8U, 0x3274U, 0x32EFU, 0x3368U, 0x33DFU, 0x3453U, 0x34C6U,
+    0x3537U, 0x35A5U, 0x3612U, 0x367DU, 0x36E5U, 0x374BU, 0x37B0U, 0x3812U,
+    0x3871U, 0x38CFU, 0x392BU, 0x3984U, 0x39DBU, 0x3A30U, 0x3A82U, 0x3AD3U,
+    0x3B21U, 0x3B6DU, 0x3BB6U, 0x3BFDU, 0x3C42U, 0x3C85U, 0x3CC5U, 0x3D03U,
+    0x3D3FU, 0x3D78U, 0x3DAFU, 0x3DE3U, 0x3E15U, 0x3E45U, 0x3E72U, 0x3E9DU,
+    0x3EC5U, 0x3EEBU, 0x3F0FU, 0x3F30U, 0x3F4FU, 0x3F6BU, 0x3F85U, 0x3F9CU,
+    0x3FB1U, 0x3FC4U, 0x3FD4U, 0x3FE1U, 0x3FECU, 0x3FF5U, 0x3FFBU, 0x3FFFU
 
 Note that the quarter can not simply be doubly-mirrored to produce the full
 sine table, see the key values for guides. To mirror by value, the value has
@@ -139,9 +158,9 @@ to be subtracted from 0. The following guides may be used to confirm proper
 generation:
 
 - Offset 0x001: 0x00C9
-- Offset 0x081: 0x3FFE
+- Offset 0x081: 0x3FFF
 - Offset 0x101: 0xFF37 (-0x00C9)
-- Offset 0x181: 0xC002 (-0x3FFE)
+- Offset 0x181: 0xC001 (-0x3FFF)
 
 
 
@@ -150,9 +169,9 @@ Waveform data
 ------------------------------------------------------------------------------
 
 
-Eight 256 byte samples are provided mostly for use in simple audio tasks. Note
-that the samples are stored in Big Endian byte order, conforming with the way
-the components access memory.
+Eight 256 byte samples and their reduced variants are provided mostly for use
+in simple audio tasks. Note that the samples are stored in Big Endian byte
+order, conforming with the way the components access memory.
 
 
 Square wave
@@ -169,12 +188,12 @@ Uses the following sine table for the first quarter (offsets 0x00 - 0x3F): ::
 
     0x81U, 0x84U, 0x87U, 0x8AU, 0x8EU, 0x91U, 0x94U, 0x97U,
     0x9AU, 0x9DU, 0xA0U, 0xA3U, 0xA6U, 0xA9U, 0xACU, 0xAFU,
-    0xB2U, 0xB5U, 0xB7U, 0xBAU, 0xBDU, 0xC0U, 0xC2U, 0xC5U,
+    0xB2U, 0xB5U, 0xB8U, 0xBAU, 0xBDU, 0xC0U, 0xC3U, 0xC5U,
     0xC8U, 0xCAU, 0xCDU, 0xCFU, 0xD2U, 0xD4U, 0xD6U, 0xD9U,
     0xDBU, 0xDDU, 0xDFU, 0xE1U, 0xE3U, 0xE5U, 0xE7U, 0xE9U,
-    0xEAU, 0xECU, 0xEEU, 0xEFU, 0xF1U, 0xF2U, 0xF3U, 0xF5U,
+    0xEBU, 0xECU, 0xEEU, 0xEFU, 0xF1U, 0xF2U, 0xF4U, 0xF5U,
     0xF6U, 0xF7U, 0xF8U, 0xF9U, 0xFAU, 0xFBU, 0xFCU, 0xFCU,
-    0xFDU, 0xFDU, 0xFEU, 0xFEU, 0xFFU, 0xFFU, 0xFFU, 0xFFU
+    0xFDU, 0xFEU, 0xFEU, 0xFEU, 0xFFU, 0xFFU, 0xFFU, 0xFFU
 
 The remaining three quarters can be produced by appropriately double-mirroring
 this table. To mirror by value, the value has to be subtracted from 0xFF. The
@@ -252,6 +271,29 @@ For Noise 2 the parameters are:
 - num2: 0xB3
 
 
+Reductions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The reductions take place in the subsequent 256 bytes for each sample, to
+support generating higher frequency variants. The following layout is used in
+this area:
+
+- 0x100 - 0x17F: 1/2 reduction (128 bytes)
+- 0x180 - 0x1BF: 1/4 reduction (64 bytes)
+- 0x1C0 - 0x1DF: 1/8 reduction (32 bytes)
+- 0x1E0 - 0x1EF: 1/16 reduction (16 bytes)
+- 0x1F0 - 0x1F7: 1/32 reduction (8 bytes)
+- 0x1F8 - 0x1FB: 1/64 reduction (4 bytes)
+- 0x1FC - 0x1FD: 1/128 reduction (2 bytes)
+- 0x1FE - 0x1FF: 1/128 reduction (2 bytes)
+
+Each reduction level is generated from the previous level by the following
+rules:
+
+- 2 consequent samples are averaged to produce a result sample.
+- Rounding is upwards if the sum was larger than 0x100, downwards otherwise.
+
+
 
 
 Musical logarithmic table
@@ -259,27 +301,40 @@ Musical logarithmic table
 
 
 The Musical logarithmic table is meant to be used with the Audio mixer to
-assist in outputting power of 2 sized samples at given musical frequencies. An
-A4 (440Hz) for a 256 byte sample at 48KHz can be produced using offset 0x76 in
-this table.
+assist in outputting power of 2 sized samples at given musical frequencies.
 
-The table contains 32 bit 16.16 fixed point sample pointer increments, whole
-part first. It's size is 512 words.
+If a 256 byte sample is played as-is at 48KHz, assuming it contains one
+period, the resulting audible frequency is 187.5Hz. The Musical logaritmic
+table contains 12 values which can be used to generate frequencies within an
+octave below this frequency. These are as follows:
 
-There are 12 tones within an octave, the octave above or below may be obtained
-by multiplying or dividing the table entries by two respectively. For the
-greatest accuracy the top 12 entries are provided (offsets 0xF4 - 0xFF); lower
-octaves then may be obtained by right shifting these values one by one for
-each until generating the whole table.
-
-The high 12 entries (offsets 0x1E8 - 0x1FF) of the table as 32bit values are
-as follows: ::
-
-    55678343U,  58989149U,  62496826U,  66213081U,  70150316U,  74321671U,
-    78741067U,  83423255U,  88383859U,  93639437U,  99207528U, 105106715U
-
-Lower octaves must be obtained by right shifting these values, discarding any
-one bits falling off on the right.
++-------+--------+-----------------------------------------------------------+
+| Index | Value  | Note & Frequency (for 256 byte sample)                    |
++=======+========+===========================================================+
+| 0     | 0x85CD | G2;   97.999Hz                                            |
++-------+--------+-----------------------------------------------------------+
+| 1     | 0x8DC2 | G#2; 103.826Hz                                            |
++-------+--------+-----------------------------------------------------------+
+| 2     | 0x9630 | A2;  110.000Hz                                            |
++-------+--------+-----------------------------------------------------------+
+| 3     | 0x9F1E | A#2; 116.541Hz                                            |
++-------+--------+-----------------------------------------------------------+
+| 4     | 0xA894 | B2;  123.471Hz                                            |
++-------+--------+-----------------------------------------------------------+
+| 5     | 0xB29A | C3;  130.813Hz                                            |
++-------+--------+-----------------------------------------------------------+
+| 6     | 0xBD39 | C#3; 138.591Hz                                            |
++-------+--------+-----------------------------------------------------------+
+| 7     | 0xC87A | D3;  146.832Hz                                            |
++-------+--------+-----------------------------------------------------------+
+| 8     | 0xD465 | D#3; 155.563Hz                                            |
++-------+--------+-----------------------------------------------------------+
+| 9     | 0xE107 | E3;  164.814Hz                                            |
++-------+--------+-----------------------------------------------------------+
+| 10    | 0xEE68 | F3;  174.614Hz                                            |
++-------+--------+-----------------------------------------------------------+
+| 11    | 0xFC95 | F#3; 184.997Hz                                            |
++-------+--------+-----------------------------------------------------------+
 
 
 
@@ -300,16 +355,12 @@ CPU data memory
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0xF800 |                                                                   |
-| \-     | Musical logarithmic table.                                        |
-| 0xF9FF |                                                                   |
+| 0xFAB4 |                                                                   |
+| \-     | Musical logarithmic table (up_mlogt).                             |
+| 0xFABF |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFA00 |                                                                   |
-| \-     | RRPGE Incremental palette.                                        |
-| 0xFA0F |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0xFA10 |                                                                   |
-| \-     | Zero.                                                             |
+| 0xFAC0 |                                                                   |
+| \-     | RRPGE Incremental palette (up_palette).                           |
 | 0xFAFF |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xFB00 |                                                                   |
@@ -317,7 +368,7 @@ CPU data memory
 | 0xFDFF |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xFE00 |                                                                   |
-| \-     | Large sine table.                                                 |
+| \-     | Large sine table (up_sine).                                       |
 | 0xFFFF |                                                                   |
 +--------+-------------------------------------------------------------------+
 
@@ -331,35 +382,35 @@ bank, as 32 bit offsets. That is the base of these offsets is 0xF0000.
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0xFE00 |                                                                   |
-| \-     | Square wave.                                                      |
-| 0xFE3F |                                                                   |
+| 0xFC00 |                                                                   |
+| \-     | Square wave (up_smp_sqr).                                         |
+| 0xFC7F |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFE40 |                                                                   |
-| \-     | Sine wave.                                                        |
+| 0xFC80 |                                                                   |
+| \-     | Sine wave (up_smp_sine).                                          |
+| 0xFCFF |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0xFD00 |                                                                   |
+| \-     | Triangle wave (up_smp_tri).                                       |
+| 0xFD7F |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0xFD80 |                                                                   |
+| \-     | Spiked wave (up_smp_spike).                                       |
+| 0xFDFF |                                                                   |
++--------+-------------------------------------------------------------------+
+| 0xFE00 |                                                                   |
+| \-     | Incremental sawtooth (up_smp_sawi).                               |
 | 0xFE7F |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xFE80 |                                                                   |
-| \-     | Triangle wave.                                                    |
-| 0xFEBF |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0xFEC0 |                                                                   |
-| \-     | Spiked wave.                                                      |
+| \-     | Decremental sawtooth (up_smp_sawd).                               |
 | 0xFEFF |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xFF00 |                                                                   |
-| \-     | Incremental sawtooth.                                             |
-| 0xFF3F |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0xFF40 |                                                                   |
-| \-     | Decremental sawtooth.                                             |
+| \-     | Noise 1 (up_smp_nois1).                                           |
 | 0xFF7F |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xFF80 |                                                                   |
-| \-     | Noise 1.                                                          |
-| 0xFFBF |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0xFFC0 |                                                                   |
-| \-     | Noise 2.                                                          |
+| \-     | Noise 2 (up_smp_nois2).                                           |
 | 0xFFFF |                                                                   |
 +--------+-------------------------------------------------------------------+
