@@ -72,23 +72,6 @@ the format the sine table provides it. Between the table entries coarse linear
 interpolation is used.
 
 
-0xE086: Frequency of tone
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- F.name: us_tfreq
-- Cycles: 50 / 140
-- Param0: Tone
-- Ret. C: High (whole) part of frequency
-- Ret.X3: Low (fractional) part of frequency
-
-Returns the frequency (add value) to be used for outputting a tone with the
-Mixer. The high 8 bits of the tone parameter are "whole" semitones (as in
-twelve tone equal temperament). The low 8 bits are a fractional part which may
-be used for frequency sweeping. "Whole" semitones are returned directly from
-the Musical logarithmic table (50 cycles), fractions are calculated using
-linear interpolation (140 cycles).
-
-
 0xE088: 32 bit multiply
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -197,7 +180,7 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | 0xE084 |           220 | 1 | C:X3 | us_sincos                              |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE086 |      50 / 140 | 1 | C:X3 | us_tfreq                               |
+| 0xE086 |               |   |      | <not used>                             |
 +--------+---------------+---+------+----------------------------------------+
 | 0xE088 |           100 | 4 | C:X3 | us_mul32                               |
 +--------+---------------+---+------+----------------------------------------+
