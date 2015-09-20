@@ -31,10 +31,10 @@ Display list offset calculation
 ------------------------------------------------------------------------------
 
 
-Functions in this group help in converting and sanitizing display list offsets
-between PRAM word offsets and Display List Definition register format offsets.
-See the "Display list definition & Process flags" register (0x0017) in
-"vid_arch.rst" for details on this format.
+Functions in this group help in converting display list offsets between PRAM
+word offsets and Display List Definition register format offsets. See the
+"Display list definition" register (0x0016) in "vid_arch.rst" for details on
+this format.
 
 
 0xE030: Convert from PRAM word offset
@@ -134,10 +134,10 @@ necessary before calling this.
 
 Setting Display list definition 1 for display is treated as a page flip, the
 flip hooks are called after it. Then the function waits for the end of the
-frame (unless already reached, using the frame rate limiter flag of the
-Display List Definition & Process flags register), sets display list clear
-controls by the provided value, finally transferring to us_dbus_getlist to
-process frame hooks and to return the work display list.
+frame (unless already reached, using the frame completion flag of the Status
+flags register of the GDG), sets display list clear controls by the provided
+value, finally transferring to us_dbus_getlist to process frame hooks and to
+return the work display list.
 
 
 0xE050: Flip pages
@@ -164,8 +164,7 @@ calling us_dbuf_getlist was omitted after the last page flip.
 
 First if necessary, it waits for the frame (in which the pages were last
 flipped) to end, also calling the frame hooks when this happens. The wait is
-performed by the Frame rate limiter flag (in the Display List Definition &
-Process Flags register).
+performed by the Frame completion flag.
 
 This function is optimized for fast return, simply providing the appropriate
 CPU RAM variable. The us_dbuf_init and us_dbuf_flip routines ensure that the
@@ -284,6 +283,31 @@ definition of this function applies to all.
 Note that these functions do not support display lists crossing PRAM page
 boundaries (where their processing would wrap around to the beginning of the
 same bank).
+
+Two CPU RAM locations are used by this component (all display list management
+functions) and some others to limit the output vertically:
+
++--------+-------------------------------------------------------------------+
+| Range  | Description                                                       |
++========+===================================================================+
+| 0xFDAC | Vertical limit, low. The first row where output is permitted.     |
++--------+-------------------------------------------------------------------+
+| 0xFDAD | Vertical limit, high. The first row where output is disabled.     |
++--------+-------------------------------------------------------------------+
+
+
+0xE040: Set vertical limits
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- F.name: us_dlist_setbounds
+- Cycles: 80
+- Param0: Vertical limit, low.
+- Param1: Vertical limit, high.
+
+Sets the vertical limits. The function checks whether the inputs are valid:
+if the high limit is smaller than the low limit, it swaps the inputs, if
+either is smaller than signed 2's complement zero, it is zeroed, if larger
+than 400, then set to 400.
 
 
 0xE034: Set up PRAM pointers for list walking
@@ -412,8 +436,8 @@ PRAM pointers 1, 2 and 3 are used and not preserved.
 - Cycles: 280 + 12 / entry
 - Param0: Display List Definition to use
 
-Clears the entire display list to zero. The passed display list definition is
-sanitized as defined for us_dloff_clip.
+Clears the entire display list (not respecting vertical limits, always all 400
+rows) to zero.
 
 Uses us_set_p for the clear, taking 6 cycles for a word, or 12 cycles for a 32
 bit display list entry. Total cycle counts are 19480 / 38680 / 77080 / 153880
@@ -673,7 +697,7 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | 0xE03E |     12U + 280 | 1 |      | us_dlist_clear                         |
 +--------+---------------+---+------+----------------------------------------+
-| 0xE040 |               |   |      | <not used>                             |
+| 0xE040 |            80 | 2 |      | us_dlist_setbounds                     |
 +--------+---------------+---+------+----------------------------------------+
 | 0xE042 |             W | 3 |  X3  | us_dbuf_init                           |
 +--------+---------------+---+------+----------------------------------------+

@@ -56,6 +56,17 @@ The managers need to have a page flip hook installed in which they clear their
 internal structures containing information on the usage of the display list.
 Normally these hooks are installed (see "ulboot.rst" for details).
 
+Both sprite managers respect the low and high vertical bounds set by the
+Display List managers. These are in the CPU RAM as follows:
+
++--------+-------------------------------------------------------------------+
+| Range  | Description                                                       |
++========+===================================================================+
+| 0xFDAC | Vertical limit, low. The first row where output is permitted.     |
++--------+-------------------------------------------------------------------+
+| 0xFDAD | Vertical limit, high. The first row where output is disabled.     |
++--------+-------------------------------------------------------------------+
+
 
 Display list column usage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -124,8 +135,8 @@ All these locations are zero-initialized.
 - F.name: us_sprite_reset
 - Cycles: 20 / 100
 
-Clears display list occupation data (0xFDD8 and 0xFDD9) according to the set
-bounds (0xFDDA, 0xFDDB). This clearing respects the display list configuration
+Clears display list occupation data (0xFDC8 and 0xFDC9) according to the set
+bounds (0xFDCA, 0xFDCB). This clearing respects the display list configuration
 (display list size) as set in the Graphics Display Generator.
 
 Sets the dirty flag (indicating *not* dirty), so if no simple sprite manager
@@ -141,8 +152,8 @@ shortcut path (20 cycles).
 - Param0: First display list column to use
 - Param1: Count of display list columns to use
 
-The parameters are directly loaded into the appropriate locations (0xFDDA,
-0xFDDB). Clears the dirty flag (indicating dirty).
+The parameters are directly loaded into the appropriate locations (0xFDCA,
+0xFDCB). Clears the dirty flag (indicating dirty).
 
 
 0xE074: Add graphics component to display list
@@ -157,7 +168,7 @@ The parameters are directly loaded into the appropriate locations (0xFDDA,
 - Param4: Y position to start at (signed 2's complement, can be off-display)
 
 Selects the column to add the sprite to by the current column locations
-(0xFDD8 and 0xFDD9), updates the appropriate location (increments the current
+(0xFDC8 and 0xFDC9), updates the appropriate location (increments the current
 first non-occupied on the bottom location if added to the bottom, decrements
 the current first occupied on the top location if added to the top), clears
 the dirty flag (indicating dirty), then transfers to us_dlist_db_add.
@@ -248,7 +259,7 @@ All these locations are zero-initialized.
 - Cycles: 20 / 1800
 
 Clears display list occupation data (0xFB00 - 0xFC8F) according to the set
-bounds (0xFDDE, 0xFDDF). This clearing respects the display list configuration
+bounds (0xFDCE, 0xFDCF). This clearing respects the display list configuration
 (display list size) as set in the Graphics Display Generator.
 
 Sets the dirty flag (indicating *not* dirty), so if no multiplexing sprite
@@ -264,8 +275,8 @@ on a shortcut path (20 cycles).
 - Param0: First display list column to use
 - Param1: Count of display list columns to use
 
-The parameters are directly loaded into the appropriate locations (0xFDDA,
-0xFDDB). Clears the dirty flag (indicating dirty).
+The parameters are directly loaded into the appropriate locations (0xFDCE,
+0xFDCF). Clears the dirty flag (indicating dirty).
 
 
 0xE076: Add graphics component to display list
@@ -282,7 +293,7 @@ The parameters are directly loaded into the appropriate locations (0xFDDA,
 Clears the dirty flag (indicating dirty). For the purpose of rendering the
 srpite, the operation matches that of us_dlist_add. The display list column to
 use is selected on every display list row using the appropriate row of the
-occupation data (0xF800 - 0xF98F), operating by the same principles described
+occupation data (0xFB00 - 0xFC8F), operating by the same principles described
 at us_sprite_add. If the locations are equal, only the affected row of the
 sprite is skipped.
 

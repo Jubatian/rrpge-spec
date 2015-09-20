@@ -59,6 +59,9 @@ The init hook list contains the following functions:
 The absolute offset of it's first free slot at 0xFDDF is set 0xFDD1
 (indicating one function loaded).
 
+The display list manager's vertical limits (0xFDAC and 0xFDAD) are set up to
+cover the whole display (low limit to 0, high limit to 400).
+
 
 
 
@@ -158,7 +161,11 @@ The following table provides the initial fill data to be used for the range
 | \-     | 0xE13A, 0xE13C, 0xE138, 0x0001, 0x000C, 0x000F, 0xF100, 0x0108    |
 | 0xFDAB |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFDAC |                                                                   |
+| 0xFDAC | 0                                                                 |
++--------+-------------------------------------------------------------------+
+| 0xFDAD | 0x0190                                                            |
++--------+-------------------------------------------------------------------+
+| 0xFDAE |                                                                   |
 | \-     | 0                                                                 |
 | 0xFDBF |                                                                   |
 +--------+-------------------------------------------------------------------+
