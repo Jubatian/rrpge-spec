@@ -127,6 +127,19 @@ a byte reader at 0xFD8C and a utf-8 reader at 0xFD88 (see "charr.rst").
 
 
 
+Audio buffer management initialization
+------------------------------------------------------------------------------
+
+
+The audio buffer manager is set up over the default mono setup, which means a
+buffer size of 4096 samples (512 bits << 7, into 0xFDAE). The block size is
+set up to 256 samples (512 bits << 3, into 0xFDAF). This at the normal 48KHz
+playback rate gives about 80ms of buffer-ahead capability at a decent 187.5Hz
+granularity.
+
+
+
+
 CPU RAM user library range fill map
 ------------------------------------------------------------------------------
 
@@ -165,7 +178,11 @@ The following table provides the initial fill data to be used for the range
 +--------+-------------------------------------------------------------------+
 | 0xFDAD | 0x0190                                                            |
 +--------+-------------------------------------------------------------------+
-| 0xFDAE |                                                                   |
+| 0xFDAE | 0x0007                                                            |
++--------+-------------------------------------------------------------------+
+| 0xFDAF | 0x0003                                                            |
++--------+-------------------------------------------------------------------+
+| 0xFDB0 |                                                                   |
 | \-     | 0                                                                 |
 | 0xFDBF |                                                                   |
 +--------+-------------------------------------------------------------------+
