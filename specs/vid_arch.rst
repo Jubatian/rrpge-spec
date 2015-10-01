@@ -27,28 +27,27 @@ Basic properties of the display
 ------------------------------------------------------------------------------
 
 
-The limits of the RRPGE system's display generator are set as follows:
+The basic properties of the RRPGE system's display generator are as follows:
 
-- 640x400 visible pixels of 1:1 pixel aspect ratio in 4bit mode
-- 320x400 visible pixels of 2:1 pixel aspect ratio in 8bit mode
+- 640x400 visible pixels of 1:1 pixel aspect ratio
+- 6 bits per pixel palettized, 64 palette entries of 4-4-4 RGB colors.
 - 16:10 display aspect ratio
-- 50Hz minimal / 70Hz maximal refresh rate
-- At least 49 vertical blank lines (for a total of at least 449 lines)
+- 50Hz minimal / 60Hz maximal refresh rate
+- At least 71 vertical blank lines (for a total of at least 471 lines)
 - At least 400 main clock cycles per display line
 - Interlaced display generation is supported for standards requiring it
 - Accesses the 32 bit Peripheral bus
 
-To support the 4bit mode (640px width) the graphic display normally has to be
-clocked by twice the frequency of the main clock (except if it only supports
-interlaced modes).
+The graphic display normally has to be clocked by twice the frequency of the
+main clock (except if it only supports interlaced modes).
 
 Interlaced modes are implemented in a transparent way: they require the same
 programming from the user like non-interlaced modes. The only exception is
 that the user needs to be aware of that it might need two frames to produce a
 complete image. See the "Interlaced rendering" chapter for more information.
 
-Note that faster rates than 70Hz may be provided by an implementation if it
-meets the at least 449 line, and at least 400 main clock cycles per line
+Note that faster rates than 60Hz may be provided by an implementation if it
+meets the at least 471 line, and at least 400 main clock cycles per line
 constraints. This implies that such an implementation uses a faster clock than
 required by this specification.
 
@@ -57,19 +56,6 @@ required by this specification.
 
 Display standards and RRPGE system compatibility
 ------------------------------------------------------------------------------
-
-
-VGA 400 line / 70Hz
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This is the display mode with the fastest refresh rate the RRPGE system
-supports: it's minimal display related timings are set out based on this mode.
-To produce it a 25.175MHz base clock is necessary from which a slightly faster
-than the minimal 12.5MHz main clock can be derived.
-
-Normally this mode's aspect ratio is not suitable for the system, however if
-used with a CRT monitor, it's aspect ratio can be corrected manually to fit,
-offering a more eye friendly visual experience.
 
 
 VGA 480 line / 60Hz
@@ -140,32 +126,37 @@ the video signal producing pixel data. ::
     |            V                                                           |
     |  +------------- Render side -------------+--------------------------+  |
     |  |                                       |                          |  |
-    |  +- 80 x 32 bit cells display data ------+- 48 x 32 bit cells void -+  |
+    |  +- 80 x 48 bit cells display data ------+- 48 x 48 bit cells void -+  |
     |  |                                       |                          |  |
     |  +------------- Display side ------------+--------------------------+  |
     |            |                                                           |
     +------------|-----------------------------------------------------------+
                  |
-                 |     +--------------+
-                 |<----| Palette data |
-                 |     +--------------+
+                 |     +--------------------------+
+                 |<----| Palette data (64 colors) |
+                 |     +--------------------------+
                  V
            Video signal
 
 
-A display line is 640 x 4 bit pixels or 320 x 8 bit pixels depending on the
-display mode, taking 80 x 32 bit Video RAM cells. One buffer in the Line
-double buffer accordingly is capable to hold 80 x 32 bits of data, while it's
-cells may have a 7 bit address. The cells addressable with these address bits
-(cells 80 - 127) do not contribute to the Video signal, and so they may not
-be implemented.
+A display line is 640 x 6 bit pixels. One buffer in the Line double buffer
+accordingly is capable to hold 80 x 48 bits of data (8 pixels per cell the
+same manner like 4 bit pixels are represented in the PRAM's 32 bit cells),
+while it's cells may have a 7 bit address. The extra cells addressable with
+these address bits (cells 80 - 127) do not contribute to the Video signal, and
+so they may not be implemented.
 
-The buffers are typically flipped when advancing a line, that is every 400
-main clock cycles. The display generator supports a doubly scanned mode when
-the buffers are only flipped after every second line.
+The Line double buffer cells are accessed in pairs, so it is effectively
+addressed using a 6 bit address.
+
+The filling of the render side starts in line -2 (2 lines before the first
+display line), then a buffer flip happens on advancing to line 0. Subsequently
+buffer flips happen either every second line or every line depending on the
+double scanning setting, render accesses to the PRAM happening between line -2
+and line 398 inclusive (401 lines).
 
 The Render side also contains a reset circuity which can reset the state of
-all cells to a given initial value in a single clock.
+all cells to a given initial value (background pattern) in a single clock.
 
 Due to this architecture the Line renderer is free to build up the following
 display line in any order as long as it fits in the line's cycle budget.
@@ -195,9 +186,9 @@ the Peripheral RAM onto the Render side of the Line double buffer.
 The processing is adequately pipelined so no Peripheral bus access cycles are
 spent idle as long as there is data to render for the line. From the user's
 point of view the Line renderer may be seen as fetching a display list
-command, then processing it. Up to 8 bus access cycles per line or line pair
-is however lost for overhead, so up to 192 bus access cycles remain available
-for processing by this scheme (392 in double scanned mode).
+command, then processing it. Up to 16 bus access cycles per line or line pair
+is however lost for overhead and PRAM refresh, so up to 184 bus access cycles
+remain available for processing by this scheme (368 in double scanned mode).
 
 (Implementations are allowed to deviate from the strictly sequential scheme in
 favor of meeting the bus access cycle requirement by pipelining, such as by
@@ -227,25 +218,26 @@ Within vertical blanking the Graphics Display Generator is capable to clear
 (by writing zeros) Peripheral RAM cells in the previously rendered Display
 List.
 
-This clearing only takes place in a VBlank after a Display List Definition
-change, using the previous Display List Definition. For the clear the Graphics
-Display Generator only uses the Peripheral bus cycles allocated to it, which
-would otherwise be left unused, so it is free from the point of other
-peripherals on the bus.
+This clearing (roughly) only takes place in a VBlank after a Display List
+Definition change, using the previous Display List Definition. For the clear
+the Graphics Display Generator only uses the Peripheral bus cycles allocated
+to it, which would otherwise be left unused, so it is free from the point of
+other peripherals on the bus.
 
 The range to clear is defined by the previous Display List Definition to
 either 1600, 3200, 6400 or 12800 cells (depending on the Display List entry
 / line size). The Clear controls register defines which cells may be cleared,
 and which may be preserved in this range.
 
-Up to 9600 cells may be written in the clearing process (that is using 48
-lines, 200 cycles each line). If by the Clear controls register more cells
-would be necessary to be cleared, the clearing process terminates when 9600
-cells are cleared (this means on the largest display list in 400 line graphics
-modes up to 24 cells may be cleared each line).
+By the above up to 12800 cells may be written in the clearing process,
+requiring 70 lines if 184 cycles are given to the clearing process each line.
+This produces the 71 line minimum requirement for the VBlank interval.
 
 Using the Clear controls it is possible to preserve parts of a Display list,
 such as a constant background pattern.
+
+Note that the Display list clear function can not pass PRAM bank boundaries,
+addressing will wrap around in such situations to the beginning of the bank.
 
 
 
@@ -260,62 +252,36 @@ are accessible in the 0x0010 - 0x001F area in the User peripheral area.
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-|        | Mask / Colorkey definition 0                                      |
+|        | Colorkey values A                                                 |
 | 0x0010 |                                                                   |
-|        | - bit  8-15: Mask / Colorkey for 0x8                              |
-|        | - bit  0- 7: Mask / Colorkey for 0x9                              |
-|        |                                                                   |
-|        | Provides user-definable Mask or Colorkey values for the given     |
-|        | values of the Mask / Colorkey selector in the render command.     |
+|        | - bit 12-15: Colorkey value for source A0                         |
+|        | - bit  8-11: Colorkey value for source A1                         |
+|        | - bit  4- 7: Colorkey value for source A2                         |
+|        | - bit  0- 3: Colorkey value for source A3                         |
 +--------+-------------------------------------------------------------------+
-|        | Mask / Colorkey definition 1                                      |
+|        | Colorkey values B                                                 |
 | 0x0011 |                                                                   |
-|        | - bit  8-15: Mask / Colorkey for 0xA                              |
-|        | - bit  0- 7: Mask / Colorkey for 0xB                              |
-|        |                                                                   |
-|        | Provides user-definable Mask or Colorkey values for the given     |
-|        | values of the Mask / Colorkey selector in the render command.     |
+|        | - bit 12-15: Colorkey value for source B0                         |
+|        | - bit  8-11: Colorkey value for source B1                         |
+|        | - bit  4- 7: Colorkey value for source B2                         |
+|        | - bit  0- 3: Colorkey value for source B3                         |
 +--------+-------------------------------------------------------------------+
-|        | Mask / Colorkey definition 2                                      |
+|        | Double scan split                                                 |
 | 0x0012 |                                                                   |
-|        | - bit  8-15: Mask / Colorkey for 0xC                              |
-|        | - bit  0- 7: Mask / Colorkey for 0xD                              |
-|        |                                                                   |
-|        | Provides user-definable Mask or Colorkey values for the given     |
-|        | values of the Mask / Colorkey selector in the render command.     |
-+--------+-------------------------------------------------------------------+
-|        | Mask / Colorkey definition 3                                      |
-| 0x0013 |                                                                   |
-|        | - bit  8-15: Mask / Colorkey for 0xE                              |
-|        | - bit  0- 7: Mask / Colorkey for 0xF                              |
-|        |                                                                   |
-|        | Provides user-definable Mask or Colorkey values for the given     |
-|        | values of the Mask / Colorkey selector in the render command.     |
-+--------+-------------------------------------------------------------------+
-|        | Shift mode region A                                               |
-| 0x0014 |                                                                   |
 |        | - bit    15: Unused, reads zero                                   |
-|        | - bit  8-14: Output width in cells (0: No output)                 |
-|        | - bit     7: Unused, reads zero                                   |
-|        | - bit  0- 6: Begin position in cells                              |
+|        | - bit 12-14: High half-palette select for Background pattern      |
+|        | - bit    11: Unused, reads zero                                   |
+|        | - bit  8-10: Low half-palette select for Background pattern       |
+|        | - bit  0- 7: Double scan split location                           |
 |        |                                                                   |
-|        | Specifies the region of output for Shift mode sources in Source   |
-|        | definitions A0 - A3. The bus access cycles required are one more  |
-|        | than the output width.                                            |
-+--------+-------------------------------------------------------------------+
-|        | Shift mode region B                                               |
-| 0x0015 |                                                                   |
-|        | - bit    15: Unused, reads zero                                   |
-|        | - bit  8-14: Output width in cells (0: No output)                 |
-|        | - bit     7: Unused, reads zero                                   |
-|        | - bit  0- 6: Begin position in cells                              |
-|        |                                                                   |
-|        | Specifies the region of output for Shift mode sources in Source   |
-|        | definitions B0 - B3. The bus access cycles required are one more  |
-|        | than the output width.                                            |
+|        | Defines how many double-scanned lines should appear on the top    |
+|        | half of the display. Effective between 0 and 200, the first       |
+|        | making the entire display single-scanned, the latter double-      |
+|        | scanned. Note that the first single-scanned line always has two   |
+|        | lines worth of cycles to render (392 cycles).                     |
 +--------+-------------------------------------------------------------------+
 |        | Display list clear controls                                       |
-| 0x0016 |                                                                   |
+| 0x0013 |                                                                   |
 |        | - bit 11-15: Initial cells to skip from clearing (0 - 31)         |
 |        | - bit  6-10: Cells to skip after a streak (0 - 31)                |
 |        | - bit  0- 5: Cells to clear in one streak (0 - 63)                |
@@ -324,71 +290,104 @@ are accessible in the 0x0010 - 0x001F area in the User peripheral area.
 |        | found in the previous display list definition, then advances by   |
 |        | the parameters provided in this register.                         |
 +--------+-------------------------------------------------------------------+
-|        | Display list definition & process flags                           |
+|        | Shift mode region A                                               |
+| 0x0014 |                                                                   |
+|        | - bit    15: Clip positioned source A3 to region if set           |
+|        | - bit    14: Clip positioned source A2 to region if set           |
+|        | - bit  8-13: Output width in cell pairs (0: No output)            |
+|        | - bit     7: Clip positioned source A1 to region if set           |
+|        | - bit     6: Clip positioned source A0 to region if set           |
+|        | - bit  0- 5: Begin position in cell pairs                         |
+|        |                                                                   |
+|        | Specifies the region of output for Shift mode sources in Source   |
+|        | definitions A0 - A3. The bus access cycles required are one more  |
+|        | than the output width. Positioned sources may also be clipped to  |
+|        | this region (note: positioned sources always use display column   |
+|        | 0 as base irrespective of this setting).                          |
++--------+-------------------------------------------------------------------+
+|        | Shift mode region B                                               |
+| 0x0015 |                                                                   |
+|        | - bit    15: Clip positioned source B3 to region if set           |
+|        | - bit    14: Clip positioned source B2 to region if set           |
+|        | - bit  8-13: Output width in cell pairs (0: No output)            |
+|        | - bit     7: Clip positioned source B1 to region if set           |
+|        | - bit     6: Clip positioned source B0 to region if set           |
+|        | - bit  0- 5: Begin position in cell pairs                         |
++--------+-------------------------------------------------------------------+
+|        | Display list definition                                           |
+| 0x0016 |                                                                   |
+|        | - bit 12-15: Display list PRAM bank                               |
+|        | - bit  2-11: Display list start offset high bits (6-15)           |
+|        | - bit  0- 1: Display list line size                               |
+|        |                                                                   |
+|        | Display list line sizes:                                          |
+|        |                                                                   |
+|        | - 0: 4 entries (cells)                                            |
+|        | - 1: 8 entries (cells)                                            |
+|        | - 2: 16 entries (cells)                                           |
+|        | - 3: 32 entries (cells)                                           |
+|        |                                                                   |
+|        | The effective portion of a display list depends on the location   |
+|        | of the double scan split, requiring between 200 and 400 lines     |
+|        | defined. Note that the display list clear function doesn't        |
+|        | consider this split location, always aiming to clear 400 lines    |
+|        | worth of display list.                                            |
+|        |                                                                   |
+|        | The newly written Display list definition does not affect the     |
+|        | currently displayed frame (the previous value is latched          |
+|        | internally), however the new value will show on reading this      |
+|        | register.                                                         |
+|        |                                                                   |
+|        | Display lists can not cross PRAM bank boundaries. The address     |
+|        | will wrap to the beginning of the bank.                           |
++--------+-------------------------------------------------------------------+
+|        | Status flags                                                      |
 | 0x0017 |                                                                   |
-|        | - bit    15: Frame rate limiter flag                              |
-|        | - bit    14: Display list clear is waiting or processing if set   |
-|        | - bit    13: Set if double scanned mode, clear otherwise          |
-|        | - bit    12: Set if 8 bit mode, clear if 4 bit mode               |
-|        | - bit    11: Unused, reads zero                                   |
-|        | - bit  2-10: Display list start offset in 2048 PRAM cell units    |
-|        | - bit  0- 1: Display list entry / line size                       |
+|        | - bit    15: Frame completion flag (read only)                    |
+|        | - bit  0-14: Unused, reads zero                                   |
 |        |                                                                   |
-|        | Display list entry / line sizes:                                  |
-|        |                                                                   |
-|        | - 0: 4 / 8 (double scan) entries                                  |
-|        | - 1: 8 / 16 (double scan) entries, bit 3 is unused                |
-|        | - 2: 16 / 32 (double scan) entries, bits 3-4 are unused           |
-|        | - 3: 32 / 64 (double scan) entries, bits 3-5 are unused           |
-|        |                                                                   |
-|        | Bits 11-15 are not writeable (writes to these are ignored).       |
-|        |                                                                   |
-|        | Note that in double scanned mode there are only 200 lines, so the |
-|        | total size of the display list is identical to that of the single |
-|        | scanned mode.                                                     |
-|        |                                                                   |
-|        | The Frame rate limiter flag becomes set when writing this         |
-|        | register, and clears when the Graphics Display Generator fetches  |
-|        | the new Display List Definition for rendering the next frame. It  |
-|        | always clears after the Display list clear is waiting or          |
-|        | processing flag.                                                  |
-|        |                                                                   |
-|        | The Display list clear is waiting or processing flag becomes set  |
-|        | when writing this register, and clears as soon as the clearing    |
-|        | process is completed or terminated.                               |
-|        |                                                                   |
-|        | The newly written Display list start offset & entry / line size   |
-|        | does not affect the currently displayed frame (the previous       |
-|        | value is latched internally), however the new value will show on  |
-|        | reading this register.                                            |
+|        | The Frame completion flag becomes set when writing the Display    |
+|        | list definition register, and clears when the Graphics Display    |
+|        | Generator fetches the new Display List Definition for rendering   |
+|        | the next frame and the Display list clear also completed.         |
 +--------+-------------------------------------------------------------------+
 |        | Source definition A0                                              |
 | 0x0018 |                                                                   |
-|        | - bit 12-15: Base offset bits 12-15                               |
-|        | - bit  8-11: PRAM bank select                                     |
-|        | - bit  5- 7: Source line size (line select shift)                 |
-|        | - bit     4: If set, shift source. If clear, positioned source.   |
-|        | - bit  0- 3: Positioned source width multiplier                   |
+|        | - bit 12-15: PRAM bank select                                     |
+|        | - bit    11: X expansion if set                                   |
+|        | - bit  8-10: Low half-palette select                              |
+|        | - bit     7: If set, shift source. If clear, positioned source.   |
+|        | - bit     6: If set, enables tiled mode (disables bit 7)          |
+|        | - bit  0- 5: Source line size in cell pairs (0: 64 cell pairs)    |
 |        |                                                                   |
-|        | Source line sizes:                                                |
+|        | Shift sources use the source line size field differently, only    |
+|        | the low 3 bits:                                                   |
 |        |                                                                   |
-|        | - 0: 1 cell (8 pixels in 4 bit mode, 4 pixels in 8 bit)           |
-|        | - 1: 2 cells                                                      |
-|        | - 2: 4 cells                                                      |
-|        | - 3: 8 cells                                                      |
-|        | - 4: 16 cells                                                     |
-|        | - 5: 32 cells                                                     |
-|        | - 6: 64 cells                                                     |
-|        | - 7: 128 cells                                                    |
-|        |                                                                   |
-|        | The positioned source width multiplier specifies odd values from  |
-|        | 1 to 31 (0 => 1; 15 => 31). It multiplies the Source line size,   |
-|        | but has no effect on the Source line select in the render         |
-|        | command.                                                          |
+|        | - 0: 1 cell pair (16 pixels)                                      |
+|        | - 1: 2 cell pairs                                                 |
+|        | - 2: 4 cell pairs                                                 |
+|        | - 3: 8 cell pairs                                                 |
+|        | - 4: 16 cell pairs                                                |
+|        | - 5: 32 cell pairs                                                |
+|        | - 6: 64 cell pairs                                                |
+|        | - 7: 128 cell pairs                                               |
 |        |                                                                   |
 |        | Shift sources wrap around on their end when rendering, always     |
 |        | producing the output width defined in the appropriate Shift mode  |
 |        | region register.                                                  |
+|        |                                                                   |
+|        | The half-palette bits produce bits 3-5 of the resulting pixel in  |
+|        | the Line double buffer when rendering the source. The values in   |
+|        | this register apply if the source pixel's bit 3 is clear (so      |
+|        | selecting palette for color indices 0 - 7).                       |
+|        |                                                                   |
+|        | In X expanded mode every source pixel will expand to two          |
+|        | destination pixels, doubling the width of the source (both for    |
+|        | positioned and shift sources)                                     |
+|        |                                                                   |
+|        | A tiled mode is provided if bit 6 is set. Bit 7 is ignored this   |
+|        | case, leaving the tiled mode acting like a positioned source.     |
+|        | This mode is described further below ("Tiled mode").              |
 +--------+-------------------------------------------------------------------+
 | 0x0019 | Source definition A1                                              |
 +--------+-------------------------------------------------------------------+
@@ -409,66 +408,86 @@ Display lists hold commands, each command defining one chunk of data to be
 rendered on the Render side of the Line double buffer. The first entry of a
 line of a display list is a background pattern which is used to reset the
 Render side of the Line double buffer before starting the render. Subsequent
-entries (up to 3, 7, 15, 31 or 63 depending on entry size and double scanning)
-are render commands.
+entries (up to 3, 7, 15, 31 depending on line size) are render commands.
 
 The layout of a render command is as follows:
 
 +--------+-------------------------------------------------------------------+
 | Bits   | Description                                                       |
 +========+===================================================================+
-|        | If set, bit 3 (4 bit mode) or bit 5 (8 bit mode) of destination   |
-| 31     | pixel values become a priority selector. If bit 3 / 5 of the      |
-|        | destination pixel is set, it won't be overridden by the source    |
-|        | pixel.                                                            |
+|        | Start offset within PRAM bank. PRAM bank boundaries can not be    |
+| 16-31  | crossed. Shift sources ignore the lower bits depending on the     |
+|        | specified line size (for example 128 cells width ignores the low  |
+|        | 7 bits).                                                          |
 +--------+-------------------------------------------------------------------+
-| 28-30  | Source definition select                                          |
+| 13-15  | Source definition select                                          |
 +--------+-------------------------------------------------------------------+
-|        | Source line select. This is multiplied with the width of the      |
-| 16-27  | source (not including the multiplier) to produce a PRAM offset,   |
-|        | and is OR combined with the source's base offset. PRAM bank       |
-|        | boundaries can not be crossed.                                    |
+| 4-12   | Mode specific bits                                                |
 +--------+-------------------------------------------------------------------+
-| 15     | Combine with mask if clear (!)                                    |
-+--------+-------------------------------------------------------------------+
-| 14     | Combine with colorkey if clear (!)                                |
-+--------+-------------------------------------------------------------------+
-|        | Mask / Colorkey value                                             |
-| 10-13  |                                                                   |
-|        | - 0x0: Mask / Colorkey is 00000000 (binary).                      |
-|        | - 0x1: Mask / Colorkey is 11111111 (binary).                      |
-|        | - 0x2: Mask / Colorkey is 00001111 (binary).                      |
-|        | - 0x3: Mask / Colorkey is 00111111 (binary).                      |
-|        | - 0x4: Mask / Colorkey is 00000011 (binary).                      |
-|        | - 0x5: Mask / Colorkey is 00001100 (binary).                      |
-|        | - 0x6: Mask / Colorkey is 00110000 (binary).                      |
-|        | - 0x7: Mask / Colorkey is 11000000 (binary).                      |
-|        | - 0x8: Mask / Colorkey is taken from bits 8 - 15 of 0x0010.       |
-|        | - 0x9: Mask / Colorkey is taken from bits 0 - 7 of 0x0010.        |
-|        | - 0xA: Mask / Colorkey is taken from bits 8 - 15 of 0x0011.       |
-|        | - 0xB: Mask / Colorkey is taken from bits 0 - 7 of 0x0011.        |
-|        | - 0xC: Mask / Colorkey is taken from bits 8 - 15 of 0x0012.       |
-|        | - 0xD: Mask / Colorkey is taken from bits 0 - 7 of 0x0012.        |
-|        | - 0xE: Mask / Colorkey is taken from bits 8 - 15 of 0x0013.       |
-|        | - 0xF: Mask / Colorkey is taken from bits 0 - 7 of 0x0013.        |
-+--------+-------------------------------------------------------------------+
-|        | Shift / Position amount in 4 bit pixel units. If the source is in |
-| 0-9    | shift mode, this value shifts it to the left by the given number  |
-|        | of pixel units. If the source is in position mode, this value     |
-|        | determines it's start position on the Render side of the Line     |
-|        | double buffer. In 8 bit mode the lowest bit is ignored.           |
+| 0-3    | Cell pair right shift amount (0 - 15 pixels)                      |
 +--------+-------------------------------------------------------------------+
 
-A render command is inactive if it's bits 15 and 10-13 are set zero. Such a
+The mode specific bits in Shift mode:
+
++--------+-------------------------------------------------------------------+
+| Bits   | Description                                                       |
++========+===================================================================+
+|        | High half-palette select. If this field is zero, the render       |
+| 10-12  | command is disabled. Otherwise it specifies bits 3 - 5 of the     |
+|        | resulting pixel value in the Line buffer if source pixel bit 3    |
+|        | was set (so effectively selects palette for indices 8 - 15).      |
++--------+-------------------------------------------------------------------+
+|        | Negated source start offset in cell pairs. Offset is generated as |
+| 4-9    | (this_value ^ 0x3F), shifted left by one if X expansion is off.   |
+|        | Note that the source fetches for the first cell pair don't        |
+|        | directly generate output, only populate the output shift          |
+|        | register. This way, combined with bits 0 - 3 of the render        |
+|        | command, this forms a source start offset in pixels on the        |
+|        | display.                                                          |
++--------+-------------------------------------------------------------------+
+
+The mode specific bits in Positioned mode:
+
++--------+-------------------------------------------------------------------+
+| Bits   | Description                                                       |
++========+===================================================================+
+|        | High half-palette select. If this field is zero, the render       |
+| 10-12  | command is disabled. Otherwise it specifies bits 3 - 5 of the     |
+|        | resulting pixel value in the Line buffer if source pixel bit 3    |
+|        | was set (so effectively selects palette for indices 8 - 15).      |
++--------+-------------------------------------------------------------------+
+| 4-9    | Start offset on display (in cell pairs). Combined with bits 0 - 3 |
+|        | of the render command, this is essentially a pixel position.      |
++--------+-------------------------------------------------------------------+
+
+The mode specific bits in Tiled mode:
+
++--------+-------------------------------------------------------------------+
+| Bits   | Description                                                       |
++========+===================================================================+
+| 12     | If set, enables pseudo 6 bit mode.                                |
++--------+-------------------------------------------------------------------+
+|        | PRAM bank select for tiles in pseudo 6 bit mode. This field is    |
+| 8-11   | unused otherwise, but this case either bit 10 or 11 should be set |
+|        | to enable the render command (so bits 10 - 12 remain nonzero).    |
++--------+-------------------------------------------------------------------+
+|        | Tile row select. In X expanded mode this is XOR combined with     |
+| 4-7    | bits 0 - 3 of the tile address, otherwise it is XOR combined with |
+|        | bits 1 - 4.                                                       |
++--------+-------------------------------------------------------------------+
+
+A render command may be disabled by leaving its bits 10 - 12 zero. Such a
 render command does not contribute to the line's contents, and only takes one
 bus access cycle (the cycle in which it was fetched).
 
-Note that it is possible to combine with both Mask and Colorkey.
+PRAM boundaries can not be crossed by source fetches: the addressing wraps
+around to the beginning of the given PRAM bank on such event.
 
-Note that Peripheral RAM bank boundaries can not even be crossed in position
-mode with an appropriate source line select and a larger than one multiplier.
-The reading of the source wraps around fetching the remaining cells from the
-beginning of the same PRAM bank.
+Note that if the source line size field is set to 128 cell pairs for Shift
+mode, infinite scrolling using bits 0 - 9 of the render command becomes
+impossible. This setup however remains useful for panning over a 1664 pixels
+wide surface (2048 pixels effective width, but 384 pixels of this can not be
+made visible).
 
 
 
@@ -478,7 +497,7 @@ Rendering process
 
 
 The rendering process for cells are identical for Shift and Position modes,
-and is carried out according to the following guide: ::
+and is carried out according to the following simplified guide: ::
 
 
     +----+----+----+----+
@@ -491,44 +510,156 @@ and is carried out according to the following guide: ::
     | Prev. src. |   Current source  |      | Shift register
     +----+----+----+----+----+----+----+----+
               |
-              |                                        Mask / C.key value
-              V                                              | |
-    +----+----+----+----+ If c.key  +----+----+----+----+    | |
-    |    Data to blit   |---------->|   Colorkey mask   |<---+ |
-    +----+----+----+----+           +----+----+----+----+      | If mask
-              |                               |                V
-              |    +----+----+----+----+      |      +----+----+----+----+
-              |    |   Priority mask   |----+ | +----|      Bit mask     |
-              |    +----+----+----+----+    | | |    +----+----+----+----+
-              |              A              | | |
-              |              | If priority  | | |    +----+----+----+----+
-              |              |              | | | +--|  Beg/Mid/End mask |
-              |              |              | | | |  +----+----+----+----+
-              |              |             _V_V_V_V_
-              |              |            |   AND   |
-             _V_             |             ~~~~|~~~~
-            |AND|<----------)|(----------------+
-             ~|~             |                 |
-             _V_     ___     |                _V_
-            | OR|<--|AND|<--)|(--------------|NEG|
-             ~|~     ~A~     |                ~~~
-              |       |      |
-              |       +------+
-              |       |
-              V       |
-     ---+----+----+----+----+---
-        | Target r.buf cell |
-     ---+----+----+----+----+---
+              |                                           Colorkey value
+              V                                                  |
+    +----+----+----+----+               +----+----+----+----+    |
+    | Data to blit (32) |-------------->|   Colorkey mask   |<---+
+    +----+----+----+----+               +----+----+----+----+
+              |                                   |
+              |                                   |      +----+----+----+----+
+              |   +---- Half-palette selects      | +----|  Beg/Mid/End mask |
+              |   |                               | |    +----+----+----+----+
+              V   V                               | |
+    +--+--+--+--+--+--+--+--+                     | | +--- Clip mask (0 / 1)
+    |  48 bit output data   |                     | | |
+    +--+--+--+--+--+--+--+--+                    _V_V_V_
+                |                               |  AND  |
+                |                                ~~~|~~~
+                |                                   | Pixel-level mask
+               _V_                                  | (8 x 6 bit pixels)
+              |AND|<--------------------------------+
+               ~|~                                  |
+               _V_     ___                         _V_
+              | OR|<--|AND|<----------------------|NEG|
+               ~|~     ~A~                         ~~~
+                |       |
+                V       |
+     ---+--+--+--+--+--+--+--+--+---
+        | Target line buf. cell |
+     ---+--+--+--+--+--+--+--+--+---
 
 
 The Beg/Mid/End mask is used in Position mode to mask the partially filled
 cells on the beginning and the end of the rendered streak of data.
 
-In Shift mode the fractional part (low 3 bits) of the Shift / Position amount
-is 2's complement negated to produce the alignment shift. In Shift mode
-typically a source cell has to be fetched in advance (without producing
-destination for it), so the shift register may be properly filled for the
-first output data.
+The Clip mask is sourced from the Shift mode region registers in Position mode
+as needed, generated to indicate whether the target line buffer cell can be
+filled or not.
+
+In normal Positioned or Shift modes (no X expansion), 2 such source fetches
+are performed to populate the two target Line buffer cells.
+
+If X expansion is set, only one source fetch is performed, which is expanded
+(from 32 bits to 64 bits by duplicating each 4 bit pixel) before writing into
+the Shift register in two passes of the above algorithm. This way half as many
+source fetches are performed than in no X expansion modes, thus halving the
+total width of the source data.
+
+If X expansion is clear, two source fetches are performed. The address for the
+second is generated OR combining one onto the source offset. This produces no
+differences in Shift mode, however in Positioned mode it affects how odd start
+offsets are handled.
+
+The simplification in the above chart means that it describes a single cell
+operation. To operate with cell pairs as required, the shift register has to
+be twice as wide (128 bits).
+
+The half-palette selection is performed according to the following scheme
+(both for the background pattern and normal renders): ::
+
+
+    +----+----+----+----+
+    |   Source pixel    | One 4 bit pixel from a 32 bit cell
+    +----+----+----+----+
+      |         |
+      |         +-----------------------------------------------------+
+      |                                                               |
+      +----+----+                                                     |
+      V    V    V                                                     V
+    +----+----+----+             ___                          +----+----+----+
+    | b3 | b3 | b3 |------+---->|NEG|                         | b2 | b1 | b0 |
+    +----+----+----+      |      ~|~                          +----+----+----+
+                          |       |                                   |
+    +----+----+----+     _V_     _V_     +----+----+----+             |
+    | High h. pal. |--->|AND|   |AND|<---|  Low h. pal. |             |
+    +----+----+----+     ~|~     ~|~     +----+----+----+             |
+                          |       |                                   |
+                          |      _V_                                  |
+                          +---->| OR|             +-------------------+
+                                 ~|~              |
+                                  |               |
+                                  V               V
+                           +----+----+----+----+----+----+
+                           |     6 bit output pixel      |
+                           +----+----+----+----+----+----+
+
+
+
+
+Tiled mode
+------------------------------------------------------------------------------
+
+
+Sources can be configured to generate a tiled mode. In this mode a tile map
+(tile descriptor source) is used to retrieve source locations. The
+half-palettes can be set for each individual tile, thus supporting using more
+than 16 colors on a tiled mode surface. Alternatively, tile mode can be used
+to produce a pseudo 6 bit mode, which combined with X expansion and a tile
+height of one, is capable to assign (almost) any of the 64 palette colors to
+every pixel.
+
+It basically uses the Positioned source logic for display, with the addition
+of tile descriptor source fetches for each cell pair (so a tile is always two
+cells wide). Actual source fetches are performed after producing the source
+offset from the tile descriptor source. The tile descriptor source is read in
+the same manner as a normal X expanded source would.
+
+The tile descriptor source defines the address and palettes for the tiles. Its
+low 16 bits provide the tile address, which is XOR combined with the Tile row
+select to generate the actual offset. If X expansion is off, the source is 2
+cells wide. The second cell this case is fetched by setting the lowest bit of
+the address to 1 (so if the address was odd, the same cell will be fetched).
+
+The high 16 bits are as follows in normal mode (pseudo 6 bit off):
+
++--------+-------------------------------------------------------------------+
+| Bits   | Description                                                       |
++========+===================================================================+
+|    31  | Unused                                                            |
++--------+-------------------------------------------------------------------+
+| 28-30  | High half-palette select                                          |
++--------+-------------------------------------------------------------------+
+|    27  | Unused                                                            |
++--------+-------------------------------------------------------------------+
+| 24-26  | Low half-palette select                                           |
++--------+-------------------------------------------------------------------+
+| 20-23  | Colorkey value                                                    |
++--------+-------------------------------------------------------------------+
+| 16-19  | PRAM bank select for the tile                                     |
++--------+-------------------------------------------------------------------+
+
+The high 16 bits in Pseudo 6 bit mode provide the two high palette index bits
+for 8 pixel pairs, bits 30 and 31 for the leftmost pixel's bit 4 and 5
+respectively. If X expansion is set, this layout corresponds to that of the
+pixels, thus allowing supplying a 6 bit color for every "wide" pixel.
+
+Note that in Pseudo 6 bit mode the Colorkey matching is still done on the low
+4 bits only, so essentially four 6 bit indices will produce a transparent
+pixel, thus only allowing selecting 60 colors (plus one if laid over a plain
+background).
+
+A probable way of building a pseudo 6 bit 320 x 200 display is using double
+scanning (setting Double Scan Split to 200), then using a tile height of one
+row (so every row has its own tile source, allowing to specify the high two
+bits for each individual pixel). If the same time the tile offsets are laid
+out horizontally incrementing, the resulting 4 bit portion of the display
+surface will allow using the Accelerator normally on it.
+
+Using Tiled mode normally adds one cycle for processing each cell pair
+compared to the cycle budget of Positioned sources (due to the additional
+tile source fetch from the PRAM). In X expanded mode however the extra PRAM
+accesses replace the access which would have to be done to fetch two source
+cells, so this case Tiled mode is "free" on term of cycles consumed.
 
 
 
@@ -538,8 +669,8 @@ Renderer cycle budget
 
 
 As defined in the "Display List" chapter, in single scanned mode from the
-user's point of view there are at least 192 useful Video bus access cycles,
-and in doubly scanned mode, there are 392.
+user's point of view there are at least 184 useful Video bus access cycles,
+and in doubly scanned mode, there are 368.
 
 The rendering from the user's point of view may be interpreted as being
 sequential: the renderer fetches a display list command, then processes it,
@@ -548,32 +679,24 @@ and there are bus access cycles remaining for the render.
 
 Bus access cycles are taken by the following rules:
 
-- 1 cycle for reading a display list command.
-- The Shift mode region's Output width count of cycles plus one for sources in
-  Shift mode.
-- The positioned source width count of cycles for sources in Position mode (0
-  to 127 cycles).
+- 1 cycle for reading a render command (including the background pattern).
+- In Shift mode, twice the Output width of cycles, plus two for the initial
+  source fetch.
+- In Positioned mode, twice the Source line size of cycles, plus one for an
+  extra Line buffer write (actually two, but one of these cycles should be
+  pipelined with the reading of a subsequent render command).
+- In Tiled mode with X expansion off, three times the Source line size of
+  cycles, plus one for an extra Line buffer write (see above).
+- In Tiled mode with X expansion, the same as in Positioned mode.
 
 Note that the renderer is not capable to optimize out access cycles which
-would be used to render into off-screen area, neither it has a limit on how
-many cycles may it consume for a command in Position mode.
-
-(Pipelining notes: if a source is in Position mode, to render it on the Line
-double buffer, one more cycle is necessary than it's width. This extra cycle
-should be performed in parallel with a display list command fetch)
+would be used to render into non-displayed area (off-screen or clipped).
 
 
 
 
 Other components of the Display Generator
 ------------------------------------------------------------------------------
-
-
-Mode and double scanning
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The graphics mode (4 bit / 8 bit) and double scanning can be set using a
-kernel call. See "0x09: Change video mode" in "kcall.rst" for details.
 
 
 Palette
@@ -603,6 +726,14 @@ of colors 0xFFF (white) and 0x000 (black) should produce approximately the
 same luminance as color 0xBBB (grey).
 
 
+PRAM refresh
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The Graphics Display Generator should also provide Peripheral RAM refresh
+logic to handle Dynamic RAM chips. These are taken from the 16 overhead cycles
+allowed in each line (including within VBLANK).
+
+
 Implementation defined
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -628,7 +759,7 @@ are as follows:
 
 - The time the Display List clear function takes, provided it finishes within
   VBlank before starting the next display frame (including fetching the next
-  frame's Display List Definition, and clearing the Frame rate limiter flag).
+  frame's Display List Definition, and clearing the Frame completion flag).
 
 - After setting the palette data through the kernel call, it's effect may
   delay for up to "a few" frames, not even necessarily taking effect in

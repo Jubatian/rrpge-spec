@@ -90,21 +90,21 @@ The first 64 words of the Data address space.
 +--------+-------------------------------------------------------------------+
 | 0x000F | Graphics FIFO data word & store trigger (see "fifo.rst")          |
 +--------+-------------------------------------------------------------------+
-| 0x0010 | GDG Mask / Colorkey definition 0 (see "vid_arch.rst")             |
+| 0x0010 | GDG Colorkey values A (see "vid_arch.rst")                        |
 +--------+-------------------------------------------------------------------+
-| 0x0011 | GDG Mask / Colorkey definition 1 (see "vid_arch.rst")             |
+| 0x0011 | GDG Colorkey values B (see "vid_arch.rst")                        |
 +--------+-------------------------------------------------------------------+
-| 0x0012 | GDG Mask / Colorkey definition 2 (see "vid_arch.rst")             |
+| 0x0012 | GDG Double scan split (see "vid_arch.rst")                        |
 +--------+-------------------------------------------------------------------+
-| 0x0013 | GDG Mask / Colorkey definition 3 (see "vid_arch.rst")             |
+| 0x0013 | GDG Display list clear controls (see "vid_arch.rst")              |
 +--------+-------------------------------------------------------------------+
 | 0x0014 | GDG Shift mode region A (see "vid_arch.rst")                      |
 +--------+-------------------------------------------------------------------+
 | 0x0015 | GDG Shift mode region B (see "vid_arch.rst")                      |
 +--------+-------------------------------------------------------------------+
-| 0x0016 | GDG Display list clear controls (see "vid_arch.rst")              |
+| 0x0016 | GDG Display list definition (see "vid_arch.rst")                  |
 +--------+-------------------------------------------------------------------+
-| 0x0017 | GDG Display list definition & process flags (see "vid_arch.rst")  |
+| 0x0017 | GDG Status flags (see "vid_arch.rst")                             |
 +--------+-------------------------------------------------------------------+
 | 0x0018 | GDG Source definition A0 (see "vid_arch.rst")                     |
 +--------+-------------------------------------------------------------------+
@@ -168,37 +168,35 @@ The register's descriptions may be found in the Mixer's documentation
 +--------+-------------------------------------------------------------------+
 | Range  | Description                                                       |
 +========+===================================================================+
-| 0x0000 | Amplitude source partition select                                 |
+| 0x0000 |                                                                   |
+| \-     | Unused                                                            |
+| 0x0007 |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0x0001 | Amplitude source start, whole                                     |
+| 0x0008 | Destination bank select                                           |
 +--------+-------------------------------------------------------------------+
-| 0x0002 | Amplitude source start, fraction                                  |
+| 0x0009 | Destination start pointer                                         |
 +--------+-------------------------------------------------------------------+
-| 0x0003 | Frequency for AM source read, whole                               |
+| 0x000A | Destination cell count                                            |
 +--------+-------------------------------------------------------------------+
-| 0x0004 | Frequency for AM source read, fraction                            |
+| 0x000B | Source configuration                                              |
 +--------+-------------------------------------------------------------------+
-| 0x0005 | Destination Partitioning & Bank selection settings                |
+| 0x000C | Sample pointer fraction add value                                 |
 +--------+-------------------------------------------------------------------+
-| 0x0006 | Destination partition select                                      |
+| 0x000D | Amplitude multiplier add value                                    |
 +--------+-------------------------------------------------------------------+
-| 0x0007 | Destination start                                                 |
+| 0x000E | Initial amplitude multiplier                                      |
 +--------+-------------------------------------------------------------------+
-| 0x0008 | Source Partitioning & Bank selection settings                     |
+| 0x000F | Source descriptor offset & Start trigger                          |
 +--------+-------------------------------------------------------------------+
-| 0x0009 | Amplitude multiplier                                              |
+
+The source descriptor has the following layout (32 bit PRAM cells):
+
 +--------+-------------------------------------------------------------------+
-| 0x000A | Sample source partition select                                    |
+| Range  | Description                                                       |
++========+===================================================================+
+| 0x0000 | Sample bit pointer                                                |
 +--------+-------------------------------------------------------------------+
-| 0x000B | Sample source start, whole                                        |
-+--------+-------------------------------------------------------------------+
-| 0x000C | Sample source start, fraction                                     |
-+--------+-------------------------------------------------------------------+
-| 0x000D | Frequency, whole                                                  |
-+--------+-------------------------------------------------------------------+
-| 0x000E | Frequency, fraction                                               |
-+--------+-------------------------------------------------------------------+
-| 0x000F | Mode & start trigger                                              |
+| 0x0001 | Sample pointer fraction & Partition select bits                   |
 +--------+-------------------------------------------------------------------+
 
 

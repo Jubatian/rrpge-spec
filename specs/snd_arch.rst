@@ -29,14 +29,11 @@ Basic properties of the audio output
 The audio output capabilities of the system can be summarized as follows:
 
 - Digital audio output only
-- 8 bit unsigned sample data
+- 16 bit unsigned sample data
 - Two channel stereo output (mono output can also be used)
 - The output is governed by hardware DMA
 - 48 KHz sampling frequency is supported
 - Clock for real time synchronization
-
-The audio output's DMA sample counter should be used to synchronize to real
-time by applications.
 
 
 
@@ -56,10 +53,10 @@ the lower bits from the DMA sample counter.
 Mono output may be realized by making the left & right channel DMA offsets
 equal.
 
-Note that the audio output DMA uses a left and a right sample (8 bits) every
-audio base clock tick. This is quarter of a 32 bit PRAM cell. The lower two
-bits of the Audio DMA sample counter selects the byte of the sample source
-cell to use (00 selecting the highest byte, 11 selecting the lowest byte).
+Note that the audio output DMA uses a left and a right sample (16 bits) every
+audio base clock tick. This is half of a 32 bit PRAM cell. The lowest bit of
+the Audio DMA sample counter selects the sample of the sample source cell to
+use (0 selecting the high 16 bits, 1 selecting the low 16 bits).
 
 
 
@@ -80,10 +77,10 @@ which relate the audio output DMA.
 +--------+-------------------------------------------------------------------+
 |        | Audio DMA sample counter / next sample read offset. Derived from  |
 | 0x0002 | the base clock after applying the divider. Writes to this field   |
-|        | are ignored. The high 14 bits of this register are used to        |
-|        | generate a PRAM offset for the DMA, the low 2 bits are used to    |
-|        | select the sample byte to use within the selected cell (assuming  |
-|        | Big Endian byte order).                                           |
+|        | are ignored. The high 15 bits of this register are used to        |
+|        | generate a PRAM offset for the DMA, the lowest bit is used to     |
+|        | select the sample to use within the selected cell (assuming Big   |
+|        | Endian byte order).                                               |
 +--------+-------------------------------------------------------------------+
 |        | Audio DMA base clock. Increments starting with zero at a fixed    |
 | 0x0003 | 48 KHz rate until reaching the divider, resetting to zero when    |
@@ -98,7 +95,7 @@ which relate the audio output DMA.
 |        | Audio DMA buffer size mask bits, specifying mask for offset bits  |
 | 0x0006 | 4 - 19. Bits set in this mask come from the DMA start offset,     |
 |        | bits cleared from the DMA sample counter. Note that since the DMA |
-|        | sample counter only provides data for bits 0 - 13, bits 14 - 19   |
+|        | sample counter only provides data for bits 0 - 14, bits 15 - 19   |
 |        | will be zero if the corresponding mask bits are cleared.          |
 +--------+-------------------------------------------------------------------+
 |        | Audio clock divider. Writing it zero produces a sample counter    |

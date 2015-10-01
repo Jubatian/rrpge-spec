@@ -33,14 +33,14 @@ formed as follows, on top of the tileset interface:
 
 The Blit configuration composes as follows:
 
-- bit 13-15: Bits 5 - 7 of Pixel OR mask
-- bit    12: Bit 4 of Pixel OR mask or High bit of Reindex bank select
+- bit 13-15: Unused
+- bit    12: High bit of Reindex bank select
 - bit  9-11: Unused
 - bit     8: If set, colorkey is 1, otherwise it is 0
 - bit     7: Unused
 - bit     6: Reindex by destination if set (only if bit 5 is also set)
 - bit     5: Tile index layout (0: OR mask + 12 bits; 1: Reindexing + 12 bits)
-- bit     4: If set, 8 bit mode, otherwise 4 bit mode
+- bit     4: Unused
 - bit     3: If set, colorkey is enabled
 - bit  0- 2: Unused
 
@@ -51,16 +51,14 @@ If bit 6 is clear and bit 5 is set, if the high 4 bits are zero, no reindexing
 is applied (the high 4 bits ranging from 1 to 15 select reindex banks).
 
 The Index bits select a tile image within the tileset. Tile images are laid
-out row by row, however they are compacted in either 4 or 8 bit planes
-depending on mode (4 bitplanes in 4 bit mode, 8 bitplanes in 8 bit mode). The
-start offset of a tile image can be calculated as follows: ::
+out row by row, however they are compacted in 4 bit planes. The start offset
+of a tile image can be calculated as follows: ::
 
-    start_offset + ((index / mode) * (width * height))
+    start_offset + ((index / 4) * (width * height))
 
-Then the bit plane to use is selected with the low 2 or 3 bits (depending on
-mode) of the tile index, lower values selecting the lower bit planes. So in 4
-bit mode, tiles 0 - 3 occupy the same memory area, on bit planes 0 - 3
-respectively.
+Then the bit plane to use is selected with the low 2 bits of the tile index,
+lower values selecting the lower bit planes. So tiles 0 - 3 occupy the same
+memory area, on bit planes 0 - 3 respectively.
 
 CPU RAM locations are used for supporting blitting, and as default tilesets
 for working with the built-in font:
@@ -75,20 +73,12 @@ for working with the built-in font:
 | 0xFD94 | Memorized Start offset of source (Word6).                         |
 +--------+-------------------------------------------------------------------+
 | 0xFD9C |                                                                   |
-| \-     | Tileset using Normal 4 bit font (up_font_4).                      |
+| \-     | Tileset using Normal 4 bit font (up_font).                        |
 | 0xFDA3 |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xFDA4 |                                                                   |
-| \-     | Tileset using Inverted 4 bit font (up_font_4i).                   |
+| \-     | Tileset using Inverted 4 bit font (up_fonti).                     |
 | 0xFDAB |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0xFDAC |                                                                   |
-| \-     | Tileset using Normal 8 bit font (up_font_8).                      |
-| 0xFDB3 |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0xFDB4 |                                                                   |
-| \-     | Tileset using Inverted 8 bit font (up_font_8i).                   |
-| 0xFDBB |                                                                   |
 +--------+-------------------------------------------------------------------+
 
 
@@ -173,16 +163,16 @@ Implements us_tile_gethw in the tileset interface.
 Returns the width and height of a tileset.
 
 
-0xE13E: Set high bits of color or reindex bank
+0xE13E: Set high bit of reindex bank
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_ftile_setch
 - Cycles: 50
 - Param0: Tileset structure pointer
-- Param1: New color bits (only low 4 bits used)
+- Param1: New high bit (only low bit used)
 
-Allows for setting bits 4-7 of the OR mask, or the highest bit (bit 4) of the
-reindex bank select for a font tileset.
+Allows for setting the highest bit (bit 4) of the reindex bank select for a
+font tileset.
 
 
 

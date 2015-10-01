@@ -32,7 +32,7 @@ RRPGE CPU reset state
 
 
 - Most of the user register set (a, b, c, d, x0, x1, x2, x3, xb) is zeroed.
-- The pointer mode register (xm) is set 0x6666 (16 bit pre-incrementing).
+- The pointer mode register (xm) is set 0x6666 (16 bit post-incrementing).
 - The stack is empty (sp zeroed, bp set up, the entire stack memory is zero).
 - The program counter (pc) points at offset 0x0000.
 
@@ -85,9 +85,9 @@ CPU RAM (Data memory)
 +--------+-------------------------------------------------------------------+
 | D.End  |                                                                   |
 | \-     | Zero.                                                             |
-| 0xF7FF |                                                                   |
+| 0xFAB3 |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xF800 |                                                                   |
+| 0xFAB4 |                                                                   |
 | \-     | Initial data (see "data.rst").                                    |
 | 0xFAFF |                                                                   |
 +--------+-------------------------------------------------------------------+
@@ -132,17 +132,41 @@ PRAM (Peripheral memory)
 +=========+==================================================================+
 | 0x00000 |                                                                  |
 | \-      | Zero.                                                            |
-| 0xFDFFF |                                                                  |
+| 0xF3FFF |                                                                  |
++---------+------------------------------------------------------------------+
+| 0xF4000 |                                                                  |
+| \-      | Display list 1 (up_dlist1), for double-buffering. Zero.          |
+| 0xF77FF |                                                                  |
++---------+------------------------------------------------------------------+
+| 0xF7800 |                                                                  |
+| \-      | Right audio buffer (up_au_rt), 4096 samples. 0x80008000.         |
+| 0xF7FFF |                                                                  |
++---------+------------------------------------------------------------------+
+| 0xF8000 |                                                                  |
+| \-      | Display list 0 (up_dlist0), see Video reset state.               |
+| 0xFB7FF |                                                                  |
++---------+------------------------------------------------------------------+
+| 0xFB800 |                                                                  |
+| \-      | Left / Mono audio buffer (up_au_lf), 4096 samples. 0x80008000.   |
+| 0xFBFFF |                                                                  |
 +---------+------------------------------------------------------------------+
 | 0xFC000 |                                                                  |
-| \-      | User Library (see "userlib/ulboot.rst").                         |
+| \-      | Graphics FIFO, 8192 entries. Zero.                               |
 | 0xFDFFF |                                                                  |
 +---------+------------------------------------------------------------------+
 | 0xFE000 |                                                                  |
-| \-      | Initialization specified in this document, zero unless defined.  |
-| 0xFF700 |                                                                  |
+| \-      | Mixer FIFO, 512 entries. Zero.                                   |
+| 0xFE1FF |                                                                  |
 +---------+------------------------------------------------------------------+
-| 0xFFE00 |                                                                  |
+| 0xFE200 |                                                                  |
+| \-      | User Library (see "userlib/ulboot.rst").                         |
+| 0xFF7FF |                                                                  |
++---------+------------------------------------------------------------------+
+| 0xFF800 |                                                                  |
+| \-      | Reserved for user 256 byte samples. 0x80808080.                  |
+| 0xFFBFF |                                                                  |
++---------+------------------------------------------------------------------+
+| 0xFFC00 |                                                                  |
 | \-      | Initial data (see "data.rst").                                   |
 | 0xFFFFF |                                                                  |
 +---------+------------------------------------------------------------------+
@@ -156,19 +180,13 @@ Video reset state
 ------------------------------------------------------------------------------
 
 
-Video mode
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The starting mode is mode 3 (320x200; 8 bit double scanned).
-
-
 Display layout
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The display list is up as follows:
 
-- 8 entries / line (smallest).
-- Peripheral RAM offset 0xFF000.
+- 4 entries / line (smallest).
+- Peripheral RAM offset 0xF8000.
 
 The display list is populated the following way:
 
@@ -178,46 +196,40 @@ The display list is populated the following way:
 
 Source definitions are set up as follows:
 
-- Source A0: 0x0082
-- Source A1: 0x4140
-- Source A2: 0x8140
-- Source A3: 0xC140
-- Source B0: 0x0260
-- Source B1: 0x8260
-- Source B2: 0x0360
-- Source B3: 0x8360
+- Source A0: 0x0028
+- Source A1: 0x0000
+- Source A2: 0x0000
+- Source A3: 0x0000
+- Source B0: 0x0000
+- Source B1: 0x0000
+- Source B2: 0x0000
+- Source B3: 0x0000
 
-Source 0 sets up positioned source on Peripheral RAM bank 0 of 80 cells width.
-This is useful for non-scrolling display.
+The colorkey value registers are all set zero.
 
-Sources 1-3 are set up 4 cell wide (16 pixels in 8 bit mode, 32 pixels in 4
-bit mode) positioned source on Video RAM bank 1, in a manner they may be
-continuously accessed through display list entries, useful for small sprites.
+Source 0 sets up positioned source on Peripheral RAM bank 0 of 80 cells width,
+with zero as low half-palette and X expansion turned off. This is useful for
+non-scrolling display.
 
-Sources 4-7 are set up 8 cell wide (32 pixels in 8 bit mode, 64 pixels in 4
-bit mode) positioned source on Video RAM banks 2 and 3, in a manner they may
-be continuously accessed through display list entries, useful for larger
-sprites.
+The remainig sources remain uninitialized (PRAM bank 0, 128 cells wide
+positioned sources, zero as low half-palette, X expansion off).
 
 Entry 1 of the display list is populated as follows:
 
-Line 0 gets the value 0x0000C000. Line 1 is 0x0005C000. Subsequent lines get
-their entry values in a similar manner, adding 0x50000 to the previous line.
-This layout produces a simple 320x200 surface in the beginning of the
-Peripheral RAM.
+Line 0 gets the value 0x00000400. Line 1 is 0x00500400. Subsequent lines get
+their entry values in a similar manner, adding 0x500000 to the previous line.
+This layout produces a simple 640x400 surface in the beginning of the
+Peripheral RAM using the first 16 colors of the palette.
 
-Note that only the valid lines of the display list are populated (so 200
-lines), the rest of the area of the display list remains zero.
+Note that only the valid lines of the display list are populated (so 400
+lines).
 
-The mask / colorkey definitions are set up as follows:
-
-- Definition 0: 0x0102
-- Definition 1: 0x0408
-- Definition 2: 0x1020
-- Definition 3: 0x4080
+Double scanning is disabled, however the background palette in the same
+register is set up so the first 16 colors are used (0x1000).
 
 The shift mode regions are both set up for 80 cells width, beginning at cell
-0 (so filling entire display).
+0 (so filling entire display). Position mode clipping is disabled for all
+sources.
 
 
 Palette
@@ -238,7 +250,7 @@ Graphics FIFO
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Internal pointers of the Graphics FIFO are set zero (so it is empty). The
-FIFO's position is 0xFE000 in the Peripheral RAM, it's size is 4K cells.
+FIFO's position is 0xFC000 in the Peripheral RAM, it's size is 8K cells.
 
 
 Display state
@@ -258,8 +270,8 @@ Audio buffers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The audio output buffers are set up for mono output (left and right pointed at
-the same location), at 0xFF800 in the Peripheral RAM, 1024 cells in size (4096
-samples). It is filled with 0x8080, producing silence.
+the same location), at 0xFB800 in the Peripheral RAM, 2048 cells in size (4096
+samples). It is filled with 0x8000, producing silence.
 
 The Audio output DMA is prepared for 48KHz output.
 
@@ -267,16 +279,14 @@ The Audio output DMA is prepared for 48KHz output.
 Mixer peripheral
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Most registers are initialized to zero except the following:
-
-- 0x0009: 0x0100 (Amplitude)
+All registers are initialized to zero.
 
 
 Mixer FIFO
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Internal pointers of the Mixer FIFO are set zero (so it is empty). The FIFO's
-position is 0xFFC00 in the Peripheral RAM, it's size is 512 cells.
+position is 0xFE000 in the Peripheral RAM, it's size is 512 cells.
 
 
 
@@ -325,15 +335,9 @@ Application state, see "state.rst".
 | \-     | 0                                                                 |
 | 0x054  |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0x055  | 0x07F8                                                            |
+| 0x055  | 0xF800                                                            |
 +--------+-------------------------------------------------------------------+
 | 0x056  |                                                                   |
-| \-     | 0                                                                 |
-| 0x098  |                                                                   |
-+--------+-------------------------------------------------------------------+
-| 0x099  | 0x0100                                                            |
-+--------+-------------------------------------------------------------------+
-| 0x09A  |                                                                   |
 | \-     | 0                                                                 |
 | 0x09F  |                                                                   |
 +--------+-------------------------------------------------------------------+
@@ -346,23 +350,23 @@ Application state, see "state.rst".
 | 0x0C3  |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0x0C4  |                                                                   |
-| \-     | 0xFF80, 0xFF80, 0xFFC0, 0x0001                                    |
+| \-     | 0xFB80, 0xFB80, 0xFF80, 0x0001                                    |
 | 0x0C7  |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0x0C8  | 0x1FFC                                                            |
+| 0x0C8  | 0x1FE0                                                            |
 +--------+-------------------------------------------------------------------+
 | 0x0C9  |                                                                   |
 | \-     | 0                                                                 |
 | 0x0CB  |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0x0CC  | 0x4FE0                                                            |
+| 0x0CC  | 0x5FC0                                                            |
 +--------+-------------------------------------------------------------------+
 | 0x0CD  |                                                                   |
 | \-     | 0                                                                 |
 | 0x0CF  |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0x0D0  | 0x0102, 0x0408, 0x1020, 0x4080, 0x5000, 0x5000, 0x0000, 0x37F8,   |
-| \-     | 0x0082, 0x4140, 0x8140, 0xC140, 0x0260, 0x8260, 0x0360, 0x8360    |
+| 0x0D0  | 0x0000, 0x0000, 0x1000, 0x0000, 0x2800, 0x2800, 0xF800, 0x0000,   |
+| \-     | 0x0028, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000    |
 | 0x0DF  |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0x0E0  |                                                                   |

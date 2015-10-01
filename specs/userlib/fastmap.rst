@@ -26,24 +26,20 @@ layout:
 - Word0: Used tile map's pointer
 - Word1: Used destination surface's pointer
 - Word2: Visible height (number of rows used on the display list, 1 - 400)
-- Word3: Base source line select value (destination surface's top row)
+- Word3: Base source offset (destination surface's partition base)
 - Word4: Current top-left rendered X tile position
 - Word5: Current top-left rendered Y tile position
-- Word6: Full update request flag & Render command flags
-- Word7: Display list column to use (1 - 3 / 7 / 15 / 31 / 63)
+- Word6: Full update request flag & Render command configuration
+- Word7: Display list column to use (1 - 3 / 7 / 15 / 31)
 - Word8: Display list Y start offset (0 - 399)
-- Word9: Source line select range (destination surface's height)
+- Word9: Source offset range (destination surface's partition range)
 
-In double scanned mode, Word2's high limit is 200 rows, and Word8's high limit
-is 199.
+The bits of Full update request flag & Render command configuration are as
+follows:
 
-The bits of Full update request flag & Render command flags are as follows:
-
-- bit    15: Combine with mask if clear (Render command, bit 15)
-- bit    14: Combine with colorkey if clear (Render command, bit 14)
-- bit 10-13: Mask / Colorkey value (Render command, bits 10 - 13)
-- bit     9: If set, priority selector is active (Render command, bit 31)
-- bit  3- 8: Unused
+- bit 13-15: Source definition select (Render command, bits 13-15)
+- bit 10-12: High half-palette select (Render command, bits 10-12)
+- bit  3- 9: Unused
 - bit     2: Expect Y scroll only if set
 - bit     1: Expect X scroll only if set
 - bit     0: Full update request if set
@@ -86,10 +82,10 @@ Shift mode region register also should be set up to properly constrain the
 width of the scrolling area if necessary (this determines the Visible width).
 
 The display lists are filled according to the requested new location (passed
-as parameters to us_fastmap_draw). The X position is in pixels (a cell is 4
-pixels in 8 bit mode, 8 pixels in 4 bit mode). The fill is performed so the
-appropriate region of the destination is shown, as if on the tile map, the
-visible area's upper left corner was at the desired X:Y position.
+as parameters to us_fastmap_draw). The X position is in pixels (a cell is 8
+pixels wide). The fill is performed so the appropriate region of the
+destination is shown, as if on the tile map, the visible area's upper left
+corner was at the desired X:Y position.
 
 
 Limitations
@@ -98,25 +94,15 @@ Limitations
 Adhering the following limitations are mandatory. Not following these the
 behavior is undefined (producing no display may be a typical result):
 
-- Visible height (Word2) must be at most 400 in single scanned mode, 200 in
-  double scanned mode.
+- Visible height (Word2) must be at most 400.
 
-- Display list Y start offset (Word8) must be between 0 and 399 in single
-  scanned mode, 0 and 199 in double scanned mode.
+- Display list Y start offset (Word8) must be between 0 and 399.
 
 - Visible height and Display list Y start offset added together must be less
-  or equal than 400 in single scanned mode, less or equal than 200 in double
-  scanned mode.
+  or equal than 400.
 
 - Display list column to use must be a valid non-background (nonzero) column
   on the target display list.
-
-- Base source line select value must not have it's bit 15 set.
-
-- Source line select range added to Base source line select must not exceed
-  0x8000.
-
-- Source line select range must not be zero.
 
 The following limitations should be adhered to produce the intended result
 (functional scrolling tile map):
@@ -128,10 +114,7 @@ The following limitations should be adhered to produce the intended result
   Basic operation fits into it.
 
 - The Source definition covering the destination surface must be set up
-  according to the destination's dimensions, and the Base source line select
-  value must be set up to match this source definition (note that a
-  destination spanning multiple source definitions is possible as long as all
-  the related source definitions are set up properly).
+  according to the destination's dimensions.
 
 - The used tileset's tile width must be a power of 2 which is a divisor of the
   destination surface's width.
@@ -168,20 +151,21 @@ Functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - F.name: us_fastmap_new
-- Cycles: 140
+- Cycles: 300 + Wait for frame end
 - Param0: Target fast scrolling tile map pointer (10 words)
 - Param1: Tile map to use (tile map structure pointer)
 - Param2: Destination surface to use (destination surface pointer)
 - Param3: Display list column to use
 - Param4: Display list start Y location
 - Param5: Display list count of used rows
-- Param6: Starting source line select value
-- Param7: Source line select value range
-- Param8: Render command flags & X / Y scroll expectations
+- Param6: Render command configuration & X / Y scroll expectations
 
 Sets up a fast scrolling tile map using the given parameters. The parameters
 are used as-is, except for the full update request flag (one bit), which is
 set.
+
+Note that source offset parameters are taken from the specified destination
+surface, which may cause the function waiting for frame end.
 
 
 0xE0CC: Mark fast scrolling tile map for update
@@ -286,6 +270,7 @@ The abbreviations used in the table are as follows:
 - R: Return value registers used.
 - F: Additional callback cycles.
 - S: For cycle counts see function's description.
+- W: May wait for a specific event.
 
 The cycle counts are to be interpreted with function entry / exit overhead
 included, and are maximal counts.
@@ -293,7 +278,7 @@ included, and are maximal counts.
 +--------+---------------+---+------+----------------------------------------+
 | Addr.  | Cycles        | P |   R  | Name                                   |
 +========+===============+===+======+========================================+
-| 0xE0CA |           140 | 9 |      | us_fastmap_new                         |
+| 0xE0CA |       300 + W | 7 |      | us_fastmap_new                         |
 +--------+---------------+---+------+----------------------------------------+
 | 0xE0CC |            25 | 1 |      | us_fastmap_mark                        |
 +--------+---------------+---+------+----------------------------------------+

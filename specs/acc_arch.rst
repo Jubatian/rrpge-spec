@@ -26,6 +26,15 @@ the lowest priority for accessing it (though higher than it's FIFO). By this
 it is capable to work in parallel with the RRPGE CPU.
 
 
+Design notes:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The Accelerator originally was capable to perform 8 bit blits (256 color mode
+surfaces), however current RRPGE specifications don't require this capability.
+The structure is kept so it is possible to expand it to 8 bit mode if
+necessary (the last version containing the 8 bit capability was 00.017.000).
+
+
 
 
 Accelerator overview
@@ -105,8 +114,6 @@ affect how the accelerator stages are chained together:
 - (VDR) Reindex using destination. This extends the reindex stage by involving
   the destination data to select from a larger table.
 
-- (VBT) Display mode to work for: either 4 bit mode or 8 bit mode.
-
 The Accelerator has two major stages as follows:
 
 - Source fetch. This stage is performed according to the the selected mode
@@ -127,8 +134,8 @@ possible on it without the knowledge of the destination. For each Peripheral
 RAM cell necessarily affected it prepares a PRAM cell aligned data and a cell
 begin / middle / end mask.
 
-The mode selector (VMD) defines the path to take executing this stage. VMR and
-VBT may have effect on the execution otherwise.
+The mode selector (VMD) defines the path to take executing this stage. VMR may
+have effect on the execution otherwise.
 
 
 The begin / middle / end mask
@@ -214,9 +221,8 @@ registers are used (both the whole and fractional parts), making half-triangle
 blitting possible (for polygon blits).
 
 The source data is fetched from the pattern (provided in the Start trigger
-register). The pattern is rotated left 4 bits or 8 bits (1 pixel) depending on
-the targeted display mode on row transitions, providing support for dithering
-fills.
+register). The pattern is rotated left 4 bits (1 pixel) on row transitions,
+providing support for dithering fills.
 
 Note that the pattern is not rotated in any manner to align it with the
 destination fraction: it always aligns with half-cell boundary.
@@ -272,14 +278,14 @@ polygon blits, or producing segments of an arbitrarily rotated sprite).
 The source data is prepared as follows: ::
 
 
-    +----+ +----+ +----+ +----+
-    | Px | | Px | | Px | | Px | Up to 8 4bit pixels or 4 8bit pixels
-    +----+ +----+ +----+ +----+
-      |      |      |      |
-      |    +-+      |      |
-      |    |    +---+      |
-      |    |    |    +-----+
-      |    |    |    |
+    +----+ +----+     +----+ +----+
+    | Px | | Px | ... | Px | | Px | Up to 8 pixels
+    +----+ +----+     +----+ +----+
+      |      |          |      |
+      | +----+          |      |
+      | |           +---+      |
+      | |           | +--------+
+      | |           | |
     +----+----+----+----+
     |    Data to blit   | Aligned with the destination cells
     +----+----+----+----+
@@ -316,8 +322,8 @@ that single pixel, and the Destination Combine stage is started with this
 input.
 
 The line pattern is used to produce the line's color. The pattern is rotated
-right one pixel (4 or 8 bits) after every two pixels output, always using the
-lowest pixel (4 or 8 bits) for the output.
+right one pixel (4 bits) after every two pixels output, always using the
+lowest pixel (4 bits) for the output.
 
 
 
@@ -472,20 +478,18 @@ This chapter explains some of the minor stages of the accelerator.
 Pixel order swap (Mirror: VMR)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This stage swaps the pixel order. It behaves differently depending on the
-display mode, as shown on the following charts: ::
+This stage swaps the pixel order: ::
 
 
-    4 bit mode                        8 bit mode
-    +--+--+--+--+--+--+--+--+         +-----+-----+-----+-----+
-    |P0|P1|P2|P3|P4|P5|P6|P7|         | P0  | P1  | P2  | P3  |
-    +--+--+--+--+--+--+--+--+         +-----+-----+-----+-----+
-                |                                 |
-                |    Pixel order swap (Mirror)    |
-                V                                 V
-    +--+--+--+--+--+--+--+--+         +-----+-----+-----+-----+
-    |P7|P6|P5|P4|P3|P2|P1|P0|         | P3  | P2  | P1  | P0  |
-    +--+--+--+--+--+--+--+--+         +-----+-----+-----+-----+
+    +--+--+--+--+--+--+--+--+
+    |P0|P1|P2|P3|P4|P5|P6|P7|
+    +--+--+--+--+--+--+--+--+
+                |
+                |    Pixel order swap (Mirror)
+                V
+    +--+--+--+--+--+--+--+--+
+    |P7|P6|P5|P4|P3|P2|P1|P0|
+    +--+--+--+--+--+--+--+--+
 
 
 Note that the other source transforms (Read AND & OR mask and barrel rotate)
@@ -496,7 +500,7 @@ Reindex (VRE and VDR)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Re-indexes each pixel using a table within the Accelerator component. It
-operates as follows on pixel level (differently for 4 bit and 8 bit modes): ::
+operates as follows on pixel level: ::
 
 
     +------+                  +---------------------+
@@ -512,7 +516,7 @@ operates as follows on pixel level (differently for 4 bit and 8 bit modes): ::
                                     |
                                     V
                             ----+--------+----
-                                | New px |     Reindex table (512 x 8bit)
+                                | New px |     Reindex table (512 x 4bit)
                             ----+--------+----
                                     |
        +----------------------------+
@@ -522,17 +526,9 @@ operates as follows on pixel level (differently for 4 bit and 8 bit modes): ::
     +------+
 
 
-The operation is performed at pixel level. In 4 bit mode the Source pixel
-(S.Px) is used as-is, in 8 bit mode however it's high bits are discarded (so
-in either mode only 4 bits from the pixel may be used to index the table).
-
-The reindex table contains 8 bit entries. In 4 bit mode the high 4 bits of
-these entries are discarded before writing back.
-
 If VDR is also enabled, instead of the "Reindex bank select" peripheral
-register the low 5 bits of the destination's appropriate pixel is used after
-applying write masks. In 4 bit mode the highest bit of the table address is
-always zero if VDR is enabled.
+register the destination's appropriate pixel is used after applying write
+masks. The highest bit of the table address is always zero if VDR is enabled.
 
 
 Colorkey (VCK)
@@ -593,45 +589,28 @@ number of rows to render. In the Accel. combine column only the 'n' member is
 shown where appropriate. Note that in Line mode the row count is unused, so
 there are no 'r' cycles.
 
-+------+------+-----+------------------------------------+-------------------+
-| Disp | Mode | VRE | Cycles                             | Accel. combine    |
-+======+======+=====+====================================+===================+
-| 4bit |  BB  | NO  | 20 + (r * 2) + (n * 6)             | n * 4             |
-+------+------+-----+------------------------------------+-------------------+
-| 4bit |  FL  | NO  | 20 + (r * 4) + (n * 4)             | n * 2             |
-+------+------+-----+------------------------------------+-------------------+
-| 4bit |  SC  | NO  | 20 + (r * 8) + (n * 4) + (p * 2)   | n * 2             |
-+------+------+-----+------------------------------------+-------------------+
-| 4bit |  LI  | NO  | 20                     + (p * 4)   | \-                |
-+------+------+-----+------------------------------------+-------------------+
-| 4bit |  BB  | YES | 28 + (r * 2) + (n * 8) (*)         | n * 8 (*)         |
-+------+------+-----+------------------------------------+-------------------+
-| 4bit |  FL  | YES | 28 + (r * 4) + (n * 8) (*)         | n * 8 (*)         |
-+------+------+-----+------------------------------------+-------------------+
-| 4bit |  SC  | YES | 28 + (r * 8) + (n * 4) + (p * 2)   | n * 2             |
-+------+------+-----+------------------------------------+-------------------+
-| 4bit |  LI  | YES | 28                     + (p * 4)   | \-                |
-+------+------+-----+------------------------------------+-------------------+
-| 8bit |  BB  | NO  | 20 + (r * 2) + (n * 6)             | n * 4             |
-+------+------+-----+------------------------------------+-------------------+
-| 8bit |  FL  | NO  | 20 + (r * 4) + (n * 4)             | n * 2             |
-+------+------+-----+------------------------------------+-------------------+
-| 8bit |  SC  | NO  | 20 + (r * 8) + (n * 4) + (p * 2)   | n * 2             |
-+------+------+-----+------------------------------------+-------------------+
-| 8bit |  LI  | NO  | 20                     + (p * 4)   | \-                |
-+------+------+-----+------------------------------------+-------------------+
-| 8bit |  BB  | YES | 28 + (r * 2) + (n * 6)             | n * 4             |
-+------+------+-----+------------------------------------+-------------------+
-| 8bit |  FL  | YES | 28 + (r * 4) + (n * 4)             | n * 4 (*)         |
-+------+------+-----+------------------------------------+-------------------+
-| 8bit |  SC  | YES | 28 + (r * 8) + (n * 4) + (p * 2)   | n * 2             |
-+------+------+-----+------------------------------------+-------------------+
-| 8bit |  LI  | YES | 28                     + (p * 4)   | \-                |
-+------+------+-----+------------------------------------+-------------------+
++------+-----+-------------------------------------------+-------------------+
+| Mode | VRE | Cycles                                    | Accel. combine    |
++======+=====+===========================================+===================+
+|  BB  | NO  | 20 + (r * 2) + (n * 6)                    | n * 4             |
++------+-----+-------------------------------------------+-------------------+
+|  FL  | NO  | 20 + (r * 4) + (n * 4)                    | n * 2             |
++------+-----+-------------------------------------------+-------------------+
+|  SC  | NO  | 20 + (r * 8) + (n * 4) + (p * 2)          | n * 2             |
++------+-----+-------------------------------------------+-------------------+
+|  LI  | NO  | 20                     + (p * 4)          | \-                |
++------+-----+-------------------------------------------+-------------------+
+|  BB  | YES | 28 + (r * 2) + (n * 8) (*)                | n * 8 (*)         |
++------+-----+-------------------------------------------+-------------------+
+|  FL  | YES | 28 + (r * 4) + (n * 8) (*)                | n * 8 (*)         |
++------+-----+-------------------------------------------+-------------------+
+|  SC  | YES | 28 + (r * 8) + (n * 4) + (p * 2)          | n * 2             |
++------+-----+-------------------------------------------+-------------------+
+|  LI  | YES | 28                     + (p * 4)          | \-                |
++------+-----+-------------------------------------------+-------------------+
 
-Note that in 4 bit mode 8 reindexing accesses are necessary for processing
-each PRAM cell while in 8 bit mode 4 such accesses are necessary. Modes where
-this determines the performance are marked with a '*'.
+Note that 8 reindexing accesses are necessary for processing each PRAM cell.
+Modes where this determines the performance are marked with a '*'.
 
 Note that the Accelerated combine may be in effect for any processed cell if
 it's conditions are met. In Line mode the conditions of it can never be met.
@@ -741,12 +720,10 @@ range, and the second half represents the Reindex table.
 | 0x0015 |                                                                   |
 |        | - bit  7-15: Unused                                               |
 |        | - bit  5- 6: (VMD) Selects blit mode                              |
-|        | - bit     4: (VBT) If set, 8 bit mode, if clear, 4 bit mode       |
+|        | - bit     4: Unused                                               |
 |        | - bit     3: (VCK) Colorkey enabled if set                        |
-|        | - bit  0- 2: Pixel barrel rotate right                            |
-|        |                                                                   |
-|        | In 4 bit mode only bits 0-1 are used of the Pixel barrel rotate   |
-|        | right.                                                            |
+|        | - bit     2: Unused                                               |
+|        | - bit  0- 1: Pixel barrel rotate right                            |
 |        |                                                                   |
 |        | The blit modes:                                                   |
 |        |                                                                   |
@@ -757,8 +734,10 @@ range, and the second half represents the Reindex table.
 +--------+-------------------------------------------------------------------+
 |        | Pixel AND mask & Colorkey.                                        |
 | 0x0016 |                                                                   |
-|        | - bit  8-15: Pixel AND mask (only low 4 bits used in 4 bit mode)  |
-|        | - bit  0- 7: Colorkey (only low 4 bits used in 4 bit mode)        |
+|        | - bit 12-15: Unused                                               |
+|        | - bit  8-11: Pixel AND mask                                       |
+|        | - bit  4- 7: Unused                                               |
+|        | - bit  0- 3: Colorkey                                             |
 +--------+-------------------------------------------------------------------+
 | 0x0017 | Count of rows to blit. Only bits 0 - 8 are used. If all these     |
 |        | bits are set zero, 512 rows are produced. Not used for LI.        |
@@ -772,8 +751,8 @@ range, and the second half represents the Reindex table.
 |        | Count of cells / pixels to blit, fractional part.                 |
 | 0x0019 |                                                                   |
 |        | Used in FL and SC modes for a pixel precise row length. Only the  |
-|        | high 2 bits are used for generating the row in 8 bit mode, only   |
-|        | the high 3 bits in 4 bit mode. Not used for BB and LI.            |
+|        | high 3 bits are used for generating the row. Not used for BB and  |
+|        | LI.                                                               |
 +--------+-------------------------------------------------------------------+
 | 0x001A | Source X whole part. Not used for FL.                             |
 +--------+-------------------------------------------------------------------+
@@ -789,7 +768,8 @@ range, and the second half represents the Reindex table.
 |        | - bit    14: (VDR) If bit 13 is set, Reindex using dest. if set   |
 |        | - bit    13: (VRE) Reindexing enabled if set                      |
 |        | - bit  8-12: Reindex bank select                                  |
-|        | - bit  0- 7: Pixel OR mask (only low 4 bits used in 4 bit mode)   |
+|        | - bit  4- 7: Unused                                               |
+|        | - bit  0- 3: Pixel OR mask                                        |
 |        |                                                                   |
 |        | The VMR flag only has effect in BB mode.                          |
 +--------+-------------------------------------------------------------------+
@@ -882,8 +862,10 @@ The Reindex table:
 +========+===================================================================+
 |        | First reindex table entry, first reindex bank (bank 0).           |
 | 0x0100 |                                                                   |
-|        | - bit  8-15: Reindex for source value 0x0.                        |
-|        | - bit  0- 7: Reindex for source value 0x1.                        |
+|        | - bit 12-15: Unused.                                              |
+|        | - bit  8-11: Reindex for source value 0x0.                        |
+|        | - bit  4- 7: Unused.                                              |
+|        | - bit  0- 3: Reindex for source value 0x1.                        |
 +--------+-------------------------------------------------------------------+
 | 0x0101 | Reindexes for source values 0x2 and 0x3, bank 0.                  |
 +--------+-------------------------------------------------------------------+
@@ -905,5 +887,3 @@ The Reindex table:
 +--------+-------------------------------------------------------------------+
 
 Note that the value order accords with the Big Endian scheme the system uses.
-
-In 4 bit mode the high 4 bits of each reidex value are unused for blits.

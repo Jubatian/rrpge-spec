@@ -119,7 +119,7 @@ The State variables area's map:
 |        | - 2: 240 pixels (4:3 aspect ratio for the 3D content).            |
 |        | - 3: 200 pixels (16:10 aspect ratio for the 3D content).          |
 |        |                                                                   |
-|        | Also see 0x0340 "Set stereoscopic 3D" in "kcall.rst".             |
+|        | Also see 0x0A "Set stereoscopic 3D" in "kcall.rst".               |
 +--------+-------------------------------------------------------------------+
 | 0x058  | Application binary total size in words, high. Copies 0x0000 from  |
 |        | the Application descriptor.                                       |
@@ -167,13 +167,15 @@ The State variables area's map:
 +--------+-------------------------------------------------------------------+
 | 0x06C  | Graphics FIFO address latch.                                      |
 +--------+-------------------------------------------------------------------+
-| 0x06D  |                                                                   |
-| \-     | Unused, must be 0x0000.                                           |
-| 0x06F  |                                                                   |
+| 0x06D  | Unused, must be 0x0000.                                           |
 +--------+-------------------------------------------------------------------+
-| 0x070  | Expected devices at each device ID's. The 0x10 "Get device        |
-| \-     | properties" and the 0x11 "Drop device" kernel calls manage these  |
-| 0x07F  | fields.                                                           |
+| 0x06E  | Next event on the input event queue. 0 if it is not queried yet   |
+| \-     | (using kc_inp_peek). Popping the event queue or flushing it       |
+| 0x06F  | clears this area until a new query is performed.                  |
++--------+-------------------------------------------------------------------+
+| 0x070  | Bound devices for each device ID. The 0x10 "Request device" and   |
+| \-     | the 0x11 "Drop device" calls manage these fields. The low 4 bits  |
+| 0x07F  | contain the bound type, bit 4 set if the binding is present.      |
 +--------+-------------------------------------------------------------------+
 | 0x080  |                                                                   |
 | \-     | Unused, must be 0x0000.                                           |
@@ -221,17 +223,6 @@ accordingly. The cycle requirements should be calculated as necessary (also
 including the operation of the Accelerator or Mixer if triggered), and filled
 in the remaining cycle count registers. Then in the same "atomic" operation
 the FIFO's read pointer should be incremented.
-
-
-0x070, Expected device types
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This area is populated by the types of devices encountered at each device ID,
-as returned by the 0x10 "Get device properties" kernel call. The return value
-is stored as-is on these fields (see "kcall.rst" for details). The 0x11 "Drop
-device" kernel call may clear these fields. Using this information the host
-may manage device hotplugging better, and allocate devices better on reloading
-a saved state. See "Hotplug support" in "inputdev.rst" for details.
 
 
 0x200, Kernel tasks

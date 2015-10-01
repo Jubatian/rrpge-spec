@@ -33,29 +33,23 @@ Layout in Peripheral RAM
 ------------------------------------------------------------------------------
 
 
-The font uses the 0xFC500 - 0xFDFFF range in the Peripheral RAM. In this area
-four instances of the font are defined using the following ranges:
+The font uses the 0xFEA00 - 0xFF7FF range in the Peripheral RAM. In this area
+two instances of the font are defined using the following ranges:
 
-- 0xFC500 - 0xFCBBF: Normal font for 4 bit mode
-- 0xFCBC0 - 0xFD27F: Inverted font for 4 bit mode
-- 0xFD280 - 0xFD93F: Normal font for 8 bit mode
-- 0xFD940 - 0xFDFFF: Inverted font for 8 bit mode
+- 0xFEA00 - 0xFF0FF: Normal font
+- 0xFF100 - 0xFF7FF: Inverted font
 
 While the font itself contains only 512 characters (taking 1536 or 0x600 PRAM
-cells), 64 characters worth of empty space is provided after each for a
+cells), 84 characters worth of empty space is provided after each for a
 possibility of expanding the font in place if needed.
 
 The inverted variants produce set bits for the background. This is useful for
 coloring characters, using the Accelerator's OR mask feature, and colorkeying
 the background (so essentially the OR mask value can become the color).
 
-
-4 bit mode font
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-For 4 bit mode, the font tile width is 1 cell, the height is 12 rows. One
-pixel shares data for 4 font tiles, the first cell of the font data being
-laid out as follows: ::
+The font tile width is 1 cell, the height is 12 rows. One pixel shares data
+for four font tiles, the first cell of the font data being laid out as
+follows: ::
 
     Bit 31                              Bit 0
     +----+----+----+----+----+----+----+----+
@@ -67,31 +61,13 @@ laid out as follows: ::
 The next cell would contain the next row for tiles 0 - 3 the same way.
 
 
-8 bit mode font
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-For 8 bit mode, the font tile width is 2 cells, the height is 12 rows. One
-pixel shares data for 8 font tiles, the first cell of the font data being
-laid out as follows: ::
-
-    Bit 31                          Bit 0
-    +--------+--------+--------+--------+
-    |76543210|76543210|76543210|76543210| Tile ID each bit belongs to
-    +--------+--------+--------+--------+
-    | Pixel 0| Pixel 1| Pixel 2| Pixel 3| Pixels in first row
-    +--------+--------+--------+--------+
-
-The next cell would contain pixels 4 - 7 of the first row, then the next row
-for tiles 0 - 7 would come the same way.
-
-
 
 
 UTF to font transformation table
 ------------------------------------------------------------------------------
 
 
-A table to be used with the us_idfutf32 function is provided at 0xFC100. It
+A table to be used with the us_idfutf32 function is provided at 0xFE600. It
 maps all UTF code points occurring in the font.
 
 The soft hyphen (UTF code 0xAD) is mapped to the 0x12 control code, which
@@ -101,8 +77,8 @@ For unknown UTF input, the return is the '?' character (0x3F).
 
 The table's 16 bit word address may be referred with the following symbols:
 
-- up_ffutf_h: 0x001F
-- up_ffutf_l: 0x8200
+- up16h_ffutf: 0x001F
+- up16l_ffutf: 0xCC00
 
 
 
@@ -112,13 +88,13 @@ Code page 437 to UTF transformation table
 
 
 A table compatible with byte character writers accepting such (see
-"charw.rst") is provided at 0xFC480. This table can be used to convert CP437
+"charw.rst") is provided at 0xFE980. This table can be used to convert CP437
 byte streams to UTF-32, to be used with functions only accepting UTF.
 
 The table's 16 bit word address may be referred with the following symbols:
 
-- up_uf437_h: 0x001F
-- up_uf437_l: 0x8900
+- up16h_uf437: 0x001F
+- up16l_uf437: 0xD300
 
 
 
@@ -127,8 +103,8 @@ Font data dump
 ------------------------------------------------------------------------------
 
 
-Below the 6144 byte (1536 cell) binary dump for the normal 4 bit mode font is
-provided. ::
+Below the 6144 byte (1536 cell) binary dump for the normal font is
+provided: ::
 
     0x00000000U, 0x00000000U, 0x0EE6EE00U, 0xECCCCCE0U,
     0xECACACE0U, 0xECCCCCE0U, 0x6CAAAC60U, 0x64CAC460U,

@@ -187,7 +187,7 @@ provided. For more extensive details, check "specs/overview.rst".
   features are display list based line composing, and a FIFO assisted
   Accelerator capable to perform many types of fast blit operations.
 
-- 8bit Stereo digital audio output with up to 48KHz sampling frequency on the
+- 16bit Stereo digital audio output with up to 48KHz sampling frequency on the
   Peripheral bus, also providing a 187.5Hz clock.
 
 - FIFO assisted Mixer DMA peripheral capable to assist audio mixing

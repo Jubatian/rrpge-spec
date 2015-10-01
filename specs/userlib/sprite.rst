@@ -43,8 +43,8 @@ To initialize and operate either, the double buffering manager must be
 initialized, paying attention to adding an appropriate Display list clear. The
 clear should target all columns selected to be managed by the sprite manager.
 Since the Display list clear is capable to clear only up to 24 columns in
-single scan modes, and 48 columns in double scanned modes, without other
-provisions at most only this many columns may be used by the sprite managers.
+a fully single scanned mode, without other provisions at most only this many
+columns may be used by the sprite managers.
 
 Note that not only the number of columns available can constrain the display
 of sprites. The Graphics Display Generator has a maximum amount of cycles
@@ -55,6 +55,17 @@ partially. See "vid_arch.rst" for details.
 The managers need to have a page flip hook installed in which they clear their
 internal structures containing information on the usage of the display list.
 Normally these hooks are installed (see "ulboot.rst" for details).
+
+Both sprite managers respect the low and high vertical bounds set by the
+Display List managers. These are in the CPU RAM as follows:
+
++--------+-------------------------------------------------------------------+
+| Range  | Description                                                       |
++========+===================================================================+
+| 0xFDAC | Vertical limit, low. The first row where output is permitted.     |
++--------+-------------------------------------------------------------------+
+| 0xFDAD | Vertical limit, high. The first row where output is disabled.     |
++--------+-------------------------------------------------------------------+
 
 
 Display list column usage
@@ -124,8 +135,8 @@ All these locations are zero-initialized.
 - F.name: us_sprite_reset
 - Cycles: 20 / 100
 
-Clears display list occupation data (0xFDD8 and 0xFDD9) according to the set
-bounds (0xFDDA, 0xFDDB). This clearing respects the display list configuration
+Clears display list occupation data (0xFDC8 and 0xFDC9) according to the set
+bounds (0xFDCA, 0xFDCB). This clearing respects the display list configuration
 (display list size) as set in the Graphics Display Generator.
 
 Sets the dirty flag (indicating *not* dirty), so if no simple sprite manager
@@ -141,8 +152,8 @@ shortcut path (20 cycles).
 - Param0: First display list column to use
 - Param1: Count of display list columns to use
 
-The parameters are directly loaded into the appropriate locations (0xFDDA,
-0xFDDB). Clears the dirty flag (indicating dirty).
+The parameters are directly loaded into the appropriate locations (0xFDCA,
+0xFDCB). Clears the dirty flag (indicating dirty).
 
 
 0xE074: Add graphics component to display list
@@ -157,12 +168,14 @@ The parameters are directly loaded into the appropriate locations (0xFDDA,
 - Param4: Y position to start at (signed 2's complement, can be off-display)
 
 Selects the column to add the sprite to by the current column locations
-(0xFDD8 and 0xFDD9), updates the appropriate location (increments the current
+(0xFDC8 and 0xFDC9), updates the appropriate location (increments the current
 first non-occupied on the bottom location if added to the bottom, decrements
 the current first occupied on the top location if added to the top), clears
 the dirty flag (indicating dirty), then transfers to us_dlist_db_add.
 
 If the two locations are equal when calling, no sprite is added.
+
+Only Positioned sources are supported.
 
 PRAM pointers 2 and 3 are used and not preserved.
 
@@ -181,6 +194,8 @@ PRAM pointers 2 and 3 are used and not preserved.
 
 Processes identically to us_sprite_add except that it transfers to
 us_dlist_db_addxy if the sprite can be added.
+
+Only Positioned sources are supported.
 
 PRAM pointers 2 and 3 are used and not preserved.
 
@@ -244,7 +259,7 @@ All these locations are zero-initialized.
 - Cycles: 20 / 1800
 
 Clears display list occupation data (0xFB00 - 0xFC8F) according to the set
-bounds (0xFDDE, 0xFDDF). This clearing respects the display list configuration
+bounds (0xFDCE, 0xFDCF). This clearing respects the display list configuration
 (display list size) as set in the Graphics Display Generator.
 
 Sets the dirty flag (indicating *not* dirty), so if no multiplexing sprite
@@ -260,8 +275,8 @@ on a shortcut path (20 cycles).
 - Param0: First display list column to use
 - Param1: Count of display list columns to use
 
-The parameters are directly loaded into the appropriate locations (0xFDDA,
-0xFDDB). Clears the dirty flag (indicating dirty).
+The parameters are directly loaded into the appropriate locations (0xFDCE,
+0xFDCF). Clears the dirty flag (indicating dirty).
 
 
 0xE076: Add graphics component to display list
@@ -278,9 +293,11 @@ The parameters are directly loaded into the appropriate locations (0xFDDA,
 Clears the dirty flag (indicating dirty). For the purpose of rendering the
 srpite, the operation matches that of us_dlist_add. The display list column to
 use is selected on every display list row using the appropriate row of the
-occupation data (0xF800 - 0xF98F), operating by the same principles described
+occupation data (0xFB00 - 0xFC8F), operating by the same principles described
 at us_sprite_add. If the locations are equal, only the affected row of the
 sprite is skipped.
+
+Only Positioned sources are supported.
 
 PRAM pointer 3 is used and not preserved.
 
@@ -299,6 +316,8 @@ PRAM pointer 3 is used and not preserved.
 
 Processes identically to us_smux_add except that it operates according to
 us_dlist_addxy for rows on which the sprite can be added.
+
+Only Positioned sources are supported.
 
 PRAM pointer 3 is used and not preserved.
 

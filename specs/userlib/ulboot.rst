@@ -23,7 +23,7 @@ the User Library.
 The following two RAM memory areas are covered in this specification:
 
 - CPU RAM memory range 0xFB00 - 0xFDFF.
-- Peripheral RAM memory range 0xFC000 - 0xFDFFF.
+- Peripheral RAM memory range 0xFE200 - 0xFF7FF.
 
 Unless otherwise specified, these areas should be initialized to zero.
 
@@ -58,6 +58,9 @@ The init hook list contains the following functions:
 
 The absolute offset of it's first free slot at 0xFDDF is set 0xFDD1
 (indicating one function loaded).
+
+The display list manager's vertical limits (0xFDAC and 0xFDAD) are set up to
+cover the whole display (low limit to 0, high limit to 400).
 
 
 
@@ -98,10 +101,8 @@ The tileset managers (btile and ftile) start out uninitialized, so the
 0xFDBC - 0xFDBE and 0xFD92 - 0xFD94 ranges set zero. The default tilesets
 however are initialized as follows over ftile:
 
-- 0xFD9C: Normal 4 bit font. Reindexing + 12 bits, No colorkey.
-- 0xFDA4: Inverted 4 bit font. Pixel OR mask + 12 bits, colorkeyed.
-- 0xFDAC: Normal 8 bit font. Reindexing + 12 bits, No colorkey.
-- 0xFDB4: Inverted 8 bit font. Pixel OR mask + 12 bits, colorkeyed.
+- 0xFD9C: Normal font. Reindexing + 12 bits, No colorkey.
+- 0xFDA4: Inverted font. Pixel OR mask + 12 bits, colorkeyed.
 
 
 
@@ -126,6 +127,19 @@ a byte reader at 0xFD8C and a utf-8 reader at 0xFD88 (see "charr.rst").
 
 
 
+Audio buffer management initialization
+------------------------------------------------------------------------------
+
+
+The audio buffer manager is set up over the default mono setup, which means a
+buffer size of 4096 samples (512 bits << 7, into 0xFDAE). The block size is
+set up to 256 samples (512 bits << 3, into 0xFDAF). This at the normal 48KHz
+playback rate gives about 80ms of buffer-ahead capability at a decent 187.5Hz
+granularity.
+
+
+
+
 CPU RAM user library range fill map
 ------------------------------------------------------------------------------
 
@@ -145,7 +159,7 @@ The following table provides the initial fill data to be used for the range
 | 0xFD8B |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xFD8C |                                                                   |
-| \-     | 0xE0F4, 0xE0F2, 0x0040, 0, 0x001F, 0x8900                         |
+| \-     | 0xE0F4, 0xE0F2, 0x0040, 0, 0x001F, 0xD300                         |
 | 0xFD91 |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xFD92 |                                                                   |
@@ -153,22 +167,22 @@ The following table provides the initial fill data to be used for the range
 | 0xFD9B |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xFD9C |                                                                   |
-| \-     | 0xE13A, 0xE13C, 0xE138, 0x0001, 0x000C, 0x000F, 0xC500, 0x0020    |
+| \-     | 0xE13A, 0xE13C, 0xE138, 0x0001, 0x000C, 0x000F, 0xEA00, 0x0020    |
 | 0xFDA3 |                                                                   |
 +--------+-------------------------------------------------------------------+
 | 0xFDA4 |                                                                   |
-| \-     | 0xE13A, 0xE13C, 0xE138, 0x0001, 0x000C, 0x000F, 0xCBC0, 0x0108    |
+| \-     | 0xE13A, 0xE13C, 0xE138, 0x0001, 0x000C, 0x000F, 0xF100, 0x0108    |
 | 0xFDAB |                                                                   |
 +--------+-------------------------------------------------------------------+
-| 0xFDAC |                                                                   |
-| \-     | 0xE13A, 0xE13C, 0xE138, 0x0002, 0x000C, 0x000F, 0xD280, 0x0030    |
-| 0xFDB3 |                                                                   |
+| 0xFDAC | 0                                                                 |
 +--------+-------------------------------------------------------------------+
-| 0xFDB4 |                                                                   |
-| \-     | 0xE13A, 0xE13C, 0xE138, 0x0002, 0x000C, 0x000F, 0xD940, 0x0118    |
-| 0xFDBB |                                                                   |
+| 0xFDAD | 0x0190                                                            |
 +--------+-------------------------------------------------------------------+
-| 0xFDBC |                                                                   |
+| 0xFDAE | 0x0007                                                            |
++--------+-------------------------------------------------------------------+
+| 0xFDAF | 0x0003                                                            |
++--------+-------------------------------------------------------------------+
+| 0xFDB0 |                                                                   |
 | \-     | 0                                                                 |
 | 0xFDBF |                                                                   |
 +--------+-------------------------------------------------------------------+
@@ -220,31 +234,23 @@ The following table provides the initial fill data to be used for the range
 +---------+------------------------------------------------------------------+
 | Range   | Fill data                                                        |
 +=========+==================================================================+
-| 0xFC000 |                                                                  |
+| 0xFE200 |                                                                  |
 | \-      | 0                                                                |
-| 0xFC0FF |                                                                  |
+| 0xFE5FF |                                                                  |
 +---------+------------------------------------------------------------------+
-| 0xFC100 |                                                                  |
+| 0xFE600 |                                                                  |
 | \-      | UTF to font transformation table, see "fontdata.rst".            |
-| 0xFC47F |                                                                  |
+| 0xFE97F |                                                                  |
 +---------+------------------------------------------------------------------+
-| 0xFC480 |                                                                  |
+| 0xFE980 |                                                                  |
 | \-      | Code page 437 to UTF transformation table, see "fontdata.rst".   |
-| 0xFC4FF |                                                                  |
+| 0xFE9FF |                                                                  |
 +---------+------------------------------------------------------------------+
-| 0xFC500 |                                                                  |
-| \-      | Normal font for 4 bit mode, see "fontdata.rst".                  |
-| 0xFCBBF |                                                                  |
+| 0xFEA00 |                                                                  |
+| \-      | Normal font, see "fontdata.rst".                                 |
+| 0xFF0FF |                                                                  |
 +---------+------------------------------------------------------------------+
-| 0xFCBC0 |                                                                  |
-| \-      | Inverted font for 4 bit mode, see "fontdata.rst".                |
-| 0xFD27F |                                                                  |
-+---------+------------------------------------------------------------------+
-| 0xFD280 |                                                                  |
-| \-      | Normal font for 8 bit mode, see "fontdata.rst".                  |
-| 0xFD93F |                                                                  |
-+---------+------------------------------------------------------------------+
-| 0xFD940 |                                                                  |
-| \-      | Inverted font for 8 bit mode, see "fontdata.rst".                |
-| 0xFDFFF |                                                                  |
+| 0xFF100 |                                                                  |
+| \-      | Inverted font, see "fontdata.rst".                               |
+| 0xFF7FF |                                                                  |
 +---------+------------------------------------------------------------------+

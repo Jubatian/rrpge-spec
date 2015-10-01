@@ -648,9 +648,6 @@ The values in table1 (64 words) are as follows: ::
     0x00E0U, 0x00E8U, 0x00F0U, 0x00F8U, 0x001FU, 0x003FU, 0x007FU, 0x00FFU,
     0x01FFU, 0x03FFU, 0x07FFU, 0x0FFFU, 0x1FFFU, 0x3FFFU, 0x7FFFU, 0xFFFFU
 
-The "MOV SP, imm7" instruction allows loading values 0 - 127 in the Stack
-Pointer in one instruction word.
-
 Timing (cycles): 2 + ai + ma
 
 
