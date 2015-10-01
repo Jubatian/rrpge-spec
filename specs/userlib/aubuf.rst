@@ -84,8 +84,8 @@ Sets the count of blocks to keep empty in the audio buffer. If it is set zero,
 the entire buffer is used, giving the most protection against skipping,
 however also producing the most lag. Setting it above zero can order the
 us_aubuf_isempty function to return zero if only the given number or fewer
-blocks are empty (the Audio DMA sample counter passed them), thus reducting
-the effective size of the buffer (reducing audio lag).
+blocks are empty (the Audio DMA sample counter passed them), thus reducing the
+effective size of the buffer (reducing audio lag).
 
 It can be set any time, so allowing to dynamically adjust the buffer size as
 needed.

@@ -30,7 +30,7 @@ Basic properties of the display
 The basic properties of the RRPGE system's display generator are as follows:
 
 - 640x400 visible pixels of 1:1 pixel aspect ratio
-- 6 bits per pixel palettized, 64 palette entires of 4-4-4 RGB colors.
+- 6 bits per pixel palettized, 64 palette entries of 4-4-4 RGB colors.
 - 16:10 display aspect ratio
 - 50Hz minimal / 60Hz maximal refresh rate
 - At least 71 vertical blank lines (for a total of at least 471 lines)

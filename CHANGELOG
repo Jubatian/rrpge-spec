@@ -1,4 +1,4 @@
-Version 00.018.000 ()
+Version 00.018.000 (2015.10.01)
  - Simplified Graphics Display Generator removing 8 bit mode and some unused
    or less useful features in the remaining 4 bit mode.
  - Graphics Display Generator 4 bit mode was expanded to support a total of 64
@@ -9,6 +9,7 @@ Version 00.018.000 ()
  - Some changes in the User Library reflecting the removal of the 8 bit mode.
  - New, simpler event based input concept, completely redesigning the input
    interface.
+ - 16 bit audio output accompanied with a redesigned Mixer.
 
 
 Version 00.017.000 (2015.07.12)

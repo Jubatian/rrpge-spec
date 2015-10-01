@@ -73,7 +73,7 @@ The logic of sample fetching could be realized as follows: ::
 The Sample bit offset afterwards is incremented by the Sample bit width, then,
 if the low 5 bits wrapped, the Source input register is shifted left by 32.
 
-Sample expansion is performed by copying the sample repeatedely into the lower
+Sample expansion is performed by copying the sample repeatedly into the lower
 bits until all bits are filled. For example a 6 bit input is expanded as
 follows: ::
 
@@ -206,7 +206,7 @@ details).
 |        | - bit  0-11: Number of cells to process; 0: 4096 (8192 samples).  |
 |        |                                                                   |
 |        | Bit 15 becomes set after a Mixer operation. This simplifies       |
-|        | usual mixing processes, only necessiting a single write to this   |
+|        | usual mixing processes, only necessitating a single write to this |
 |        | register.                                                         |
 +--------+-------------------------------------------------------------------+
 |        | Source configuration.                                             |
@@ -219,7 +219,7 @@ details).
 |        | - bit  0- 3: Source partition size.                               |
 |        |                                                                   |
 |        | Narrower than 16 bits samples are expanded to 16 bits by copying  |
-|        | them repeatedely on the lower bits (for example a 6 bit sample of |
+|        | them repeatedly on the lower bits (for example a 6 bit sample of  |
 |        | 0x20: 0b100000 would give 0x8208: 0b1000001000001000 in 16 bits). |
 |        |                                                                   |
 |        | Source partition sizes are as follows:                            |
